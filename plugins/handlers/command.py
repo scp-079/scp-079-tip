@@ -24,7 +24,7 @@ from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from ..functions.channel import get_debug_text, send_debug, share_data
-from ..functions.etc import bold, code, delay, get_command_context, get_command_type, get_now, lang
+from ..functions.etc import bold, code, code_block, delay, get_command_context, get_command_type, get_now, lang
 from ..functions.etc import mention_id, thread
 from ..functions.file import save
 from ..functions.filters import authorized_group, from_user, is_class_c, test_group
@@ -657,6 +657,65 @@ def rm(client: Client, message: Message) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Rm begin error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
+        delete_message(client, gid, mid)
+
+    return False
+
+
+@Client.on_message(Filters.incoming & Filters.group & Filters.command(["show"], glovar.prefix)
+                   & ~test_group & authorized_group
+                   & from_user)
+def show(client: Client, message: Message) -> bool:
+    # Show the config text
+
+    if not message or not message.chat:
+        return True
+
+    # Basic data
+    gid = message.chat.id
+    mid = message.message_id
+
+    glovar.locks["message"].acquire()
+    try:
+        # Check permission
+        if not is_class_c(None, message):
+            return True
+
+        aid = message.from_user.id
+        command_type = get_command_type(message)
+
+        # Text prefix
+        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('action_show'))}\n")
+
+        # Check command format
+        type_list = set(glovar.default_config)
+        for the_type in ["default", "lock", "clean", "resend", "channel"]:
+            type_list.discard(the_type)
+
+        if not command_type or command_type not in type_list:
+            text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
+                     f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
+            thread(send_report_message, (15, client, gid, text))
+            return True
+
+        # Get the config
+        result = glovar.configs[gid][command_type] or lang("reason_none")
+        text += (f"{lang('result')}{lang('colon')}" + "-" * 24 + "\n\n"
+                 f"{code_block(result)}\n")
+
+        # Check the text
+        if len(text) > 4000:
+            text = code_block(result)
+
+        # Send the report message
+        thread(send_report_message, (20, client, gid, text))
+
+        return True
+    except Exception as e:
+        logger.warning(f"Show error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
         delete_message(client, gid, mid)

@@ -203,6 +203,7 @@ lang: Dict[str, str] = {
     "name": (zh_cn and "名称") or "Name",
     "reason": (zh_cn and "原因") or "Reason",
     "reset": (zh_cn and "重置数据") or "Reset Data",
+    "result": (zh_cn and "结果") or "Result",
     "rollback": (zh_cn and "数据回滚") or "Rollback",
     "score": (zh_cn and "评分") or "Score",
     "status_failed": (zh_cn and "未执行") or "Failed",
@@ -286,6 +287,7 @@ lang: Dict[str, str] = {
     "action_ot": (zh_cn and "调整 OT 提示") or "Adjust OT Tip",
     "action_rm": (zh_cn and "调整 RM 警告") or "Adjust RM Tip",
     "action_resend": (zh_cn and "重新发送入群链接") or "Resend Group Link Message",
+    "action_show": (zh_cn and "查看设置内容") or "Show the Config Text",
     "action_welcome": (zh_cn and "调整欢迎消息") or "Adjust Welcome Tip",
     "button_channel": (zh_cn and "点击加入") or "Click to Join",
     "description_channel": ((zh_cn and "请点击下方按钮加入讨论群组")
@@ -319,6 +321,7 @@ all_commands: List[str] = [
     "ot",
     "resend",
     "rm",
+    "show",
     "welcome",
     "version"
 ]
