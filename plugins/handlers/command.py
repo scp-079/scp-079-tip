@@ -507,6 +507,62 @@ def ot(client: Client, message: Message) -> bool:
     return False
 
 
+@Client.on_message(Filters.incoming & Filters.group & Filters.command(["resend"], glovar.prefix)
+                   & ~test_group & authorized_group
+                   & from_user)
+def resend(client: Client, message: Message) -> bool:
+    # Resend the group link message
+
+    if not message or not message.chat:
+        return True
+
+    # Basic data
+    gid = message.chat.id
+    mid = message.message_id
+
+    glovar.locks["message"].acquire()
+    try:
+        # Check permission
+        if not is_class_c(None, message):
+            return True
+
+        aid = message.from_user.id
+
+        # Text prefix
+        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('action_resend'))}\n")
+
+        # Try to send
+        result = get_invite_link(client, "send", gid, True)
+
+        # Check the result
+        if result:
+            text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
+                     f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
+            thread(send_report_message, (15, client, gid, text))
+            return True
+
+        # Send debug message
+        send_debug(
+            client=client,
+            chat=message.chat,
+            action=lang("action_resend"),
+            aid=aid
+        )
+
+        # Send the report message
+        thread(send_report_message, (20, client, gid, text))
+
+        return True
+    except Exception as e:
+        logger.warning(f"Resend begin error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
+        delete_message(client, gid, mid)
+
+    return False
+
+
 @Client.on_message(Filters.incoming & Filters.group & Filters.command(["rm"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
@@ -677,7 +733,7 @@ def welcome(client: Client, message: Message) -> bool:
 
         return True
     except Exception as e:
-        logger.warning(f"Purge end error: {e}", exc_info=True)
+        logger.warning(f"Welcome error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
         delete_message(client, gid, mid)

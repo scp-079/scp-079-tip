@@ -107,13 +107,16 @@ def get_debug_text(client: Client, context: Union[int, Chat, List[int]]) -> str:
     return text
 
 
-def send_debug(client: Client, chat: Chat, action: str, aid: int, config_type: str, more: str = "") -> bool:
+def send_debug(client: Client, chat: Chat, action: str, aid: int, config_type: str = "",
+               more: str = "") -> bool:
     # Send the debug message
     try:
         text = get_debug_text(client, chat)
         text += (f"{lang('admin_group')}{lang('colon')}{code(aid)}\n"
-                 f"{lang('action')}{lang('colon')}{code(action)}\n"
-                 f"{lang('type')}{lang('colon')}{code(config_type)}\n")
+                 f"{lang('action')}{lang('colon')}{code(action)}\n")
+
+        if config_type:
+            text += f"{lang('type')}{lang('colon')}{code(config_type)}\n"
 
         if more:
             text += f"{lang('more')}{lang('colon')}{code(more)}\n"
