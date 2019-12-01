@@ -279,7 +279,8 @@ lang: Dict[str, str] = {
     "contact": (zh_cn and "联系方式") or "Contact Info",
     "more": (zh_cn and "附加信息") or "Extra Info",
     # Special
-
+    "action_update": (zh_cn and "更新设置") or "Update Config",
+    "type": (zh_cn and "类别") or "Type",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
     "auto_delete": (zh_cn and "自动删除") or "Auto Delete",
