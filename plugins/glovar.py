@@ -279,7 +279,13 @@ lang: Dict[str, str] = {
     "contact": (zh_cn and "联系方式") or "Contact Info",
     "more": (zh_cn and "附加信息") or "Extra Info",
     # Special
-    "action_update": (zh_cn and "更新设置") or "Update Config",
+    "action_bind": (zh_cn and "绑定频道") or "Bind Channel",
+    "action_channel": (zh_cn and "调整邀请提示") or "Adjust Invite Text",
+    "action_keyword": (zh_cn and "调整关键词") or "Adjust Keywords",
+    "action_ot": (zh_cn and "调整 OT 提示") or "Adjust OT Tip",
+    "action_rm": (zh_cn and "调整 RM 警告") or "Adjust RM Tip",
+    "action_resend": (zh_cn and "重新发送入群链接") or "Resend Group Link Message",
+    "action_welcome": (zh_cn and "调整欢迎消息") or "Adjust Welcome Tip",
     "button_channel": (zh_cn and "点击加入") or "Click to Join",
     "description_channel": ((zh_cn and "请点击下方按钮加入讨论群组")
                             or "Please click the button below to join the chat group"),
@@ -408,7 +414,7 @@ sender: str = "TIP"
 
 should_hide: bool = False
 
-version: str = "0.0.7"
+version: str = "0.0.9"
 
 # Load data from pickle
 

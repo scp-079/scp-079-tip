@@ -31,66 +31,7 @@ from .telegram import edit_message_text, export_chat_invite_link, send_message
 logger = logging.getLogger(__name__)
 
 
-def get_keywords(text: str) -> dict:
-    # Get keywords
-    try:
-        # Check the text
-        if not text:
-            return {}
-
-        text_list = [t for t in text.split("\n+++") if t]
-
-        if not text_list or len(text_list) % 2 != 0:
-            return {}
-
-        # Get keyword_list
-        keyword_list = [t.strip() for t in text_list[0::2]]
-        reply_list = [t.strip() for t in text_list[1::2]]
-
-        # Get keyword dict
-        keywords = {}
-
-        for i in range(len(keyword_list)):
-            keyword = keyword_list[i]
-            reply = reply_list[i]
-
-            k_list = [k.strip() for k in keyword.split("||") if k.strip()]
-
-            for k in k_list:
-                keywords[k] = reply
-    except Exception as e:
-        logger.warning(f"Get keywords error: {e}", exc_info=True)
-
-    return {}
-
-
-def get_markup(the_type: str, gid: int) -> InlineKeyboardMarkup:
-    # Get the group button config
-    result = None
-    try:
-        # Read the config
-        text = glovar.configs[gid][f"{the_type}_button"]
-        link = glovar.configs[gid][f"{the_type}_link"]
-        
-        # Generate the markup
-        if text and link:
-            result = InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            text=text,
-                            url=link
-                        )
-                    ]
-                ]
-            )
-    except Exception as e:
-        logger.warning(f"Get button config error: {e}", exc_info=True)
-    
-    return result
-
-
-def get_invite_link(client: Client, the_type: str, gid: int) -> bool:
+def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = False) -> bool:
     # Get a new invite link
     glovar.locks["channel"].acquire()
     try:
@@ -105,6 +46,10 @@ def get_invite_link(client: Client, the_type: str, gid: int) -> bool:
 
         # Check the config
         if not cid:
+            return False
+
+        # Check the link time
+        if not manual and now - time < glovar.time_channel:
             return False
 
         # Generate link
@@ -159,6 +104,65 @@ def get_invite_link(client: Client, the_type: str, gid: int) -> bool:
         glovar.locks["channel"].release()
 
     return False
+
+
+def get_keywords(text: str) -> dict:
+    # Get keywords
+    try:
+        # Check the text
+        if not text:
+            return {}
+
+        text_list = [t for t in text.split("\n+++") if t]
+
+        if not text_list or len(text_list) % 2 != 0:
+            return {}
+
+        # Get keyword_list
+        keyword_list = [t.strip() for t in text_list[0::2]]
+        reply_list = [t.strip() for t in text_list[1::2]]
+
+        # Get keyword dict
+        keywords = {}
+
+        for i in range(len(keyword_list)):
+            keyword = keyword_list[i]
+            reply = reply_list[i]
+
+            k_list = [k.strip() for k in keyword.split("||") if k.strip()]
+
+            for k in k_list:
+                keywords[k] = reply
+    except Exception as e:
+        logger.warning(f"Get keywords error: {e}", exc_info=True)
+
+    return {}
+
+
+def get_markup(the_type: str, gid: int) -> InlineKeyboardMarkup:
+    # Get the group button config
+    result = None
+    try:
+        # Read the config
+        text = glovar.configs[gid][f"{the_type}_button"]
+        link = glovar.configs[gid][f"{the_type}_link"]
+
+        # Generate the markup
+        if text and link:
+            result = InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text=text,
+                            url=link
+                        )
+                    ]
+                ]
+            )
+    except Exception as e:
+        logger.warning(f"Get button config error: {e}", exc_info=True)
+
+    return result
 
 
 def tip_keyword(client: Client, message: Message, text: str) -> bool:
