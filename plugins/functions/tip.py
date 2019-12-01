@@ -18,10 +18,10 @@
 
 import logging
 
-from pyrogram import Client, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram import Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
-from .etc import get_now
+from .etc import code, get_full_name, get_now, mention_id, mention_name
 from .file import save
 from .group import delete_message
 from .telegram import edit_message_text, export_chat_invite_link, send_message
@@ -62,6 +62,32 @@ def get_keywords(text: str) -> dict:
         logger.warning(f"Get keywords error: {e}", exc_info=True)
 
     return {}
+
+
+def get_markup(the_type: str, gid: int) -> InlineKeyboardMarkup:
+    # Get the group button config
+    result = None
+    try:
+        # Read the config
+        text = glovar.configs[gid][f"{the_type}_button"]
+        link = glovar.configs[gid][f"{the_type}_link"]
+        
+        # Generate the markup
+        if text and link:
+            result = InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text=text,
+                            url=link
+                        )
+                    ]
+                ]
+            )
+    except Exception as e:
+        logger.warning(f"Get button config error: {e}", exc_info=True)
+    
+    return result
 
 
 def get_invite_link(client: Client, the_type: str, gid: int) -> bool:
@@ -131,5 +157,115 @@ def get_invite_link(client: Client, the_type: str, gid: int) -> bool:
         logger.warning(f"New invite link error: {e}", exc_info=True)
     finally:
         glovar.locks["channel"].release()
+
+    return False
+
+
+def tip_keyword(client: Client, message: Message, text: str) -> bool:
+    # Send keyword tip
+    try:
+        # Basic data
+        gid = message.chat.id
+        mid = message.message_id
+        now = get_now()
+
+        # Get the markup
+        markup = get_markup("keyword", gid)
+
+        # Send the tip
+        result = send_message(client, gid, text, mid, markup)
+        if result:
+            mid, _ = glovar.message_ids[gid]["keyword"]
+            mid and delete_message(client, gid, mid)
+            glovar.message_ids[gid]["keyword"] = (result.message_id, now)
+        
+        return True
+    except Exception as e:
+        logger.warning(f"Tip keyword error: {e}", exc_info=True)
+
+    return False
+
+
+def tip_ot(client: Client, gid: int, mid: int = None) -> bool:
+    # Send OT tip
+    try:
+        # Basic data
+        now = get_now()
+        
+        # Get the markup
+        markup = get_markup("ot", gid)
+        
+        # Read the config
+        text = glovar.configs[gid]["ot"]
+        
+        # Send the tip
+        result = send_message(client, gid, text, mid, markup)
+        if result:
+            mid, _ = glovar.message_ids[gid]["ot"]
+            mid and delete_message(client, gid, mid)
+            glovar.message_ids[gid]["ot"] = (result.message_id, now)
+        
+        return True
+    except Exception as e:
+        logger.warning(f"Tip ot error: {e}", exc_info=True)
+
+    return False
+
+
+def tip_rm(client: Client, gid: int, text: str, mid: int = None) -> bool:
+    # Send RM tip
+    try:
+        # Basic data
+        now = get_now()
+
+        # Get the markup
+        markup = get_markup("rm", gid)
+
+        # Send the tip
+        result = send_message(client, gid, text, mid, markup)
+        if result:
+            mid, _ = glovar.message_ids[gid]["rm"]
+            mid and delete_message(client, gid, mid)
+            glovar.message_ids[gid]["rm"] = (result.message_id, now)
+        
+        return True
+    except Exception as e:
+        logger.warning(f"Tip rm error: {e}", exc_info=True)
+    
+    return False
+
+
+def tip_welcome(client: Client, message: Message) -> bool:
+    # Send welcome tip
+    try:
+        # Basic data
+        gid = message.chat.id
+        uid = message.from_user.id
+        mid = message.message_id
+        name = get_full_name(message.from_user)
+        now = get_now()
+
+        # Get the markup
+        markup = get_markup("welcome", gid)
+
+        # Read the config
+        text = glovar.configs[gid]["welcome"]
+
+        # Replace
+        text.replace("$code_id", code(uid))
+        text.replace("$code_name", code(name))
+        text.replace("$mention_id", mention_id(uid))
+        text.replace("$mention_name", mention_name(message.from_user))
+
+        # Send the tip
+        result = send_message(client, gid, text, mid, markup)
+        if result:
+            mid, _ = glovar.message_ids[gid]["welcome"]
+            mid and delete_message(client, gid, mid)
+            glovar.message_ids[gid]["welcome"] = (result.message_id, now)
+
+        return True
+    except Exception as e:
+        logger.warning(f"Tip welcome error: {e}", exc_info=True)
 
     return False
