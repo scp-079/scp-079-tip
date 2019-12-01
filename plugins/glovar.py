@@ -453,6 +453,7 @@ configs: Dict[int, Dict[str, Union[bool, int]]] = {}
 #         "default": True,
 #         "lock": 0,
 #         "clean": True,
+#         "resend": False,
 #         "channel": 0,
 #         "keyword": "",
 #         "ot": "",
