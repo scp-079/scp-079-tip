@@ -24,7 +24,7 @@ from pyrogram import Chat, Client
 
 from .. import glovar
 from .etc import code, code_block, general_link, lang, thread
-from .file import crypt_file, data_to_file, delete_file, get_new_path, save
+from .file import crypt_file, data_to_file, delete_file, get_new_path
 from .telegram import get_group_info, send_document, send_message
 
 # Enable logging
