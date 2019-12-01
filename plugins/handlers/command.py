@@ -463,6 +463,7 @@ def ot(client: Client, message: Message) -> bool:
         if command_type not in {"button", "link"}:
             command_type = get_command_type(message)
             glovar.configs[gid]["ot"] = command_type
+            save("configs")
             text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
 
             # Send the report message
@@ -609,6 +610,7 @@ def rm(client: Client, message: Message) -> bool:
         if command_type not in {"button", "link"}:
             command_type = get_command_type(message)
             glovar.configs[gid]["rm"] = command_type
+            save("configs")
             text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
 
             # Send the report message
@@ -697,6 +699,7 @@ def welcome(client: Client, message: Message) -> bool:
         if command_type not in {"button", "link"}:
             command_type = get_command_type(message)
             glovar.configs[gid]["welcome"] = command_type
+            save("configs")
             text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
 
             # Send the report message
