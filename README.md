@@ -29,7 +29,7 @@ See [this article](https://scp-079.org/tip/).
         - `receive.py` : Receive data from exchange channel
         - `telegram.py` : Some telegram functions
         - `timers.py` : Timer functions
-        - `user.py` : Functions about user and channel object
+        - `tip.py` : Functions about tips
     - handlers
         - `command.py` : Handle commands
         - `message.py`: Handle messages
