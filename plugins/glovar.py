@@ -461,7 +461,7 @@ watch_ids: Dict[str, Dict[int, int]] = {
 
 # Init data variables
 
-configs: Dict[int, Dict[str, Union[bool, int]]] = {}
+configs: Dict[int, Dict[str, Union[bool, int, str]]] = {}
 # configs = {
 #     -10012345678: {
 #         "default": True,
