@@ -193,6 +193,25 @@ def get_command_type(message: Message) -> str:
     return result
 
 
+def get_filename(message: Message, normal: bool = False) -> str:
+    # Get file's filename
+    text = ""
+    try:
+        if message.document:
+            if message.document.file_name:
+                text += message.document.file_name
+        elif message.audio:
+            if message.audio.file_name:
+                text += message.audio.file_name
+
+        if text:
+            text = t2t(text, normal)
+    except Exception as e:
+        logger.warning(f"Get filename error: {e}", exc_info=True)
+
+    return text
+
+
 def get_forward_name(message: Message, normal: bool = False) -> str:
     # Get forwarded message's origin sender's name
     text = ""
