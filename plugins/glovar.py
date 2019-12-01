@@ -338,6 +338,14 @@ default_config: Dict[str, Union[bool, int, str]] = {
     "welcome": ""
 }
 
+default_message_data: Dict[str, Tuple[int, int]] = {
+    "channel": (0, 0),
+    "keyword": (0, 0),
+    "ot": (0, 0),
+    "rm": (0, 0),
+    "welcome": (0, 0)
+}
+
 default_user_status: Dict[str, Dict[str, float]] = {
     "score": {
         "captcha": 0.0,
@@ -421,8 +429,8 @@ left_group_ids: Set[int] = set()
 message_ids: Dict[int, Dict[str, Tuple[int, int]]] = {}
 # message_ids = {
 #     -10012345678: {
-#         "channel": (124, 1512345679),
-#         "keyword": (123, 1512345678),
+#         "channel": (123, 1512345678),
+#         "keyword": (124, 1512345678),
 #         "ot": (125, 1512345678),
 #         "rm": (126, 1512345678),
 #         "welcome": (127, 1512345678)
