@@ -108,6 +108,7 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
 
 def get_keywords(text: str) -> dict:
     # Get keywords
+    result = {}
     try:
         # Check the text
         if not text:
@@ -123,7 +124,7 @@ def get_keywords(text: str) -> dict:
         reply_list = [t.strip() for t in text_list[1::2]]
 
         # Get keyword dict
-        keywords = {}
+        result = {}
 
         for i in range(len(keyword_list)):
             keyword = keyword_list[i]
@@ -132,11 +133,11 @@ def get_keywords(text: str) -> dict:
             k_list = [k.strip() for k in keyword.split("||") if k.strip()]
 
             for k in k_list:
-                keywords[k] = reply
+                result[k] = reply
     except Exception as e:
         logger.warning(f"Get keywords error: {e}", exc_info=True)
 
-    return {}
+    return result
 
 
 def get_markup(the_type: str, gid: int) -> InlineKeyboardMarkup:
