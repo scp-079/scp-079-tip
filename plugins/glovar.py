@@ -401,6 +401,7 @@ regex: Dict[str, bool] = {
     "iml": False,
     "pho": False,
     "nm": False,
+    "rm": True,
     "sho": False,
     "spc": False,
     "spe": False,
