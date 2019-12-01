@@ -300,7 +300,17 @@ lang: Dict[str, str] = {
 
 # Init
 
-all_commands: List[str] = ["config", "config_noporn", "version"]
+all_commands: List[str] = [
+    "channel",
+    "config",
+    "config_tip",
+    "keyword",
+    "ot",
+    "resend",
+    "rm",
+    "welcome",
+    "version"
+]
 
 bot_ids: Set[int] = {avatar_id, captcha_id, clean_id, lang_id, long_id, noflood_id,
                      noporn_id, nospam_id, recheck_id, tip_id, user_id, warn_id}
@@ -345,6 +355,7 @@ emoji_set: Set[str] = set(UNICODE_EMOJI)
 
 locks: Dict[str, Lock] = {
     "admin": Lock(),
+    "channel": Lock(),
     "message": Lock(),
     "receive": Lock(),
     "regex": Lock()
