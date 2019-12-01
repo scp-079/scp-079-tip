@@ -256,10 +256,10 @@ def tip_welcome(client: Client, message: Message) -> bool:
         text = glovar.configs[gid]["welcome"]
 
         # Replace
-        text.replace("$code_id", code(uid))
-        text.replace("$code_name", code(name))
-        text.replace("$mention_id", mention_id(uid))
-        text.replace("$mention_name", mention_name(message.from_user))
+        text = text.replace("$code_id", code(uid))
+        text = text.replace("$code_name", code(name))
+        text = text.replace("$mention_id", mention_id(uid))
+        text = text.replace("$mention_name", mention_name(message.from_user))
 
         # Send the tip
         result = send_message(client, gid, text, mid, markup)
