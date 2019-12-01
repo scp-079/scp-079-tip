@@ -114,7 +114,7 @@ def get_keywords(text: str) -> dict:
         if not text:
             return {}
 
-        text_list = [t for t in text.split("\n+++") if t]
+        text_list = [t.lower() for t in text.split("\n+++") if t]
 
         if not text_list or len(text_list) % 2 != 0:
             return {}

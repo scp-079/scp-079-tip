@@ -432,7 +432,7 @@ def is_keyword_text(message: Message) -> str:
             return ""
 
         # Get the message text
-        message_text = get_text(message)
+        message_text = get_text(message).lower()
 
         # Get keywords
         keywords = get_keywords(glovar.configs[gid]["keyword"])
