@@ -280,6 +280,9 @@ lang: Dict[str, str] = {
     "more": (zh_cn and "附加信息") or "Extra Info",
     # Special
     "action_update": (zh_cn and "更新设置") or "Update Config",
+    "button_channel": (zh_cn and "点击加入") or "Click to Join",
+    "description_channel": ((zh_cn and "请点击下方按钮加入讨论群组")
+                            or "Please click the button below to join the chat group"),
     "type": (zh_cn and "类别") or "Type",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
@@ -332,10 +335,21 @@ default_config: Dict[str, Union[bool, int, str]] = {
     "clean": True,
     "resend": False,
     "channel": 0,
+    "channel_text": lang["description_channel"],
+    "channel_button": lang["button_channel"],
+    "channel_link": "",
     "keyword": "",
+    "keyword_button": "",
+    "keyword_link": "",
     "ot": "",
+    "ot_button": "",
+    "ot_link": "",
     "rm": "",
-    "welcome": ""
+    "rm_button": "",
+    "rm_link": "",
+    "welcome": "",
+    "welcome_button": "",
+    "welcome_link": "",
 }
 
 default_message_data: Dict[str, Tuple[int, int]] = {
@@ -393,7 +407,7 @@ sender: str = "TIP"
 
 should_hide: bool = False
 
-version: str = "0.0.1"
+version: str = "0.0.6"
 
 # Load data from pickle
 
@@ -477,10 +491,21 @@ configs: Dict[int, Dict[str, Union[bool, int, str]]] = {}
 #         "clean": True,
 #         "resend": False,
 #         "channel": 0,
+#         "channel_text": "text",
+#         "channel_button": "text",
+#         "channel_link": "",
 #         "keyword": "",
+#         "keyword_button": "",
+#         "keyword_link": "",
 #         "ot": "",
+#         "ot_button": "",
+#         "ot_link": "",
 #         "rm": "",
-#         "welcome": ""
+#         "rm_button": "",
+#         "rm_link": "",
+#         "welcome": "",
+#         "welcome_button": "",
+#         "welcome_link": ""
 #     }
 # }
 

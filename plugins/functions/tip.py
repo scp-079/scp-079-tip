@@ -18,6 +18,15 @@
 
 import logging
 
+from pyrogram import Client, InlineKeyboardButton, InlineKeyboardMarkup
+
+from .. import glovar
+from .etc import get_now
+from .file import save
+from .group import delete_message
+from .telegram import edit_message_text, export_chat_invite_link, send_message
+
+
 # Enable logging
 logger = logging.getLogger(__name__)
 
@@ -53,3 +62,74 @@ def get_keywords(text: str) -> dict:
         logger.warning(f"Get keywords error: {e}", exc_info=True)
 
     return {}
+
+
+def get_invite_link(client: Client, the_type: str, gid: int) -> bool:
+    # Get a new invite link
+    glovar.locks["channel"].acquire()
+    try:
+        # Basic data
+        now = get_now()
+
+        # Read the config
+        cid = glovar.configs[gid]["channel"]
+        channel_text = glovar.configs[gid]["channel_text"]
+        channel_button = glovar.configs[gid]["channel_button"]
+        mid, time = glovar.message_ids[gid]["channel"]
+
+        # Check the config
+        if not cid:
+            return False
+
+        # Generate link
+        link = export_chat_invite_link(client, gid)
+
+        # Check the link
+        if link is False:
+            glovar.configs[gid]["channel"] = 0
+            save("configs")
+            glovar.message_ids[gid]["channel"] = (0, 0)
+            save("message_ids")
+            delete_message(client, cid, mid)
+            return False
+        elif not link:
+            return False
+
+        # Update the link
+        glovar.configs[gid]["channel_link"] = link
+        save("configs")
+
+        # Generate text and markup
+        text = channel_text
+        markup = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        text=channel_button,
+                        url=link
+                    )
+                ]
+            ]
+        )
+
+        # Edit message
+        if the_type == "edit" and mid:
+            result = edit_message_text(client, cid, mid, text, markup)
+            if result:
+                glovar.message_ids[gid]["channel"] = (mid, now)
+                save("message_ids")
+                return True
+
+        # Send new message
+        result = send_message(client, cid, text, None, markup)
+        if result:
+            glovar.message_ids[gid]["channel"] = (result.message_id, now)
+            save("message_ids")
+            mid and delete_message(client, cid, mid)
+            return True
+    except Exception as e:
+        logger.warning(f"New invite link error: {e}", exc_info=True)
+    finally:
+        glovar.locks["channel"].release()
+
+    return False

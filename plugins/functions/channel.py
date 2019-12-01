@@ -113,7 +113,7 @@ def send_debug(client: Client, chat: Chat, action: str, aid: int, config_type: s
         text = get_debug_text(client, chat)
         text += (f"{lang('admin_group')}{lang('colon')}{code(aid)}\n"
                  f"{lang('action')}{lang('colon')}{code(action)}\n"
-                 f"{lang('type')}{lang('colon')}{code(lang(config_type))}\n")
+                 f"{lang('type')}{lang('colon')}{code(config_type)}\n")
 
         if more:
             text += f"{lang('more')}{lang('colon')}{code(more)}\n"

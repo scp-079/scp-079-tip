@@ -106,12 +106,23 @@ def receive_config_commit(data: dict) -> bool:
         else:
             config["channel"] = 0
 
+        config["channel_text"] = glovar.configs[gid]["channel_text"]
+        config["channel_button"] = glovar.configs[gid]["channel_button"]
+        config["channel_link"] = glovar.configs[gid]["channel_link"]
+
         # Others
         for the_type in ["keyword", "ot", "rm", "welcome"]:
+            config[f"{the_type}_button"] = glovar.configs[gid][f"{the_type}_button"]
+            config[f"{the_type}_link"] = glovar.configs[gid][f"{the_type}_link"]
+
             if config[the_type]:
                 config[the_type] = glovar.configs[gid][the_type]
             else:
                 config[the_type] = ""
+
+        # Default
+        if config["default"]:
+            config = deepcopy(glovar.default_config)
 
         glovar.configs[gid] = config
         save("configs")
