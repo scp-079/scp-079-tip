@@ -543,7 +543,7 @@ def resend(client: Client, message: Message) -> bool:
         result = get_invite_link(client, "send", gid, True)
 
         # Check the result
-        if result:
+        if not result:
             text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
                      f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
             thread(send_report_message, (15, client, gid, text))
@@ -558,6 +558,7 @@ def resend(client: Client, message: Message) -> bool:
         )
 
         # Send the report message
+        text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
         thread(send_report_message, (20, client, gid, text))
 
         return True
