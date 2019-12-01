@@ -73,6 +73,7 @@ def channel(client: Client, message: Message) -> bool:
 
             # Try to send a message to the channel
             cid = r_message.forward_from_chat.id
+            glovar.configs[gid]["default"] = False
             glovar.configs[gid]["channel"] = cid
             save("configs")
             result = get_invite_link(client, "send", gid, True)
@@ -118,6 +119,7 @@ def channel(client: Client, message: Message) -> bool:
 
         # Change the button config
         command_context = command_context.strip()
+        glovar.configs[gid]["default"] = False
         glovar.configs[gid][f"channel_{command_type}"] = command_context
         save("configs")
         get_invite_link(client, "edit", gid, True)
@@ -373,6 +375,7 @@ def keyword(client: Client, message: Message) -> bool:
                 thread(send_report_message, (15, client, gid, text))
                 return True
             else:
+                glovar.configs[gid]["default"] = False
                 glovar.configs[gid]["keyword"] = command_type
                 save("configs")
                 text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
@@ -394,6 +397,7 @@ def keyword(client: Client, message: Message) -> bool:
 
         # Config keyword message button
         command_context = command_context.strip()
+        glovar.configs[gid]["default"] = False
         glovar.configs[gid][f"keyword_{command_type}"] = command_context
         save("configs")
         text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
@@ -462,6 +466,7 @@ def ot(client: Client, message: Message) -> bool:
         # Config OT text
         if command_type not in {"button", "link"}:
             command_type = get_command_type(message)
+            glovar.configs[gid]["default"] = False
             glovar.configs[gid]["ot"] = command_type
             save("configs")
             text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
@@ -483,6 +488,7 @@ def ot(client: Client, message: Message) -> bool:
 
         # Config OT message button
         command_context = command_context.strip()
+        glovar.configs[gid]["default"] = False
         glovar.configs[gid][f"ot_{command_type}"] = command_context
         save("configs")
         text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
@@ -609,6 +615,7 @@ def rm(client: Client, message: Message) -> bool:
         # Config RM text
         if command_type not in {"button", "link"}:
             command_type = get_command_type(message)
+            glovar.configs[gid]["default"] = False
             glovar.configs[gid]["rm"] = command_type
             save("configs")
             text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
@@ -630,6 +637,7 @@ def rm(client: Client, message: Message) -> bool:
 
         # Config RM message button
         command_context = command_context.strip()
+        glovar.configs[gid]["default"] = False
         glovar.configs[gid][f"rm_{command_type}"] = command_context
         save("configs")
         text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
@@ -698,6 +706,7 @@ def welcome(client: Client, message: Message) -> bool:
         # Config RM text
         if command_type not in {"button", "link"}:
             command_type = get_command_type(message)
+            glovar.configs[gid]["default"] = False
             glovar.configs[gid]["welcome"] = command_type
             save("configs")
             text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
@@ -719,6 +728,7 @@ def welcome(client: Client, message: Message) -> bool:
 
         # Config RM message button
         command_context = command_context.strip()
+        glovar.configs[gid]["default"] = False
         glovar.configs[gid][f"welcome_{command_type}"] = command_context
         save("configs")
         text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
