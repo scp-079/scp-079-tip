@@ -123,6 +123,8 @@ def resend_link(client: Client) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Resend link error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
 
     return False
 
