@@ -183,6 +183,7 @@ def tip_keyword(client: Client, message: Message, text: str) -> bool:
             mid, _ = glovar.message_ids[gid]["keyword"]
             mid and delete_message(client, gid, mid)
             glovar.message_ids[gid]["keyword"] = (result.message_id, now)
+            save("message_ids")
         
         return True
     except Exception as e:
@@ -209,6 +210,7 @@ def tip_ot(client: Client, gid: int, mid: int = None) -> bool:
             mid, _ = glovar.message_ids[gid]["ot"]
             mid and delete_message(client, gid, mid)
             glovar.message_ids[gid]["ot"] = (result.message_id, now)
+            save("message_ids")
         
         return True
     except Exception as e:
@@ -232,6 +234,7 @@ def tip_rm(client: Client, gid: int, text: str, mid: int = None) -> bool:
             mid, _ = glovar.message_ids[gid]["rm"]
             mid and delete_message(client, gid, mid)
             glovar.message_ids[gid]["rm"] = (result.message_id, now)
+            save("message_ids")
         
         return True
     except Exception as e:
@@ -290,6 +293,7 @@ def tip_welcome(client: Client, message: Message = None,
             mid, _ = glovar.message_ids[gid]["welcome"]
             mid and delete_message(client, gid, mid)
             glovar.message_ids[gid]["welcome"] = (result.message_id, now)
+            save("message_ids")
 
         return True
     except Exception as e:
