@@ -282,7 +282,7 @@ def tip_welcome(client: Client, message: Message = None, member: ChatMember = No
         text = text.replace("$code_id", code(uid))
         text = text.replace("$code_name", code(name))
         text = text.replace("$mention_id", mention_id(uid))
-        text = text.replace("$mention_name", mention_name(message.from_user))
+        text = text.replace("$mention_name", mention_name(user))
 
         # Send the tip
         result = send_message(client, gid, text, mid, markup)
