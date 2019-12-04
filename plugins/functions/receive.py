@@ -65,6 +65,7 @@ def receive_help_welcome(client: Client, data: dict) -> bool:
         # Basic data
         user_id = data["user_id"]
         group_ids = data["group_ids"]
+        message_id = data["message_id"]
 
         # Proceed
         for group_id in group_ids:
@@ -78,7 +79,7 @@ def receive_help_welcome(client: Client, data: dict) -> bool:
                 continue
 
             member = get_member(client, group_id, user_id, False)
-            tip_welcome(client, None, member, group_id)
+            tip_welcome(client, None, member, group_id, message_id)
     except Exception as e:
         logger.warning(f"Receive help welcome error: {e}", exc_info=True)
     finally:

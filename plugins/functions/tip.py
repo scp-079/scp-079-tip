@@ -240,7 +240,8 @@ def tip_rm(client: Client, gid: int, text: str, mid: int = None) -> bool:
     return False
 
 
-def tip_welcome(client: Client, message: Message = None, member: ChatMember = None, gid: int = 0) -> bool:
+def tip_welcome(client: Client, message: Message = None,
+                member: ChatMember = None, gid: int = 0, mid: int = None) -> bool:
     # Send welcome tip
     try:
         # Basic data
@@ -259,7 +260,6 @@ def tip_welcome(client: Client, message: Message = None, member: ChatMember = No
 
             user = member.user
             uid = user.id
-            mid = None
         else:
             return True
 
