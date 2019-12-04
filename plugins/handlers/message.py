@@ -33,8 +33,8 @@ from ..functions.group import leave_group
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import receive_add_bad, receive_config_commit, receive_clear_data
 from ..functions.receive import receive_config_reply, receive_config_show, receive_declared_message
-from ..functions.receive import receive_leave_approve, receive_regex, receive_refresh, receive_remove_bad
-from ..functions.receive import receive_remove_score, receive_remove_watch, receive_rollback
+from ..functions.receive import receive_help_welcome, receive_leave_approve, receive_regex, receive_refresh
+from ..functions.receive import receive_remove_bad, receive_remove_score, receive_remove_watch, receive_rollback
 from ..functions.receive import receive_text_data, receive_user_score, receive_watch_user
 from ..functions.telegram import get_admins, get_user_bio, send_message
 from ..functions.timers import backup_files, send_count
@@ -131,6 +131,13 @@ def check_join(client: Client, message: Message) -> bool:
     # Check new joined user
     glovar.locks["message"].acquire()
     try:
+        # Basic data
+        gid = message.chat.id
+
+        # Word with CAPTCHA
+        if glovar.captcha_id in glovar.admin_ids[gid]:
+            return True
+
         for new in message.new_chat_members:
             # Basic data
             uid = new.id
@@ -292,7 +299,11 @@ def process_data(client: Client, message: Message) -> bool:
 
             if sender == "CAPTCHA":
 
-                if action == "update":
+                if action == "help":
+                    if action_type == "welcome":
+                        receive_help_welcome(client, data)
+
+                elif action == "update":
                     if action_type == "declare":
                         receive_declared_message(data)
                     elif action_type == "score":

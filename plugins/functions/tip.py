@@ -18,7 +18,7 @@
 
 import logging
 
-from pyrogram import Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram import ChatMember, Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
 from .etc import code, get_full_name, get_now, mention_id, mention_name
@@ -240,15 +240,37 @@ def tip_rm(client: Client, gid: int, text: str, mid: int = None) -> bool:
     return False
 
 
-def tip_welcome(client: Client, message: Message) -> bool:
+def tip_welcome(client: Client, message: Message = None, member: ChatMember = None, gid: int = 0) -> bool:
     # Send welcome tip
     try:
         # Basic data
-        gid = message.chat.id
-        uid = message.from_user.id
-        mid = message.message_id
-        name = get_full_name(message.from_user)
+        if message:
+            if message.new_chat_members:
+                user = message.new_chat_members[0]
+            else:
+                user = message.from_user
+
+            gid = message.chat.id
+            uid = message.from_user.id
+            mid = message.message_id
+        elif member and gid:
+            if member.status != "member":
+                return True
+
+            user = member.user
+            uid = user.id
+            mid = None
+        else:
+            return True
+
+        name = get_full_name(user)
         now = get_now()
+
+        # Check welcome status
+        if uid in glovar.welcomed_ids[gid]:
+            return True
+        else:
+            glovar.welcomed_ids[gid].add(uid)
 
         # Get the markup
         markup = get_markup("welcome", gid)

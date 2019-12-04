@@ -24,7 +24,7 @@ from pyrogram import InputMediaPhoto, InlineKeyboardMarkup, Message
 from pyrogram.api.functions.users import GetFullUser
 from pyrogram.api.types import InputPeerUser, InputPeerChannel, UserFull
 from pyrogram.errors import ChatAdminRequired, ButtonDataInvalid, ChannelInvalid, ChannelPrivate, FloodWait
-from pyrogram.errors import PeerIdInvalid, QueryIdInvalid, UsernameInvalid, UsernameNotOccupied
+from pyrogram.errors import PeerIdInvalid, QueryIdInvalid, UsernameInvalid, UsernameNotOccupied, UserNotParticipant
 
 from .. import glovar
 from .etc import delay, t2t, wait_flood
@@ -220,6 +220,26 @@ def get_chat(client: Client, cid: Union[int, str]) -> Union[Chat, ChatPreview, N
                 wait_flood(e)
     except Exception as e:
         logger.warning(f"Get chat {cid} error: {e}", exc_info=True)
+
+    return result
+
+
+def get_chat_member(client: Client, cid: int, uid: int) -> Union[bool, ChatMember, None]:
+    # Get information about one member of a chat
+    result = None
+    try:
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.get_chat_member(chat_id=cid, user_id=uid)
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+            except UserNotParticipant:
+                result = False
+    except Exception as e:
+        logger.warning(f"Get chat member {uid} in {cid} error: {e}", exc_info=True)
 
     return result
 

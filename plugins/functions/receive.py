@@ -28,10 +28,11 @@ from .. import glovar
 from .channel import get_debug_text, share_data
 from .etc import code, crypt_str, general_link, get_int, get_text, lang, mention_id, thread
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
-from .group import get_config_text, leave_group
+from .group import get_config_text, get_member, leave_group
 from .ids import init_group_id, init_user_id
 from .telegram import send_message, send_report_message
 from .timers import update_admins
+from .tip import tip_welcome
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -53,6 +54,35 @@ def receive_add_bad(data: dict) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Receive add bad error: {e}", exc_info=True)
+
+    return False
+
+
+def receive_help_welcome(client: Client, data: dict) -> bool:
+    # Receive help welcome
+    glovar.locks["message"].acquire()
+    try:
+        # Basic data
+        user_id = data["user_id"]
+        group_ids = data["group_ids"]
+
+        # Proceed
+        for group_id in group_ids:
+            if group_id not in glovar.admin_ids:
+                continue
+
+            if not init_group_id(group_id):
+                continue
+
+            if user_id in glovar.welcomed_ids[group_id]:
+                continue
+
+            member = get_member(client, group_id, user_id, False)
+            tip_welcome(client, None, member, group_id)
+    except Exception as e:
+        logger.warning(f"Receive help welcome error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
 
     return False
 

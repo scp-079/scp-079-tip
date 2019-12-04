@@ -28,7 +28,7 @@ from threading import Lock
 from typing import Dict, List, Set, Tuple, Union
 
 from emoji import UNICODE_EMOJI
-from pyrogram import Chat
+from pyrogram import Chat, ChatMember
 
 # Enable logging
 logging.basicConfig(
@@ -394,6 +394,13 @@ locks: Dict[str, Lock] = {
     "regex": Lock()
 }
 
+members: Dict[int, Dict[int, ChatMember]] = {}
+# members = {
+#     -10012345678: {
+#         12345678: ChatMember
+#     }
+# }
+
 regex: Dict[str, bool] = {
     "ad": False,
     "ban": False,
@@ -419,7 +426,12 @@ sender: str = "TIP"
 
 should_hide: bool = False
 
-version: str = "0.1.0"
+version: str = "0.1.1"
+
+welcomed_ids: Dict[int, Set[int]] = {}
+# welcomed_ids = {
+#     -10012345678: {12345678}
+# }
 
 # Load data from pickle
 
