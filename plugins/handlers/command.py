@@ -763,7 +763,7 @@ def welcome(client: Client, message: Message) -> bool:
             thread(send_report_message, (15, client, gid, text))
             return True
 
-        # Config RM text
+        # Config welcome text
         if command_type not in {"button", "link"}:
             command_type = get_command_type(message)
             glovar.configs[gid]["default"] = False
@@ -786,7 +786,7 @@ def welcome(client: Client, message: Message) -> bool:
 
             return True
 
-        # Config RM message button
+        # Config welcome message button
         command_context = command_context.strip()
         glovar.configs[gid]["default"] = False
         glovar.configs[gid][f"welcome_{command_type}"] = command_context
