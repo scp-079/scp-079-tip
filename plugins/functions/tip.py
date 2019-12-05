@@ -255,7 +255,7 @@ def tip_welcome(client: Client, message: Message = None,
                 user = message.from_user
 
             gid = message.chat.id
-            uid = message.from_user.id
+            uid = user.id
             mid = message.message_id
         elif member and gid:
             if member.status != "member":
