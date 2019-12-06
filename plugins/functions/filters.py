@@ -515,6 +515,10 @@ def is_rm_text(message: Message) -> str:
         # Basic data
         gid = message.chat.id
 
+        # Check admin
+        if is_class_c(None, message):
+            return ""
+
         # Check config
         if not glovar.configs[gid].get("rm"):
             return ""

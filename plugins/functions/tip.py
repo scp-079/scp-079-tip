@@ -258,7 +258,7 @@ def tip_welcome(client: Client, message: Message = None,
             uid = user.id
             mid = message.message_id
         elif member and gid:
-            if member.status != "member":
+            if member.status not in {"member", "restricted"}:
                 return True
 
             user = member.user
