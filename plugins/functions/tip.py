@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from typing import Optional
 
 from pyrogram import ChatMember, Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
@@ -140,7 +141,7 @@ def get_keywords(text: str) -> dict:
     return result
 
 
-def get_markup(the_type: str, gid: int) -> InlineKeyboardMarkup:
+def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
     # Get the group button config
     result = None
     try:
@@ -148,18 +149,31 @@ def get_markup(the_type: str, gid: int) -> InlineKeyboardMarkup:
         text = glovar.configs[gid][f"{the_type}_button"]
         link = glovar.configs[gid][f"{the_type}_link"]
 
-        # Generate the markup
-        if text and link:
-            result = InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            text=text,
-                            url=link
-                        )
-                    ]
-                ]
+        # Check the config
+        if not text or not link:
+            return None
+
+        text_list = [u.strip() for u in text.split("||") if u.strip()]
+        link_list = [u.strip() for u in link.split("||") if u.strip()]
+
+        if len(text_list) != len(link_list) or len(text_list) > 6:
+            return None
+
+        # Generate
+        markup_list = [[]]
+
+        for i in range(len(text_list)):
+            if len(markup_list[-1]) == 2:
+                markup_list.append([])
+
+            markup_list[-1].append(
+                InlineKeyboardButton(
+                    text=text_list[i],
+                    url=link_list[i]
+                )
             )
+
+        result = InlineKeyboardMarkup(markup_list)
     except Exception as e:
         logger.warning(f"Get button config error: {e}", exc_info=True)
 
