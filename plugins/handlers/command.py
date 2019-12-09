@@ -181,12 +181,14 @@ def config(client: Client, message: Message) -> bool:
 
         # Pre-process config
         default_config = deepcopy(glovar.default_config)
-        type_list = set(default_config)
+        the_config = deepcopy(glovar.configs[gid])
+
+        type_list = set(the_config)
         type_list.discard("lock")
+
         for the_type in type_list:
             default_config[the_type] = bool(default_config[the_type])
 
-        the_config = deepcopy(glovar.configs[gid])
         for the_type in type_list:
             the_config[the_type] = bool(the_config[the_type])
 
