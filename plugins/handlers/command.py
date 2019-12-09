@@ -269,7 +269,7 @@ def config_directly(client: Client, message: Message) -> bool:
                     new_config = deepcopy(glovar.default_config)
                 else:
                     if command_context:
-                        if command_type in {"clean", "resend"}:
+                        if command_type in {"captcha", "clean", "resend"}:
                             if command_context == "off":
                                 new_config[command_type] = False
                             elif command_context == "on":
