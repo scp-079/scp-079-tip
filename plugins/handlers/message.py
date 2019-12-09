@@ -135,7 +135,7 @@ def check_join(client: Client, message: Message) -> bool:
         gid = message.chat.id
 
         # Word with CAPTCHA
-        if glovar.captcha_id in glovar.admin_ids[gid]:
+        if glovar.configs[gid].get("captcha") and glovar.captcha_id in glovar.admin_ids[gid]:
             return True
 
         for new in message.new_chat_members:
