@@ -75,6 +75,9 @@ def receive_help_welcome(client: Client, data: dict) -> bool:
             if not init_group_id(group_id):
                 continue
 
+            if not glovar.configs[group_id].get("captcha"):
+                continue
+
             if user_id in glovar.welcomed_ids[group_id]:
                 continue
 
