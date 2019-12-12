@@ -258,7 +258,7 @@ def tip_rm(client: Client, gid: int, text: str, mid: int = None) -> bool:
 
 
 def tip_welcome(client: Client, message: Message = None,
-                member: ChatMember = None, gid: int = 0, mid: int = None) -> bool:
+                member: ChatMember = None, gid: int = 0, mid: int = None, force: bool = False) -> bool:
     # Send welcome tip
     try:
         # Basic data
@@ -284,7 +284,7 @@ def tip_welcome(client: Client, message: Message = None,
         now = get_now()
 
         # Check welcome status
-        if uid in glovar.welcomed_ids[gid]:
+        if not force and uid in glovar.welcomed_ids[gid]:
             return True
         else:
             glovar.welcomed_ids[gid].add(uid)

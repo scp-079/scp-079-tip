@@ -751,7 +751,7 @@ def welcome(client: Client, message: Message) -> bool:
         # Send welcome tip
         if r_message:
             text = glovar.configs[gid]["welcome"]
-            text and tip_welcome(client, r_message)
+            text and tip_welcome(client, r_message, None, 0, None, True)
             return True
 
         # Text prefix
