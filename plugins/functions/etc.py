@@ -274,7 +274,10 @@ def get_length(text: str) -> int:
             if t in glovar.emoji_set:
                 text = text.replace(t, "###")
 
+        logger.warning(text)
+
         result = len(text.encode())
+        logger.warning(result)
     except Exception as e:
         logger.warning(f"Get length error: {e}", exc_info=True)
 
