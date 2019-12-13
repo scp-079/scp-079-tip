@@ -163,7 +163,8 @@ def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
         markup_list = [[]]
 
         for i in range(len(text_list)):
-            if len(markup_list[-1]) == 2:
+            if (len(markup_list[-1]) == 2
+                    or (len(text_list[i].encode()) > 18 and markup_list[-1] is not [])):
                 markup_list.append([])
 
             markup_list[-1].append(
