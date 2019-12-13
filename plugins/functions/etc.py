@@ -160,7 +160,7 @@ def get_command_context(message: Message) -> (str, str):
     command_type = ""
     command_context = ""
     try:
-        text = get_text(message)
+        text = get_text(message, False, False)
         command_list = text.split(" ")
 
         if len(list(filter(None, command_list))) <= 1:
@@ -184,7 +184,7 @@ def get_command_type(message: Message) -> str:
     # Get the command type "a" in "/command a"
     result = ""
     try:
-        text = get_text(message)
+        text = get_text(message, False, False)
         command_list = list(filter(None, text.split(" ")))
         result = text[len(command_list[0]):].strip()
     except Exception as e:
