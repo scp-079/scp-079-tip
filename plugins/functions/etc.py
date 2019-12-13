@@ -290,7 +290,10 @@ def get_length(text: str) -> int:
         for emoji in emoji_dict:
             length_remove += len(emoji.encode()) * emoji_dict[emoji]
 
+        logger.warning(length_add)
+        logger.warning(length_remove)
         result = len(text.encode()) + length_add - length_remove
+        logger.warning(result)
     except Exception as e:
         logger.warning(f"Get length error: {e}", exc_info=True)
 
