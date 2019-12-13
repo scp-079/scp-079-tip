@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from copy import deepcopy
 from html import escape
 from json import dumps
 from random import choice, uniform
@@ -270,14 +271,24 @@ def get_length(text: str) -> int:
         if not text:
             return 0
 
-        for t in text:
-            if t in glovar.emoji_set:
-                text = text.replace(t, "###")
+        emoji_dict = {}
+        emoji_set = {emoji for emoji in glovar.emoji_set if emoji in text and emoji not in glovar.emoji_protect}
+        emoji_old_set = deepcopy(emoji_set)
 
-        logger.warning(text)
+        for emoji in emoji_old_set:
+            if any(emoji in emoji_old and emoji != emoji_old for emoji_old in emoji_old_set):
+                emoji_set.discard(emoji)
 
-        result = len(text.encode())
-        logger.warning(result)
+        for emoji in emoji_set:
+            emoji_dict[emoji] = text.count(emoji)
+
+        length_add = len(emoji_dict) * 3
+
+        length_remove = 0
+        for emoji in emoji_dict:
+            length_remove += len(emoji.encode())
+
+        result = len(text.encode()) + length_add - length_remove
     except Exception as e:
         logger.warning(f"Get length error: {e}", exc_info=True)
 
