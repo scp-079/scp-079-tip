@@ -163,8 +163,10 @@ def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
         markup_list = [[]]
 
         for i in range(len(text_list)):
+            length = get_length(text_list[i])
+
             if (len(markup_list[-1]) == 2
-                    or (get_length(text_list[i]) > 18 and markup_list[-1] is not [])):
+                    or (length > 18 and markup_list[-1] is not [])):
                 markup_list.append([])
 
             markup_list[-1].append(
@@ -173,6 +175,10 @@ def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
                     url=link_list[i]
                 )
             )
+
+            if (len(markup_list[-1]) == 1
+                    and (length > 18 and i != len(text_list) - 1)):
+                markup_list.append([])
 
         result = InlineKeyboardMarkup(markup_list)
     except Exception as e:
