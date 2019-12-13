@@ -263,6 +263,24 @@ def get_int(text: str) -> Optional[int]:
     return result
 
 
+def get_length(text: str) -> int:
+    # Get the length of the string
+    result = 0
+    try:
+        if not text:
+            return 0
+
+        for t in text:
+            if t in glovar.emoji_set:
+                text = text.replace(t, "###")
+
+        result = len(text.encode())
+    except Exception as e:
+        logger.warning(f"Get length error: {e}", exc_info=True)
+
+    return result
+
+
 def get_now() -> int:
     # Get time for now
     result = 0

@@ -432,7 +432,7 @@ sender: str = "TIP"
 
 should_hide: bool = False
 
-version: str = "0.1.3"
+version: str = "0.1.4"
 
 welcomed_ids: Dict[int, Set[int]] = {}
 # welcomed_ids = {

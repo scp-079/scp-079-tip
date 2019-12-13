@@ -22,7 +22,7 @@ from typing import Optional
 from pyrogram import ChatMember, Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
-from .etc import code, get_full_name, get_now, mention_id, mention_name
+from .etc import code, get_full_name, get_length, get_now, mention_id, mention_name
 from .file import save
 from .group import delete_message
 from .telegram import edit_message_text, export_chat_invite_link, send_message
@@ -164,7 +164,7 @@ def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
 
         for i in range(len(text_list)):
             if (len(markup_list[-1]) == 2
-                    or (len(text_list[i].encode()) > 18 and markup_list[-1] is not [])):
+                    or (get_length(text_list[i]) > 18 and markup_list[-1] is not [])):
                 markup_list.append([])
 
             markup_list[-1].append(
