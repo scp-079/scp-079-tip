@@ -282,11 +282,13 @@ def get_length(text: str) -> int:
         for emoji in emoji_set:
             emoji_dict[emoji] = text.count(emoji)
 
-        length_add = len(emoji_dict) * 3
+        length_add = 0
+        for emoji in emoji_dict:
+            length_add += 3 * emoji_dict[emoji]
 
         length_remove = 0
         for emoji in emoji_dict:
-            length_remove += len(emoji.encode())
+            length_remove += len(emoji.encode()) * emoji_dict[emoji]
 
         result = len(text.encode()) + length_add - length_remove
     except Exception as e:
