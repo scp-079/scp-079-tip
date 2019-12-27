@@ -24,7 +24,8 @@ from pyrogram import InputMediaPhoto, InlineKeyboardMarkup, Message
 from pyrogram.api.functions.users import GetFullUser
 from pyrogram.api.types import InputPeerUser, InputPeerChannel, UserFull
 from pyrogram.errors import ChatAdminRequired, ButtonDataInvalid, ChannelInvalid, ChannelPrivate, FloodWait
-from pyrogram.errors import PeerIdInvalid, QueryIdInvalid, UsernameInvalid, UsernameNotOccupied, UserNotParticipant
+from pyrogram.errors import MessageDeleteForbidden, PeerIdInvalid, QueryIdInvalid
+from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotParticipant
 
 from .. import glovar
 from .etc import delay, t2t, wait_flood
@@ -73,6 +74,8 @@ def delete_messages(client: Client, cid: int, mids: Iterable[int]) -> Optional[b
                     except FloodWait as e:
                         flood_wait = True
                         wait_flood(e)
+            except MessageDeleteForbidden:
+                return False
             except Exception as e:
                 logger.warning(f"Delete message {mids} in {cid} for loop error: {e}", exc_info=True)
     except Exception as e:
