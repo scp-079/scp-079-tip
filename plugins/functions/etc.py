@@ -161,7 +161,7 @@ def get_command_context(message: Message) -> (str, str):
     command_type = ""
     command_context = ""
     try:
-        text = get_text(message, False, False)
+        text = get_text(message)
         command_list = text.split(" ")
 
         if len(list(filter(None, command_list))) <= 1:
@@ -185,7 +185,7 @@ def get_command_type(message: Message) -> str:
     # Get the command type "a" in "/command a"
     result = ""
     try:
-        text = get_text(message, False, False)
+        text = get_text(message)
         command_list = list(filter(None, text.split(" ")))
         result = text[len(command_list[0]):].strip()
     except Exception as e:
@@ -194,7 +194,7 @@ def get_command_type(message: Message) -> str:
     return result
 
 
-def get_filename(message: Message, normal: bool = False) -> str:
+def get_filename(message: Message, normal: bool = False, printable: bool = False) -> str:
     # Get file's filename
     text = ""
     try:
@@ -206,20 +206,20 @@ def get_filename(message: Message, normal: bool = False) -> str:
                 text += message.audio.file_name
 
         if text:
-            text = t2t(text, normal)
+            text = t2t(text, normal, printable)
     except Exception as e:
         logger.warning(f"Get filename error: {e}", exc_info=True)
 
     return text
 
 
-def get_forward_name(message: Message, normal: bool = False) -> str:
+def get_forward_name(message: Message, normal: bool = False, printable: bool = False) -> str:
     # Get forwarded message's origin sender's name
     text = ""
     try:
         if message.forward_from:
             user = message.forward_from
-            text = get_full_name(user, normal)
+            text = get_full_name(user, normal, printable)
         elif message.forward_sender_name:
             text = message.forward_sender_name
         elif message.forward_from_chat:
@@ -227,14 +227,14 @@ def get_forward_name(message: Message, normal: bool = False) -> str:
             text = chat.title
 
         if text:
-            text = t2t(text, normal)
+            text = t2t(text, normal, printable)
     except Exception as e:
         logger.warning(f"Get forward name error: {e}", exc_info=True)
 
     return text
 
 
-def get_full_name(user: User, normal: bool = False) -> str:
+def get_full_name(user: User, normal: bool = False, printable: bool = False) -> str:
     # Get user's full name
     text = ""
     try:
@@ -246,7 +246,7 @@ def get_full_name(user: User, normal: bool = False) -> str:
             text += f" {user.last_name}"
 
         if text and normal:
-            text = t2t(text, normal)
+            text = t2t(text, normal, printable)
     except Exception as e:
         logger.warning(f"Get full name error: {e}", exc_info=True)
 
@@ -308,7 +308,7 @@ def get_now() -> int:
     return result
 
 
-def get_text(message: Message, normal: bool = False, printable: bool = True) -> str:
+def get_text(message: Message, normal: bool = False, printable: bool = False) -> str:
     # Get message's text
     text = ""
     try:
@@ -384,7 +384,7 @@ def random_str(i: int) -> str:
     return text
 
 
-def t2t(text: str, normal: bool, printable: bool = True) -> str:
+def t2t(text: str, normal: bool, printable: bool) -> str:
     # Convert the string, text to text
     try:
         if not text:

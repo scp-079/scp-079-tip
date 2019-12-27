@@ -62,17 +62,17 @@ def check(client: Client, message: Message) -> bool:
             return True
 
         # Check the forward from name
-        forward_name = get_forward_name(message, True)
+        forward_name = get_forward_name(message, True, True)
         if forward_name and is_nm_text(forward_name):
             return True
 
         # Check the user's name
-        name = get_full_name(message.from_user, True)
+        name = get_full_name(message.from_user, True, True)
         if name and is_nm_text(name):
             return True
 
         # Check the text
-        message_text = get_text(message, True)
+        message_text = get_text(message, True, True)
         if is_ban_text(message_text, False):
             return True
 
@@ -80,7 +80,7 @@ def check(client: Client, message: Message) -> bool:
             return True
 
         # File name
-        filename = get_filename(message, True)
+        filename = get_filename(message, True, True)
         if is_ban_text(filename, False):
             return True
 
@@ -147,12 +147,12 @@ def check_join(client: Client, message: Message) -> bool:
                 return True
 
             # Check name
-            name = get_full_name(new, True)
+            name = get_full_name(new, True, True)
             if name and (is_nm_text(name) or is_wb_text(name, False)):
                 return True
 
             # Check bio
-            bio = get_user_bio(client, uid, True)
+            bio = get_user_bio(client, uid, True, True)
             if bio and (is_bio_text(bio) or is_wb_text(bio, False)):
                 return True
 
