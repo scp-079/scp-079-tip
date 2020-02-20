@@ -87,6 +87,7 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
         # Edit message
         if the_type == "edit" and mid:
             result = edit_message_text(client, cid, mid, text, markup)
+
             if result:
                 glovar.message_ids[gid]["channel"] = (mid, now)
                 save("message_ids")
@@ -94,6 +95,7 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
 
         # Send new message
         result = send_message(client, cid, text, None, markup)
+
         if result:
             glovar.message_ids[gid]["channel"] = (result.message_id, now)
             save("message_ids")
@@ -200,6 +202,7 @@ def tip_keyword(client: Client, message: Message, text: str) -> bool:
 
         # Send the tip
         result = send_message(client, gid, text, mid, markup)
+
         if result:
             mid, _ = glovar.message_ids[gid]["keyword"]
             mid and delete_message(client, gid, mid)
@@ -227,6 +230,7 @@ def tip_ot(client: Client, gid: int, mid: int = None) -> bool:
         
         # Send the tip
         result = send_message(client, gid, text, mid, markup)
+
         if result:
             mid, _ = glovar.message_ids[gid]["ot"]
             mid and delete_message(client, gid, mid)
@@ -251,6 +255,7 @@ def tip_rm(client: Client, gid: int, text: str, mid: int = None) -> bool:
 
         # Send the tip
         result = send_message(client, gid, text, mid, markup)
+
         if result:
             mid, _ = glovar.message_ids[gid]["rm"]
             mid and delete_message(client, gid, mid)
@@ -310,6 +315,7 @@ def tip_welcome(client: Client, message: Message = None,
 
         # Send the tip
         result = send_message(client, gid, text, mid, markup)
+
         if result:
             mid, _ = glovar.message_ids[gid]["welcome"]
             mid and delete_message(client, gid, mid)

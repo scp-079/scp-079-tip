@@ -46,6 +46,7 @@ def is_authorized_group(_, update: Union[CallbackQuery, Message]) -> bool:
             return False
 
         cid = message.chat.id
+
         if init_group_id(cid):
             return True
     except Exception as e:
@@ -105,6 +106,7 @@ def is_declared_message(_, message: Message) -> bool:
 
         gid = message.chat.id
         mid = message.message_id
+
         return is_declared_message_id(gid, mid)
     except Exception as e:
         logger.warning(f"Is declared message error: {e}", exc_info=True)
@@ -119,6 +121,7 @@ def is_exchange_channel(_, message: Message) -> bool:
             return False
 
         cid = message.chat.id
+
         if glovar.should_hide:
             return cid == glovar.hide_channel_id
         else:
@@ -147,6 +150,7 @@ def is_hide_channel(_, message: Message) -> bool:
             return False
 
         cid = message.chat.id
+
         if cid == glovar.hide_channel_id:
             return True
     except Exception as e:
@@ -159,6 +163,7 @@ def is_new_group(_, message: Message) -> bool:
     # Check if the bot joined a new group
     try:
         new_users = message.new_chat_members
+
         if new_users:
             return any(user.is_self for user in new_users)
         elif message.group_chat_created or message.supergroup_chat_created:
@@ -181,6 +186,7 @@ def is_test_group(_, update: Union[CallbackQuery, Message]) -> bool:
             return False
 
         cid = message.chat.id
+
         if cid == glovar.test_group_id:
             return True
     except Exception as e:
@@ -333,9 +339,10 @@ def is_class_e_user(user: Union[int, User]) -> bool:
         if uid in glovar.bot_ids:
             return True
 
-        group_list = list(glovar.admin_ids)
+        group_list = list(glovar.trust_ids)
+
         for gid in group_list:
-            if uid in glovar.admin_ids.get(gid, set()):
+            if uid in glovar.trust_ids.get(gid, set()):
                 return True
     except Exception as e:
         logger.warning(f"Is class e user error: {e}", exc_info=True)
@@ -423,6 +430,7 @@ def is_high_score_user(user: User) -> float:
             return 0.0
 
         score = sum(user_status["score"].values())
+
         if score >= 3.0:
             return score
     except Exception as e:
@@ -543,6 +551,7 @@ def is_watch_user(user: User, the_type: str, now: int) -> bool:
 
         uid = user.id
         until = glovar.watch_ids[the_type].get(uid, 0)
+
         if now < until:
             return True
     except Exception as e:

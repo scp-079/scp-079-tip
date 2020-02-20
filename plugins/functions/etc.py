@@ -42,6 +42,7 @@ def bold(text: Any) -> str:
     # Get a bold text
     try:
         text = str(text).strip()
+
         if text:
             return f"<b>{escape(text)}</b>"
     except Exception as e:
@@ -70,6 +71,7 @@ def code(text: Any) -> str:
     # Get a code text
     try:
         text = str(text).strip()
+
         if text:
             return f"<code>{escape(text)}</code>"
     except Exception as e:
@@ -82,6 +84,7 @@ def code_block(text: Any) -> str:
     # Get a code block text
     try:
         text = str(text).rstrip()
+
         if text:
             return f"<pre>{escape(text)}</pre>"
     except Exception as e:
@@ -129,6 +132,7 @@ def general_link(text: Union[int, str], link: str) -> str:
     try:
         text = str(text).strip()
         link = link.strip()
+
         if text and link:
             result = f'<a href="{link}">{escape(text)}</a>'
     except Exception as e:
@@ -142,6 +146,7 @@ def get_channel_link(message: Union[int, Message]) -> str:
     text = ""
     try:
         text = "https://t.me/"
+
         if isinstance(message, int):
             text += f"c/{str(message)[4:]}"
         else:
@@ -242,6 +247,7 @@ def get_full_name(user: User, normal: bool = False, printable: bool = False) -> 
             return ""
 
         text = user.first_name
+
         if user.last_name:
             text += f" {user.last_name}"
 
@@ -283,10 +289,12 @@ def get_length(text: str) -> int:
             emoji_dict[emoji] = text.count(emoji)
 
         length_add = 0
+
         for emoji in emoji_dict:
             length_add += 3 * emoji_dict[emoji]
 
         length_remove = 0
+
         for emoji in emoji_dict:
             length_remove += len(emoji.encode()) * emoji_dict[emoji]
 
@@ -316,6 +324,7 @@ def get_text(message: Message, normal: bool = False, printable: bool = False) ->
             return ""
 
         the_text = message.text or message.caption
+
         if the_text:
             text += the_text
 

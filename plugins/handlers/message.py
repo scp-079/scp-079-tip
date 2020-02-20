@@ -63,16 +63,19 @@ def check(client: Client, message: Message) -> bool:
 
         # Check the forward from name
         forward_name = get_forward_name(message, True, True)
+
         if forward_name and is_nm_text(forward_name):
             return True
 
         # Check the user's name
         name = get_full_name(message.from_user, True, True)
+
         if name and is_nm_text(name):
             return True
 
         # Check the text
         message_text = get_text(message, True, True)
+
         if is_ban_text(message_text, False):
             return True
 
@@ -81,6 +84,7 @@ def check(client: Client, message: Message) -> bool:
 
         # File name
         filename = get_filename(message, True, True)
+
         if is_ban_text(filename, False):
             return True
 
@@ -106,11 +110,13 @@ def check(client: Client, message: Message) -> bool:
 
         # Check keyword
         detection = is_keyword_text(message)
+
         if detection:
             return tip_keyword(client, message, detection)
 
         # Check rm
         detection = is_rm_text(message)
+
         if detection:
             return tip_rm(client, gid, detection, mid)
 
@@ -148,11 +154,13 @@ def check_join(client: Client, message: Message) -> bool:
 
             # Check name
             name = get_full_name(new, True, True)
+
             if name and (is_nm_text(name) or is_wb_text(name, False)):
                 return True
 
             # Check bio
             bio = get_user_bio(client, uid, True, True)
+
             if bio and (is_bio_text(bio) or is_wb_text(bio, False)):
                 return True
 

@@ -64,6 +64,7 @@ def delete_messages(client: Client, cid: int, mids: Iterable[int]) -> Optional[b
     try:
         mids = list(mids)
         mids_list = [mids[i:i + 100] for i in range(0, len(mids), 100)]
+
         for mids in mids_list:
             try:
                 flood_wait = True
@@ -113,6 +114,7 @@ def edit_message_photo(client: Client, cid: int, mid: int, photo: str, file_ref:
             caption=caption,
             parse_mode="html"
         )
+
         flood_wait = True
         while flood_wait:
             flood_wait = False
@@ -256,6 +258,7 @@ def get_group_info(client: Client, chat: Union[int, Chat], cache: bool = True) -
     try:
         if isinstance(chat, int):
             the_cache = glovar.chats.get(chat)
+
             if the_cache:
                 chat = the_cache
             else:
@@ -285,6 +288,7 @@ def get_user_bio(client: Client, uid: int, normal: bool = False, printable: bool
     result = None
     try:
         user_id = resolve_peer(client, uid)
+
         if not user_id:
             return None
 

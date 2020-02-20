@@ -166,6 +166,7 @@ def config(client: Client, message: Message) -> bool:
 
         # Check command format
         command_type = get_command_type(message)
+
         if not command_type or not re.search(f"^{glovar.sender}$", command_type, re.I):
             return True
 
@@ -256,6 +257,7 @@ def config_directly(client: Client, message: Message) -> bool:
 
         # Check command format
         command_type, command_context = get_command_context(message)
+
         if command_type:
             if command_type == "show":
                 text += f"{lang('action')}{lang('colon')}{code(lang('config_show'))}\n"
@@ -599,6 +601,7 @@ def rm(client: Client, message: Message) -> bool:
         # Send RM tip
         if r_message:
             text = glovar.configs[gid]["rm"]
+
             if text:
                 return tip_rm(client, gid, text, r_message.message_id)
             else:
@@ -694,6 +697,7 @@ def show(client: Client, message: Message) -> bool:
 
         # Check command format
         type_list = set(glovar.default_config)
+
         for the_type in ["default", "lock", "clean", "resend", "channel"]:
             type_list.discard(the_type)
 
