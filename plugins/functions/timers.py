@@ -67,7 +67,11 @@ def interval_hour_01(client: Client) -> bool:
         # Generate a new invite link
         for gid in list(glovar.configs):
             if glovar.configs[gid]["channel"]:
-                get_invite_link(client, "edit", gid)
+                get_invite_link(
+                    client=client,
+                    the_type="edit",
+                    gid=gid
+                )
     except Exception as e:
         logger.warning(f"Interval hour 01 error: {e}", exc_info=True)
     finally:
@@ -118,7 +122,11 @@ def resend_link(client: Client) -> bool:
             if not glovar.configs[gid].get("resend"):
                 continue
 
-            get_invite_link(client, "send", gid)
+            get_invite_link(
+                client=client,
+                the_type="send",
+                gid=gid
+            )
 
         return True
     except Exception as e:

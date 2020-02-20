@@ -22,7 +22,7 @@ from typing import Optional
 from pyrogram import ChatMember, Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
-from .etc import code, get_full_name, get_length, get_now, mention_id, mention_name
+from .etc import code, get_full_name, get_length, get_now, lang, mention_id, mention_name
 from .file import save
 from .group import delete_message
 from .telegram import edit_message_text, export_chat_invite_link, send_message
@@ -32,7 +32,7 @@ from .telegram import edit_message_text, export_chat_invite_link, send_message
 logger = logging.getLogger(__name__)
 
 
-def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = False) -> bool:
+def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = False, reason: str = "") -> bool:
     # Get a new invite link
     glovar.locks["channel"].acquire()
     try:
@@ -85,7 +85,15 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
         )
 
         # Edit message
-        if the_type == "edit" and mid:
+        if the_type in {"close", "edit", "open"} and mid:
+            if the_type == "close":
+                text = f"{lang('description')}{lang('colon')}{code(lang('description_close'))}\n"
+
+                if reason:
+                    text += f"{lang('reason')}{lang('colon')}{code(reason)}\n"
+
+                markup = None
+
             result = edit_message_text(client, cid, mid, text, markup)
 
             if result:

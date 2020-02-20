@@ -305,13 +305,9 @@ lang: Dict[str, str] = {
     "button_channel": (zh_cn and "点击加入") or "Click to Join",
     "description_channel": ((zh_cn and "请点击下方按钮加入讨论群组")
                             or "Please click the button below to join the chat group"),
-    "description_close": ((zh_cn and "已暂时关闭入群通道")
-                          or "The channel to join the group has been temporarily closed"),
-    "description_closed": ((zh_cn and "根据群组的设置，暂时不会提供群组链接，请稍后再试")
-                           or "According to the group's settings, the group link will not be provided at this time. "
-                              "Please try again later"),
-    "description_open": ((zh_cn and "已重新开启入群通道")
-                         or "The channel to join the group has been opened"),
+    "description_close": ((zh_cn and "根据群组的设置，暂时不会提供群组链接，请稍后再试")
+                          or ("According to the group's settings, the group link will not be provided at this time. "
+                              "Please try again later")),
     "type": (zh_cn and "类别") or "Type",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
