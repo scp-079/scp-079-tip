@@ -1,5 +1,5 @@
 # SCP-079-TIP - Here's a tip
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-TIP.
 #
@@ -565,7 +565,7 @@ def resend(client: Client, message: Message) -> bool:
 
         return True
     except Exception as e:
-        logger.warning(f"Resend begin error: {e}", exc_info=True)
+        logger.warning(f"Resend error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
         delete_message(client, gid, mid)

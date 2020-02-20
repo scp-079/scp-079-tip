@@ -1,5 +1,5 @@
 # SCP-079-TIP - Here's a tip
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-TIP.
 #
@@ -96,9 +96,11 @@ password: str = ""
 try:
     config = RawConfigParser()
     config.read("config.ini")
+
     # [basic]
     bot_token = config["basic"].get("bot_token", bot_token)
     prefix = list(config["basic"].get("prefix", prefix_str))
+
     # [bots]
     avatar_id = int(config["bots"].get("avatar_id", avatar_id))
     captcha_id = int(config["bots"].get("captcha_id", captcha_id))
@@ -112,12 +114,14 @@ try:
     tip_id = int(config["bots"].get("tip_id", tip_id))
     user_id = int(config["bots"].get("user_id", user_id))
     warn_id = int(config["bots"].get("warn_id", warn_id))
+
     # [channels]
     critical_channel_id = int(config["channels"].get("critical_channel_id", critical_channel_id))
     debug_channel_id = int(config["channels"].get("debug_channel_id", debug_channel_id))
     exchange_channel_id = int(config["channels"].get("exchange_channel_id", exchange_channel_id))
     hide_channel_id = int(config["channels"].get("hide_channel_id", hide_channel_id))
     test_group_id = int(config["channels"].get("test_group_id", test_group_id))
+
     # [custom]
     aio = config["custom"].get("aio", aio)
     aio = eval(aio)
@@ -134,6 +138,7 @@ try:
     time_welcome = int(config["custom"].get("time_welcome", time_welcome))
     zh_cn = config["custom"].get("zh_cn", zh_cn)
     zh_cn = eval(zh_cn)
+
     # [emoji]
     emoji_ad_single = int(config["emoji"].get("emoji_ad_single", emoji_ad_single))
     emoji_ad_total = int(config["emoji"].get("emoji_ad_total", emoji_ad_total))
@@ -141,6 +146,7 @@ try:
     emoji_protect = getdecoder("unicode_escape")(config["emoji"].get("emoji_protect", emoji_protect))[0]
     emoji_wb_single = int(config["emoji"].get("emoji_wb_single", emoji_wb_single))
     emoji_wb_total = int(config["emoji"].get("emoji_wb_total", emoji_wb_total))
+
     # [encrypt]
     key = config["encrypt"].get("key", key)
     key = key.encode("utf-8")
@@ -288,7 +294,9 @@ lang: Dict[str, str] = {
     # Special
     "action_bind": (zh_cn and "绑定频道") or "Bind Channel",
     "action_channel": (zh_cn and "调整邀请提示") or "Adjust Invite Text",
+    "action_close": (zh_cn and "关闭入群通道") or "Close Group Channel",
     "action_keyword": (zh_cn and "调整关键词") or "Adjust Keywords",
+    "action_open": (zh_cn and "开启入群通道") or "Open Group Channel",
     "action_ot": (zh_cn and "调整 OT 提示") or "Adjust OT Tip",
     "action_rm": (zh_cn and "调整 RM 警告") or "Adjust RM Tip",
     "action_resend": (zh_cn and "重新发送入群链接") or "Resend Group Link Message",
@@ -297,6 +305,13 @@ lang: Dict[str, str] = {
     "button_channel": (zh_cn and "点击加入") or "Click to Join",
     "description_channel": ((zh_cn and "请点击下方按钮加入讨论群组")
                             or "Please click the button below to join the chat group"),
+    "description_close": ((zh_cn and "已暂时关闭入群通道")
+                          or "The channel to join the group has been temporarily closed"),
+    "description_closed": ((zh_cn and "根据群组的设置，暂时不会提供群组链接，请稍后再试")
+                           or "According to the group's settings, the group link will not be provided at this time. "
+                              "Please try again later"),
+    "description_open": ((zh_cn and "已重新开启入群通道")
+                         or "The channel to join the group has been opened"),
     "type": (zh_cn and "类别") or "Type",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
@@ -432,7 +447,7 @@ sender: str = "TIP"
 
 should_hide: bool = False
 
-version: str = "0.1.5"
+version: str = "0.1.6"
 
 welcomed_ids: Dict[int, Set[int]] = {}
 # welcomed_ids = {
@@ -479,6 +494,11 @@ message_ids: Dict[int, Dict[str, Tuple[int, int]]] = {}
 #         "rm": (126, 1512345678),
 #         "welcome": (127, 1512345678)
 #     }
+# }
+
+trust_ids: Dict[int, Set[int]] = {}
+# trust_ids = {
+#     -10012345678: {12345678}
 # }
 
 user_ids: Dict[int, Dict[str, Dict[str, float]]] = {}
@@ -550,9 +570,10 @@ for word_type in regex:
 # }
 
 # Load data
-file_list: List[str] = ["admin_ids", "bad_ids", "left_group_ids", "message_ids", "user_ids", "watch_ids",
+file_list: List[str] = ["admin_ids", "bad_ids", "left_group_ids", "message_ids", "trust_ids", "user_ids", "watch_ids",
                         "configs"]
 file_list += [f"{f}_words" for f in regex]
+
 for file in file_list:
     try:
         try:
@@ -564,6 +585,7 @@ for file in file_list:
                     pickle.dump(eval(f"{file}"), f)
         except Exception as e:
             logger.error(f"Load data {file} error: {e}", exc_info=True)
+
             with open(f"data/.{file}", "rb") as f:
                 locals()[f"{file}"] = pickle.load(f)
     except Exception as e:
@@ -573,6 +595,7 @@ for file in file_list:
 # Generate special characters dictionary
 for special in ["spc", "spe"]:
     locals()[f"{special}_dict"]: Dict[str, str] = {}
+
     for rule in locals()[f"{special}_words"]:
         # Check keys
         if "[" not in rule:
@@ -584,10 +607,11 @@ for special in ["spc", "spe"]:
 
         keys = rule.split("]")[0][1:]
         value = rule.split("?#")[1][1]
+
         for k in keys:
             locals()[f"{special}_dict"][k] = value
 
 # Start program
-copyright_text = (f"SCP-079-{sender} v{version}, Copyright (C) 2019 SCP-079 <https://scp-079.org>\n"
+copyright_text = (f"SCP-079-{sender} v{version}, Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>\n"
                   "Licensed under the terms of the GNU General Public License v3 or later (GPLv3+)\n")
 print(copyright_text)

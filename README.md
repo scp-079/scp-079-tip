@@ -5,7 +5,7 @@ This bot is used to send tips.
 ## How to use
 
 - See the [manual](https://telegra.ph/SCP-079-TIP-12-04)
-- See [this article](https://scp-079.org/tip/) to build a bot by yourself
+- [README](https://github.com/scp-079/scp-079-readme) of the SCP-079 Project
 - Discuss [group](https://t.me/SCP_079_CHAT)
 
 ## To Do List
