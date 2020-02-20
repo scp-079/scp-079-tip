@@ -108,8 +108,15 @@ def leave_group(client: Client, gid: int) -> bool:
         glovar.message_ids.pop(gid, {})
         save("message_ids")
 
+        glovar.trust_ids.pop(gid, set())
+        save("trust_ids")
+
         glovar.configs.pop(gid, {})
         save("configs")
+
+        glovar.declared_message_ids.pop(gid, set())
+        glovar.members.pop(gid, {})
+        glovar.welcomed_ids.pop(gid, set())
 
         return True
     except Exception as e:
