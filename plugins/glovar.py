@@ -236,6 +236,7 @@ lang: Dict[str, str] = {
     "custom": (zh_cn and "自定义") or "Custom",
     "default": (zh_cn and "默认") or "Default",
     "captcha": (zh_cn and "过审欢迎") or "Welcome After CAPTCHA",
+    "alone": (zh_cn and "非回复欢迎") or "Alone Mode",
     "clean": (zh_cn and "无痕模式") or "Clean Mode",
     "resend": (zh_cn and "每日重发入群链接") or "Resend Invite Link Everyday",
     "channel": (zh_cn and "入群频道") or "Entry Channel",
@@ -359,6 +360,7 @@ default_config: Dict[str, Union[bool, int, str]] = {
     "default": True,
     "lock": 0,
     "captcha": True,
+    "alone": False,
     "clean": True,
     "resend": False,
     "channel": 0,
@@ -443,7 +445,7 @@ sender: str = "TIP"
 
 should_hide: bool = False
 
-version: str = "0.1.6"
+version: str = "0.1.7"
 
 welcomed_ids: Dict[int, Set[int]] = {}
 # welcomed_ids = {
@@ -535,6 +537,7 @@ configs: Dict[int, Dict[str, Union[bool, int, str]]] = {}
 #         "default": True,
 #         "lock": 0,
 #         "captcha": True,
+#         "alone": False,
 #         "clean": True,
 #         "resend": False,
 #         "channel": 0,

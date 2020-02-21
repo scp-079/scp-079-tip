@@ -349,7 +349,7 @@ def config_directly(client: Client, message: Message) -> bool:
                     new_config = deepcopy(glovar.default_config)
                 else:
                     if command_context:
-                        if command_type in {"captcha", "clean", "resend"}:
+                        if command_type in {"captcha", "alone", "clean", "resend"}:
                             if command_context == "off":
                                 new_config[command_type] = False
                             elif command_context == "on":
@@ -841,7 +841,7 @@ def show(client: Client, message: Message) -> bool:
         # Check command format
         type_list = set(glovar.default_config)
 
-        for the_type in ["default", "lock", "clean", "resend", "channel"]:
+        for the_type in ["default", "lock", "captcha", "alone", "clean", "resend", "channel"]:
             type_list.discard(the_type)
 
         if not command_type or command_type not in type_list:

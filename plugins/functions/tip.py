@@ -315,6 +315,9 @@ def tip_welcome(client: Client, message: Message = None,
         # Read the config
         text = glovar.configs[gid]["welcome"]
 
+        if glovar.configs[gid].get("alone"):
+            mid = None
+
         # Replace
         text = text.replace("$code_id", code(uid))
         text = text.replace("$code_name", code(name))

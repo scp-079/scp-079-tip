@@ -54,11 +54,13 @@ def get_config_text(config: dict) -> str:
         # Basic
         default_text = (lambda x: lang("default") if x else lang("custom"))(config.get("default"))
         captcha_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("captcha"))
+        alone_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("alone"))
         clean_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("clean"))
         resend_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("resend"))
         channel_text = (lambda x: config["channel"] if x else lang("disabled"))(config.get("channel"))
         result += (f"{lang('config')}{lang('colon')}{code(default_text)}\n"
                    f"{lang('captcha')}{lang('colon')}{code(captcha_text)}\n"
+                   f"{lang('alone')}{lang('colon')}{code(alone_text)}\n"
                    f"{lang('clean')}{lang('colon')}{code(clean_text)}\n"
                    f"{lang('resend')}{lang('colon')}{code(resend_text)}\n"
                    f"{lang('channel')}{lang('colon')}{code(channel_text)}\n")
