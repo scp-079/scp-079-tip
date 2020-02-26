@@ -711,7 +711,7 @@ def rm(client: Client, message: Message) -> bool:
 
         # Send RM tip
         if r_message:
-            text = glovar.configs[gid]["rm"]
+            text = glovar.configs[gid].get("rm_text")
             text and tip_rm(client, gid, text, r_message.message_id)
             return True
 
