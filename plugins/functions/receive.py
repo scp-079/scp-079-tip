@@ -153,6 +153,7 @@ def receive_config_commit(data: dict) -> bool:
         # Others
         for the_type in ["keyword", "ot", "rm", "welcome"]:
             config[the_type] = bool(glovar.configs[gid].get(the_type))
+            logger.warning(config)
             config[f"{the_type}_text"] = glovar.configs[gid].get(f"{the_type}_text")
             config[f"{the_type}_button"] = glovar.configs[gid].get(f"{the_type}_button")
             config[f"{the_type}_link"] = glovar.configs[gid].get(f"{the_type}_link")
