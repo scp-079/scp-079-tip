@@ -349,7 +349,7 @@ def config_directly(client: Client, message: Message) -> bool:
                     new_config = deepcopy(glovar.default_config)
                 else:
                     if command_context:
-                        if command_type in {"captcha", "alone", "clean", "resend", "hold",
+                        if command_type in {"captcha", "alone", "clean", "resend",
                                             "keyword", "ot", "rm", "welcome"}:
                             if command_context == "off":
                                 new_config[command_type] = False
@@ -358,7 +358,7 @@ def config_directly(client: Client, message: Message) -> bool:
                             else:
                                 success = False
                                 reason = lang("command_para")
-                        elif command_type == "channel":
+                        elif command_type in {"channel", "hold"}:
                             if command_context == "off":
                                 new_config[command_type] = 0
                             else:
@@ -469,9 +469,8 @@ def keyword(client: Client, message: Message) -> bool:
             )
         else:
             # Config keyword message button
-            command_context = command_context.strip()
             glovar.configs[gid]["default"] = False
-            glovar.configs[gid][f"keyword_{command_type}"] = command_context
+            glovar.configs[gid][f"keyword_{command_type}"] = command_context.strip()
             save("configs")
             text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
             send_debug(
@@ -599,9 +598,8 @@ def ot(client: Client, message: Message) -> bool:
             return True
 
         # Config OT
-        command_context = command_context.strip()
         glovar.configs[gid]["default"] = False
-        glovar.configs[gid][f"ot_{command_type}"] = command_context
+        glovar.configs[gid][f"ot_{command_type}"] = command_context.strip()
         save("configs")
         text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
         send_debug(
@@ -714,11 +712,8 @@ def rm(client: Client, message: Message) -> bool:
         # Send RM tip
         if r_message:
             text = glovar.configs[gid]["rm"]
-
-            if text:
-                return tip_rm(client, gid, text, r_message.message_id)
-            else:
-                return True
+            text and tip_rm(client, gid, text, r_message.message_id)
+            return True
 
         # Text prefix
         text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
@@ -732,9 +727,8 @@ def rm(client: Client, message: Message) -> bool:
             return True
 
         # Config RM
-        command_context = command_context.strip()
         glovar.configs[gid]["default"] = False
-        glovar.configs[gid][f"rm_{command_type}"] = command_context
+        glovar.configs[gid][f"rm_{command_type}"] = command_context.strip()
         save("configs")
         text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
         send_debug(

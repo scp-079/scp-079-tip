@@ -147,6 +147,8 @@ def receive_config_commit(data: dict) -> bool:
         # Hold
         if config.get("hold"):
             config["hold"] = glovar.configs[gid].get("hold")
+        else:
+            config["hold"] = 0
 
         # Others
         for the_type in ["keyword", "ot", "rm", "welcome"]:

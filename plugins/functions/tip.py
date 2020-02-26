@@ -317,7 +317,11 @@ def tip_welcome(client: Client, message: Message = None,
         markup = get_markup("welcome", gid)
 
         # Read the config
-        text = glovar.configs[gid]["welcome_text"]
+        text = glovar.configs[gid].get("welcome_text")
+
+        # Check the config
+        if not text:
+            return True
 
         if glovar.configs[gid].get("alone"):
             mid = None
