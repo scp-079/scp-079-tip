@@ -238,7 +238,8 @@ def update_admins(client: Client) -> bool:
                     for admin in admin_members:
                         if (admin.user.is_self
                                 and admin.can_delete_messages
-                                and admin.can_invite_users):
+                                and admin.can_invite_users
+                                and admin.can_pin_messages):
                             should_leave = False
 
                 if not should_leave:
