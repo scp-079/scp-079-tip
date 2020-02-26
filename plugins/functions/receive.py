@@ -58,6 +58,28 @@ def receive_add_bad(data: dict) -> bool:
     return False
 
 
+def receive_captcha_flood(data: dict) -> bool:
+    # Receive captcha flood status
+    try:
+        # Basic data
+        gid = data["group_id"]
+        status = data["status"]
+
+        # Check the status
+        if status == "begin":
+            glovar.flooded_ids.add(gid)
+        elif status == "end":
+            glovar.flooded_ids.discard(gid)
+
+        save("flooded_ids")
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive captcha flood error: {e}", exc_info=True)
+
+    return False
+
+
 def receive_help_welcome(client: Client, data: dict) -> bool:
     # Receive help welcome
     glovar.locks["message"].acquire()

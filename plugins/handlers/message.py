@@ -31,7 +31,7 @@ from ..functions.filters import is_high_score_user, is_keyword_text, is_nm_text,
 from ..functions.filters import is_watch_user, is_wb_text, new_group, test_group
 from ..functions.group import leave_group
 from ..functions.ids import init_group_id, init_user_id
-from ..functions.receive import receive_add_bad, receive_config_commit, receive_clear_data
+from ..functions.receive import receive_add_bad, receive_captcha_flood, receive_config_commit, receive_clear_data
 from ..functions.receive import receive_config_reply, receive_config_show, receive_declared_message
 from ..functions.receive import receive_help_welcome, receive_leave_approve, receive_regex, receive_refresh
 from ..functions.receive import receive_remove_bad, receive_remove_score, receive_remove_watch, receive_rollback
@@ -351,7 +351,11 @@ def process_data(client: Client, message: Message) -> bool:
 
             if sender == "CAPTCHA":
 
-                if action == "help":
+                if action == "captcha":
+                    if action_type == "flood":
+                        receive_captcha_flood(data)
+
+                elif action == "help":
                     if action_type == "welcome":
                         receive_help_welcome(client, data)
 

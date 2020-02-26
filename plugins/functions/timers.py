@@ -26,8 +26,7 @@ from .channel import share_data, share_regex_count
 from .etc import code, general_link, get_now, lang, thread
 from .file import save
 from .group import delete_message, leave_group
-from .telegram import get_admins, get_group_info
-from .telegram import send_message
+from .telegram import get_admins, get_group_info, pin_chat_message, send_message
 from .tip import get_invite_link
 
 # Enable logging
@@ -60,6 +59,27 @@ def backup_files(client: Client) -> bool:
     return False
 
 
+def interval_hour_01(client: Client) -> bool:
+    # Execute every hour
+    glovar.locks["message"].acquire()
+    try:
+        # Hold the pinned message
+        for gid in list(glovar.configs):
+            if not glovar.configs[gid].get("hold"):
+                continue
+
+            if gid in glovar.flooded_ids:
+                continue
+
+            thread(pin_chat_message, (client, gid, glovar.configs[gid]["hold"]))
+    except Exception as e:
+        logger.warning(f"Interval hour 01 error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
+
+    return False
+
+
 def interval_min_01(client: Client) -> bool:
     # Execute every minute
     glovar.locks["message"].acquire()
@@ -86,12 +106,14 @@ def interval_min_01(client: Client) -> bool:
 
         # Generate a new invite link
         for gid in list(glovar.configs):
-            if glovar.configs[gid].get("channel"):
-                get_invite_link(
-                    client=client,
-                    the_type="edit",
-                    gid=gid
-                )
+            if not glovar.configs[gid].get("channel"):
+                continue
+
+            get_invite_link(
+                client=client,
+                the_type="edit",
+                gid=gid
+            )
 
         return True
     except Exception as e:
@@ -220,7 +242,15 @@ def update_admins(client: Client) -> bool:
                             should_leave = False
 
                 if not should_leave:
+                    glovar.lack_group_ids.discard(gid)
+                    save("lack_group_ids")
                     continue
+
+                if gid in glovar.lack_group_ids:
+                    continue
+
+                glovar.lack_group_ids.add(gid)
+                save("lack_group_ids")
 
                 group_name, group_link = get_group_info(client, gid)
                 share_data(
