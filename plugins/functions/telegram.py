@@ -507,3 +507,23 @@ def send_report_message(secs: int, client: Client, cid: int, text: str, mid: int
         logger.warning(f"Send report message to {cid} error: {e}", exc_info=True)
 
     return result
+
+
+def unpin_chat_message(client: Client, cid: int) -> Optional[bool]:
+    # Unpin a message in a group, channel or your own chat
+    result = None
+    try:
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.unpin_chat_message(chat_id=cid)
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+            except (ChatAdminRequired, ChatNotModified, PeerIdInvalid, ChannelInvalid, ChannelPrivate):
+                return False
+    except Exception as e:
+        logger.warning(f"Unpin chat message error: {e}", exc_info=True)
+
+    return result

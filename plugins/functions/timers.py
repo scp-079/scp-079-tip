@@ -25,8 +25,8 @@ from .. import glovar
 from .channel import share_data, share_regex_count
 from .etc import code, general_link, get_now, lang, thread
 from .file import save
-from .group import delete_message, leave_group
-from .telegram import get_admins, get_group_info, pin_chat_message, send_message
+from .group import delete_message, leave_group, re_pin
+from .telegram import get_admins, get_group_info, send_message
 from .tip import get_invite_link
 
 # Enable logging
@@ -71,7 +71,7 @@ def interval_hour_01(client: Client) -> bool:
             if gid in glovar.flooded_ids:
                 continue
 
-            thread(pin_chat_message, (client, gid, glovar.configs[gid]["hold"]))
+            thread(re_pin, (client, gid, glovar.configs[gid]["hold"]))
     except Exception as e:
         logger.warning(f"Interval hour 01 error: {e}", exc_info=True)
     finally:

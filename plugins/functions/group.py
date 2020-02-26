@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from time import sleep
 from typing import Optional
 
 from pyrogram import ChatMember, Client
@@ -25,7 +26,7 @@ from .. import glovar
 from .etc import code, lang, thread
 from .file import save
 from .ids import init_group_id
-from .telegram import delete_messages, get_chat_member, leave_chat
+from .telegram import delete_messages, get_chat_member, leave_chat, pin_chat_message, unpin_chat_message
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -126,5 +127,17 @@ def leave_group(client: Client, gid: int) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Leave group error: {e}", exc_info=True)
+
+    return False
+
+
+def re_pin(client: Client, gid: int, mid: int) -> bool:
+    # Unpin and pin the message
+    try:
+        unpin_chat_message(client, gid)
+        sleep(3)
+        pin_chat_message(client, gid, mid)
+    except Exception as e:
+        logger.warning(f"Re pin error: {e}", exc_info=True)
 
     return False
