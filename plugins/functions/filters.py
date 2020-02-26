@@ -454,6 +454,7 @@ def is_keyword_text(message: Message) -> str:
 
         # Get keywords
         keywords = get_keywords(glovar.configs[gid]["keyword_text"])
+        logger.warning(keywords)
 
         # Find keyword in text
         for keyword in keywords:

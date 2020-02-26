@@ -110,6 +110,7 @@ def check(client: Client, message: Message) -> bool:
             return True
 
         # Check keyword
+        logger.warning("hi")
         detection = is_keyword_text(message)
 
         if detection:
