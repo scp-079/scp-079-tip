@@ -446,7 +446,7 @@ def is_keyword_text(message: Message) -> str:
         gid = message.chat.id
 
         # Check config
-        if not glovar.configs[gid].get("keyword_text"):
+        if not glovar.configs[gid].get("keyword") or not glovar.configs[gid].get("keyword_text"):
             return ""
 
         # Get the message text
@@ -528,7 +528,7 @@ def is_rm_text(message: Message) -> str:
             return ""
 
         # Check config
-        if not glovar.configs[gid].get("rm_text"):
+        if not glovar.configs[gid].get("rm") or not glovar.configs[gid].get("rm_text"):
             return ""
 
         # Get the message text

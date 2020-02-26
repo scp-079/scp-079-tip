@@ -237,7 +237,7 @@ def tip_ot(client: Client, gid: int, mid: int = None) -> bool:
         text = glovar.configs[gid].get("ot_text")
 
         # Check the config
-        if not text:
+        if not glovar.configs[gid].get("ot") or not text:
             return True
         
         # Send the tip
@@ -261,6 +261,14 @@ def tip_rm(client: Client, gid: int, text: str, mid: int = None) -> bool:
     try:
         # Basic data
         now = get_now()
+
+        # Check the config
+        if not glovar.configs[gid].get("rm"):
+            return True
+
+        # Check the text
+        if not text or not text.strip():
+            return True
 
         # Get the markup
         markup = get_markup("rm", gid)

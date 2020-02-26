@@ -141,6 +141,10 @@ def check_join(client: Client, message: Message) -> bool:
         # Basic data
         gid = message.chat.id
 
+        # Check config
+        if not glovar.configs[gid].get("welcome"):
+            return True
+
         # Word with CAPTCHA
         if glovar.configs[gid].get("captcha") and glovar.captcha_id in glovar.admin_ids[gid]:
             return True
@@ -171,7 +175,7 @@ def check_join(client: Client, message: Message) -> bool:
 
             # Init the user's status
             if not init_user_id(uid):
-                continue
+                return True
 
         # Welcome
         tip_welcome(client, message)

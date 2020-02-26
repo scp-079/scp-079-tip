@@ -709,10 +709,12 @@ def rm(client: Client, message: Message) -> bool:
         command_type, command_context = get_command_context(message)
 
         # Send RM tip
+        text = glovar.configs[gid].get("rm_text")
+
         if r_message:
-            text = glovar.configs[gid].get("rm_text")
-            text and tip_rm(client, gid, text, r_message.message_id)
-            return True
+            return tip_rm(client, gid, text, r_message.message_id)
+        elif not command_type:
+            return tip_rm(client, gid, text)
 
         # Text prefix
         text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
@@ -837,9 +839,7 @@ def welcome(client: Client, message: Message) -> bool:
 
         # Send welcome tip
         if r_message:
-            text = glovar.configs[gid].get("welcome_text")
-            text and tip_welcome(client, r_message, None, 0, None, True)
-            return True
+            return tip_welcome(client, r_message, None, 0, None, True)
 
         # Text prefix
         text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
