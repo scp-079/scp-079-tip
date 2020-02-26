@@ -456,7 +456,7 @@ def hold(client: Client, message: Message) -> bool:
             action=lang("config_change"),
             aid=aid,
             config_type=lang("action_hold"),
-            more=str(gid)
+            more=str(r_message.message_id)
         )
 
         return True
