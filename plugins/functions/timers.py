@@ -59,27 +59,6 @@ def backup_files(client: Client) -> bool:
     return False
 
 
-def interval_hour_01(client: Client) -> bool:
-    # Execute every hour
-    glovar.locks["message"].acquire()
-    try:
-        # Hold the pinned message
-        for gid in list(glovar.configs):
-            if not glovar.configs[gid].get("hold"):
-                continue
-
-            if gid in glovar.flooded_ids:
-                continue
-
-            thread(re_pin, (client, gid, glovar.configs[gid]["hold"]))
-    except Exception as e:
-        logger.warning(f"Interval hour 01 error: {e}", exc_info=True)
-    finally:
-        glovar.locks["message"].release()
-
-    return False
-
-
 def interval_min_01(client: Client) -> bool:
     # Execute every minute
     glovar.locks["message"].acquire()
