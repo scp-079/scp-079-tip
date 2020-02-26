@@ -440,8 +440,7 @@ def keyword(client: Client, message: Message) -> bool:
 
         # Config keyword
         if command_type == "text":
-            result = get_keywords(command_type)
-            logger.warning(result)
+            result = get_keywords(command_context)
 
             # Check the result
             if not result:
