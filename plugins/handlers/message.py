@@ -59,7 +59,7 @@ def check(client: Client, message: Message) -> bool:
 
         # Check the config
         if ((not glovar.configs[gid].get("keyword") and not glovar.configs[gid].get("rm"))
-                or not (glovar.configs[gid].get("keyword_text") and not glovar.configs[gid].get("rm_text"))):
+                or (not glovar.configs[gid].get("keyword_text") and not glovar.configs[gid].get("rm_text"))):
             return True
 
         # Check the forward from name
@@ -110,7 +110,6 @@ def check(client: Client, message: Message) -> bool:
             return True
 
         # Check keyword
-        logger.warning("hi")
         detection = is_keyword_text(message)
 
         if detection:
