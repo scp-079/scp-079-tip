@@ -60,12 +60,13 @@ def get_config_text(config: dict) -> str:
             the_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get(the_type))
             result += f"{lang(the_type)}{lang('colon')}{code(the_text)}\n"
 
-        # Channel
-        channel_text = (lambda x: config["channel"] if x else lang("disabled"))(config.get("channel"))
-        result += f"{lang('channel')}{lang('colon')}{code(channel_text)}\n"
+        # Channel, hold
+        for the_type in ["channel", "hold"]:
+            channel_text = (lambda x: config[the_type] if x else lang("disabled"))(config.get(the_type))
+            result += f"{lang(the_type)}{lang('colon')}{code(channel_text)}\n"
 
         # Others
-        for the_type in ["hold", "keyword", "ot", "rm", "welcome"]:
+        for the_type in ["keyword", "ot", "rm", "welcome"]:
             the_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get(the_type))
             result += f"{lang(the_type)}{lang('colon')}{code(the_text)}\n"
     except Exception as e:

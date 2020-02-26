@@ -314,6 +314,7 @@ lang: Dict[str, str] = {
     "description_ot": (zh_cn and "离题内容请适度") or "OT Warning",
     "description_rm": (zh_cn and "请勿开 rm 命令类玩笑") or "Please do not joke about the rm command",
     "description_welcome": (zh_cn and "你好，$mention_name") or "Hello $mention_name",
+    "pinned_message": (zh_cn and "置顶消息") or "Pinned Message",
     "type": (zh_cn and "类别") or "Type",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",

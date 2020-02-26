@@ -29,7 +29,7 @@ from ..functions.etc import mention_id, thread
 from ..functions.file import save
 from ..functions.filters import authorized_group, from_user, is_class_c, test_group
 from ..functions.group import delete_message, get_config_text
-from ..functions.telegram import get_group_info, send_message, send_report_message
+from ..functions.telegram import get_group_info, pin_chat_message, send_message, send_report_message
 from ..functions.tip import get_invite_link, get_keywords, tip_ot, tip_rm, tip_welcome
 
 # Enable logging
@@ -400,6 +400,70 @@ def config_directly(client: Client, message: Message) -> bool:
     except Exception as e:
         logger.warning(f"Config directly error: {e}", exc_info=True)
     finally:
+        delete_message(client, gid, mid)
+
+    return False
+
+
+@Client.on_message(Filters.incoming & Filters.group & Filters.command(["hold"], glovar.prefix)
+                   & ~test_group & authorized_group
+                   & from_user)
+def hold(client: Client, message: Message) -> bool:
+    # Hold a message
+
+    if not message or not message.chat:
+        return True
+
+    # Basic data
+    gid = message.chat.id
+    mid = message.message_id
+
+    glovar.locks["message"].acquire()
+    try:
+        # Check permission
+        if not is_class_c(None, message):
+            return True
+
+        aid = message.from_user.id
+        r_message = message.reply_to_message
+
+        # Text prefix
+        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('action_hold'))}\n")
+
+        # Check the message
+        if not r_message:
+            text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
+                     f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
+            thread(send_report_message, (15, client, gid, text))
+            return True
+
+        # Hold the message
+        glovar.configs[gid]["hold"] = r_message.message_id
+        thread(pin_chat_message, (client, gid, r_message.message_id))
+
+        # Generate the text
+        text += (f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
+                 f"{lang('pinned_message')}{lang('colon')}{code(r_message.message_id)}\n")
+
+        # Send the report message
+        thread(send_report_message, (20, client, gid, text))
+
+        # Send debug message
+        send_debug(
+            client=client,
+            chat=message.chat,
+            action=lang("config_change"),
+            aid=aid,
+            config_type=lang("action_hold"),
+            more=str(gid)
+        )
+
+        return True
+    except Exception as e:
+        logger.warning(f"Hold error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
         delete_message(client, gid, mid)
 
     return False
