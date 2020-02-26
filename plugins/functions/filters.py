@@ -55,6 +55,19 @@ def is_authorized_group(_, update: Union[CallbackQuery, Message]) -> bool:
     return False
 
 
+def is_channel_pinned(_, message: Message) -> bool:
+    # Check if the message is sent by the linked channel
+    try:
+        if (not message.service
+                and not message.from_user
+                and message.forward_from_chat):
+            return True
+    except Exception as e:
+        logger.warning(f"Is channel pinned error: {e}", exc_info=True)
+
+    return False
+
+
 def is_class_c(_, message: Message) -> bool:
     # Check if the message is sent from Class C personnel
     try:
@@ -198,6 +211,11 @@ def is_test_group(_, update: Union[CallbackQuery, Message]) -> bool:
 authorized_group = Filters.create(
     func=is_authorized_group,
     name="Authorized Group"
+)
+
+channel_pinned = Filters.create(
+    func=is_channel_pinned,
+    name="Channel Pinned"
 )
 
 class_c = Filters.create(

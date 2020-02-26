@@ -25,10 +25,10 @@ from ..functions.channel import get_debug_text
 from ..functions.etc import code, general_link, get_filename, get_forward_name, get_full_name, get_now, get_text
 from ..functions.etc import lang, mention_id, thread
 from ..functions.file import save
-from ..functions.filters import authorized_group, class_d, declared_message, exchange_channel, from_user, hide_channel
-from ..functions.filters import is_ban_text, is_bio_text, is_class_d_user, is_declared_message, is_high_score_user
-from ..functions.filters import is_keyword_text, is_nm_text, is_regex_text, is_rm_text, is_watch_user, is_wb_text
-from ..functions.filters import new_group, test_group
+from ..functions.filters import authorized_group, channel_pinned, class_d, declared_message, exchange_channel
+from ..functions.filters import from_user, hide_channel, is_ban_text, is_bio_text, is_class_d_user, is_declared_message
+from ..functions.filters import is_high_score_user, is_keyword_text, is_nm_text, is_regex_text, is_rm_text
+from ..functions.filters import is_watch_user, is_wb_text, new_group, test_group
 from ..functions.group import leave_group
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import receive_add_bad, receive_config_commit, receive_clear_data
@@ -36,7 +36,7 @@ from ..functions.receive import receive_config_reply, receive_config_show, recei
 from ..functions.receive import receive_help_welcome, receive_leave_approve, receive_regex, receive_refresh
 from ..functions.receive import receive_remove_bad, receive_remove_score, receive_remove_watch, receive_rollback
 from ..functions.receive import receive_text_data, receive_user_score, receive_watch_user
-from ..functions.telegram import get_admins, get_user_bio, send_message
+from ..functions.telegram import get_admins, get_user_bio, pin_chat_message, send_message
 from ..functions.timers import backup_files, send_count
 from ..functions.tip import tip_keyword, tip_rm, tip_welcome
 
@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 @Client.on_message(Filters.incoming & Filters.group & ~Filters.service
                    & ~test_group & authorized_group
                    & from_user & ~class_d
-                   & ~declared_message)
+                   & ~channel_pinned & ~declared_message)
 def check(client: Client, message: Message) -> bool:
     # Check the messages sent from groups
     glovar.locks["message"].acquire()
@@ -292,6 +292,35 @@ def init_group(client: Client, message: Message) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Init group error: {e}", exc_info=True)
+
+    return False
+
+
+@Client.on_message(Filters.incoming & Filters.group & ~Filters.service
+                   & ~test_group & authorized_group
+                   & channel_pinned & ~declared_message)
+def pin(client: Client, message: Message) -> bool:
+    # Pin the held message
+    glovar.locks["message"].acquire()
+    try:
+        # Basic data
+        gid = message.chat.id
+
+        # Read config
+        mid = glovar.configs[gid].get("hold")
+
+        # Check config
+        if not mid:
+            return True
+
+        # Pin the message
+        thread(pin_chat_message, (client, gid, mid))
+
+        return True
+    except Exception as e:
+        logger.warning(f"Pin error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
 
     return False
 
