@@ -60,26 +60,6 @@ def backup_files(client: Client) -> bool:
     return False
 
 
-def interval_hour_01(client: Client) -> bool:
-    # Execute every hour
-    glovar.locks["message"].acquire()
-    try:
-        # Generate a new invite link
-        for gid in list(glovar.configs):
-            if glovar.configs[gid].get("channel"):
-                get_invite_link(
-                    client=client,
-                    the_type="edit",
-                    gid=gid
-                )
-    except Exception as e:
-        logger.warning(f"Interval hour 01 error: {e}", exc_info=True)
-    finally:
-        glovar.locks["message"].release()
-
-    return False
-
-
 def interval_min_01(client: Client) -> bool:
     # Execute every minute
     glovar.locks["message"].acquire()
@@ -103,6 +83,15 @@ def interval_min_01(client: Client) -> bool:
                     delete_message(client, gid, mid)
 
         save("message_ids")
+
+        # Generate a new invite link
+        for gid in list(glovar.configs):
+            if glovar.configs[gid].get("channel"):
+                get_invite_link(
+                    client=client,
+                    the_type="edit",
+                    gid=gid
+                )
 
         return True
     except Exception as e:
