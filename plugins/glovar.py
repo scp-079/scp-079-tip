@@ -297,7 +297,7 @@ lang: Dict[str, str] = {
     "action_bind": (zh_cn and "绑定频道") or "Bind Channel",
     "action_channel": (zh_cn and "调整邀请提示") or "Adjust Invite Text",
     "action_close": (zh_cn and "关闭入群通道") or "Close Group Channel",
-    "action_hold": (zh_cn and "设置保持置顶") or "Set Pinned Hold",
+    "action_hold": (zh_cn and "设置保持置顶") or "Hold the Pinned Message",
     "action_keyword": (zh_cn and "调整关键词") or "Adjust Keywords",
     "action_open": (zh_cn and "开启入群通道") or "Open Group Channel",
     "action_ot": (zh_cn and "调整 OT 提示") or "Adjust OT Tip",
