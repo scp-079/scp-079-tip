@@ -135,24 +135,25 @@ def receive_config_commit(data: dict) -> bool:
         config = data["config"]
 
         # Channel
-        if config["channel"]:
-            config["channel"] = glovar.configs[gid]["channel"]
+        if config.get("channel"):
+            config["channel"] = glovar.configs[gid].get("channel")
         else:
             config["channel"] = 0
 
-        config["channel_text"] = glovar.configs[gid]["channel_text"]
-        config["channel_button"] = glovar.configs[gid]["channel_button"]
-        config["channel_link"] = glovar.configs[gid]["channel_link"]
+        config["channel_text"] = glovar.configs[gid].get("channel_text")
+        config["channel_button"] = glovar.configs[gid].get("channel_button")
+        config["channel_link"] = glovar.configs[gid].get("channel_link")
+
+        # Hold
+        if config.get("hold"):
+            config["hold"] = glovar.configs[gid].get("hold")
 
         # Others
         for the_type in ["keyword", "ot", "rm", "welcome"]:
-            config[f"{the_type}_button"] = glovar.configs[gid][f"{the_type}_button"]
-            config[f"{the_type}_link"] = glovar.configs[gid][f"{the_type}_link"]
-
-            if config[the_type]:
-                config[the_type] = glovar.configs[gid][the_type]
-            else:
-                config[the_type] = ""
+            config[the_type] = bool(glovar.configs[gid].get(the_type))
+            config[f"{the_type}_text"] = glovar.configs[gid].get(f"{the_type}_text")
+            config[f"{the_type}_button"] = glovar.configs[gid].get(f"{the_type}_button")
+            config[f"{the_type}_link"] = glovar.configs[gid].get(f"{the_type}_link")
 
         # Default
         if config["default"]:

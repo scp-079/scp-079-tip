@@ -446,14 +446,14 @@ def is_keyword_text(message: Message) -> str:
         gid = message.chat.id
 
         # Check config
-        if not glovar.configs[gid].get("keyword"):
+        if not glovar.configs[gid].get("keyword_text"):
             return ""
 
         # Get the message text
         message_text = get_text(message).lower()
 
         # Get keywords
-        keywords = get_keywords(glovar.configs[gid]["keyword"])
+        keywords = get_keywords(glovar.configs[gid]["keyword_text"])
 
         # Find keyword in text
         for keyword in keywords:
@@ -528,7 +528,7 @@ def is_rm_text(message: Message) -> str:
             return ""
 
         # Check config
-        if not glovar.configs[gid].get("rm"):
+        if not glovar.configs[gid].get("rm_text"):
             return ""
 
         # Get the message text
@@ -536,7 +536,7 @@ def is_rm_text(message: Message) -> str:
 
         # Check the message_text
         if is_regex_text("rm", message_text):
-            return glovar.configs[gid]["rm"]
+            return glovar.configs[gid]["rm_text"]
     except Exception as e:
         logger.warning(f"Is rm text error: {e}", exc_info=True)
 

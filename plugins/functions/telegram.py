@@ -23,8 +23,8 @@ from pyrogram import Chat, ChatMember, ChatPreview, Client
 from pyrogram import InputMediaPhoto, InlineKeyboardMarkup, Message
 from pyrogram.api.functions.users import GetFullUser
 from pyrogram.api.types import InputPeerUser, InputPeerChannel, UserFull
-from pyrogram.errors import ChatAdminRequired, ButtonDataInvalid, ChannelInvalid, ChannelPrivate, FloodWait
-from pyrogram.errors import MessageDeleteForbidden, PeerIdInvalid, QueryIdInvalid
+from pyrogram.errors import ButtonDataInvalid, ChatAdminRequired, ChatNotModified, ChannelInvalid, ChannelPrivate
+from pyrogram.errors import FloodWait, MessageDeleteForbidden, PeerIdInvalid, QueryIdInvalid
 from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotParticipant
 
 from .. import glovar
@@ -304,6 +304,30 @@ def get_user_bio(client: Client, uid: int, normal: bool = False, printable: bool
                 wait_flood(e)
     except Exception as e:
         logger.warning(f"Get user {uid} bio error: {e}", exc_info=True)
+
+    return result
+
+
+def pin_chat_message(client: Client, cid: int, mid: int) -> Optional[bool]:
+    # Pin a message in a group, channel or your own chat
+    result = None
+    try:
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.pin_chat_message(
+                    chat_id=cid,
+                    message_id=mid,
+                    disable_notification=True
+                )
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+            except (ChatAdminRequired, ChatNotModified, PeerIdInvalid, ChannelInvalid, ChannelPrivate):
+                return False
+    except Exception as e:
+        logger.warning(f"Pin chat message error: {e}", exc_info=True)
 
     return result
 

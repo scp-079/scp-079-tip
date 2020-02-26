@@ -349,7 +349,8 @@ def config_directly(client: Client, message: Message) -> bool:
                     new_config = deepcopy(glovar.default_config)
                 else:
                     if command_context:
-                        if command_type in {"captcha", "alone", "clean", "resend"}:
+                        if command_type in {"captcha", "alone", "clean", "resend", "hold",
+                                            "keyword", "ot", "rm", "welcome"}:
                             if command_context == "off":
                                 new_config[command_type] = False
                             elif command_context == "on":
@@ -360,12 +361,6 @@ def config_directly(client: Client, message: Message) -> bool:
                         elif command_type == "channel":
                             if command_context == "off":
                                 new_config[command_type] = 0
-                            else:
-                                success = False
-                                reason = lang("command_para")
-                        elif command_type in {"keyword", "ot", "rm", "welcome"}:
-                            if command_context == "off":
-                                new_config[command_type] = ""
                             else:
                                 success = False
                                 reason = lang("command_para")
@@ -437,14 +432,14 @@ def keyword(client: Client, message: Message) -> bool:
                 f"{lang('action')}{lang('colon')}{code(lang('action_keyword'))}\n")
 
         # Check command format
-        if not command_type and not command_context:
+        if not command_type or command_type not in {"text", "button", "link"} or not command_context:
             text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
                      f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
             thread(send_report_message, (15, client, gid, text))
             return True
 
-        # Config keyword text
-        if command_type not in {"button", "link"}:
+        # Config keyword
+        if command_type == "text":
             command_type = get_command_type(message)
             result = get_keywords(command_type)
 
@@ -456,7 +451,7 @@ def keyword(client: Client, message: Message) -> bool:
                 return True
             else:
                 glovar.configs[gid]["default"] = False
-                glovar.configs[gid]["keyword"] = command_type
+                glovar.configs[gid]["keyword_text"] = command_context.strip()
                 save("configs")
                 text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
 
@@ -470,28 +465,26 @@ def keyword(client: Client, message: Message) -> bool:
                 action=lang("config_change"),
                 aid=aid,
                 config_type="keyword",
-                more="text"
+                more=command_type
+            )
+        else:
+            # Config keyword message button
+            command_context = command_context.strip()
+            glovar.configs[gid]["default"] = False
+            glovar.configs[gid][f"keyword_{command_type}"] = command_context
+            save("configs")
+            text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
+            send_debug(
+                client=client,
+                chat=message.chat,
+                action=lang("config_change"),
+                aid=aid,
+                config_type="keyword",
+                more=command_type
             )
 
-            return True
-
-        # Config keyword message button
-        command_context = command_context.strip()
-        glovar.configs[gid]["default"] = False
-        glovar.configs[gid][f"keyword_{command_type}"] = command_context
-        save("configs")
-        text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
-        send_debug(
-            client=client,
-            chat=message.chat,
-            action=lang("config_change"),
-            aid=aid,
-            config_type="keyword",
-            more=command_type
-        )
-
-        # Send the report message
-        thread(send_report_message, (20, client, gid, text))
+            # Send the report message
+            thread(send_report_message, (20, client, gid, text))
 
         return True
     except Exception as e:
@@ -599,36 +592,13 @@ def ot(client: Client, message: Message) -> bool:
                 f"{lang('action')}{lang('colon')}{code(lang('action_ot'))}\n")
 
         # Check command format
-        if not command_type and not command_context:
+        if not command_type or command_type not in {"text", "button", "link"} or not command_context:
             text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
                      f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
             thread(send_report_message, (15, client, gid, text))
             return True
 
-        # Config OT text
-        if command_type not in {"button", "link"}:
-            command_type = get_command_type(message)
-            glovar.configs[gid]["default"] = False
-            glovar.configs[gid]["ot"] = command_type
-            save("configs")
-            text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
-
-            # Send the report message
-            thread(send_report_message, (20, client, gid, text))
-
-            # Send debug message
-            send_debug(
-                client=client,
-                chat=message.chat,
-                action=lang("config_change"),
-                aid=aid,
-                config_type="ot",
-                more="text"
-            )
-
-            return True
-
-        # Config OT message button
+        # Config OT
         command_context = command_context.strip()
         glovar.configs[gid]["default"] = False
         glovar.configs[gid][f"ot_{command_type}"] = command_context
@@ -755,36 +725,13 @@ def rm(client: Client, message: Message) -> bool:
                 f"{lang('action')}{lang('colon')}{code(lang('action_rm'))}\n")
 
         # Check command format
-        if not command_type and not command_context:
+        if not command_type or command_type not in {"text", "button", "link"} or not command_context:
             text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
                      f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
             thread(send_report_message, (15, client, gid, text))
             return True
 
-        # Config RM text
-        if command_type not in {"button", "link"}:
-            command_type = get_command_type(message)
-            glovar.configs[gid]["default"] = False
-            glovar.configs[gid]["rm"] = command_type
-            save("configs")
-            text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
-
-            # Send the report message
-            thread(send_report_message, (20, client, gid, text))
-
-            # Send debug message
-            send_debug(
-                client=client,
-                chat=message.chat,
-                action=lang("config_change"),
-                aid=aid,
-                config_type="rm",
-                more="text"
-            )
-
-            return True
-
-        # Config RM message button
+        # Config RM
         command_context = command_context.strip()
         glovar.configs[gid]["default"] = False
         glovar.configs[gid][f"rm_{command_type}"] = command_context
@@ -841,7 +788,7 @@ def show(client: Client, message: Message) -> bool:
         # Check command format
         type_list = set(glovar.default_config)
 
-        for the_type in ["default", "lock", "captcha", "alone", "clean", "resend", "channel"]:
+        for the_type in ["default", "lock", "captcha", "alone", "clean", "resend", "channel", "hold"]:
             type_list.discard(the_type)
 
         if not command_type or command_type not in type_list:
@@ -851,7 +798,7 @@ def show(client: Client, message: Message) -> bool:
             return True
 
         # Get the config
-        result = glovar.configs[gid][command_type] or lang("reason_none")
+        result = glovar.configs[gid].get(command_type) or lang("reason_none")
         text += (f"{lang('result')}{lang('colon')}" + "-" * 24 + "\n\n"
                  f"{code_block(result)}\n")
 
@@ -897,7 +844,7 @@ def welcome(client: Client, message: Message) -> bool:
 
         # Send welcome tip
         if r_message:
-            text = glovar.configs[gid]["welcome"]
+            text = glovar.configs[gid].get("welcome_text")
             text and tip_welcome(client, r_message, None, 0, None, True)
             return True
 
@@ -906,36 +853,13 @@ def welcome(client: Client, message: Message) -> bool:
                 f"{lang('action')}{lang('colon')}{code(lang('action_welcome'))}\n")
 
         # Check command format
-        if not command_type and not command_context:
+        if not command_type or command_type not in {"text", "button", "link"} or not command_context:
             text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
                      f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
             thread(send_report_message, (15, client, gid, text))
             return True
 
-        # Config welcome text
-        if command_type not in {"button", "link"}:
-            command_type = get_command_type(message)
-            glovar.configs[gid]["default"] = False
-            glovar.configs[gid]["welcome"] = command_type
-            save("configs")
-            text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
-
-            # Send the report message
-            thread(send_report_message, (20, client, gid, text))
-
-            # Send debug message
-            send_debug(
-                client=client,
-                chat=message.chat,
-                action=lang("config_change"),
-                aid=aid,
-                config_type="welcome",
-                more="text"
-            )
-
-            return True
-
-        # Config welcome message button
+        # Config welcome
         command_context = command_context.strip()
         glovar.configs[gid]["default"] = False
         glovar.configs[gid][f"welcome_{command_type}"] = command_context

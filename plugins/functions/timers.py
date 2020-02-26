@@ -66,7 +66,7 @@ def interval_hour_01(client: Client) -> bool:
     try:
         # Generate a new invite link
         for gid in list(glovar.configs):
-            if glovar.configs[gid]["channel"]:
+            if glovar.configs[gid].get("channel"):
                 get_invite_link(
                     client=client,
                     the_type="edit",

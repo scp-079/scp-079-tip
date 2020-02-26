@@ -40,10 +40,10 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
         now = get_now()
 
         # Read the config
-        cid = glovar.configs[gid]["channel"]
-        channel_text = glovar.configs[gid]["channel_text"]
-        channel_button = glovar.configs[gid]["channel_button"]
-        mid, time = glovar.message_ids[gid]["channel"]
+        cid = glovar.configs[gid].get("channel")
+        channel_text = glovar.configs[gid].get("channel_text")
+        channel_button = glovar.configs[gid].get("channel_button")
+        mid, time = glovar.message_ids[gid].get("channel", (0, 0))
 
         # Check the config
         if not cid:
@@ -156,8 +156,8 @@ def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
     result = None
     try:
         # Read the config
-        text = glovar.configs[gid][f"{the_type}_button"]
-        link = glovar.configs[gid][f"{the_type}_link"]
+        text = glovar.configs[gid].get(f"{the_type}_button")
+        link = glovar.configs[gid].get(f"{the_type}_link")
 
         # Check the config
         if not text or not link:
@@ -234,7 +234,11 @@ def tip_ot(client: Client, gid: int, mid: int = None) -> bool:
         markup = get_markup("ot", gid)
         
         # Read the config
-        text = glovar.configs[gid]["ot"]
+        text = glovar.configs[gid].get("ot_text")
+
+        # Check the config
+        if not text:
+            return True
         
         # Send the tip
         result = send_message(client, gid, text, mid, markup)
@@ -313,7 +317,7 @@ def tip_welcome(client: Client, message: Message = None,
         markup = get_markup("welcome", gid)
 
         # Read the config
-        text = glovar.configs[gid]["welcome"]
+        text = glovar.configs[gid]["welcome_text"]
 
         if glovar.configs[gid].get("alone"):
             mid = None

@@ -240,6 +240,7 @@ lang: Dict[str, str] = {
     "clean": (zh_cn and "无痕模式") or "Clean Mode",
     "resend": (zh_cn and "每日重发入群链接") or "Resend Invite Link Everyday",
     "channel": (zh_cn and "入群频道") or "Entry Channel",
+    "hold": (zh_cn and "保持置顶") or "Hold the Pinned Message",
     "keyword": (zh_cn and "关键词提示") or "Custom Keywords",
     "ot": (zh_cn and "OT 警告") or "OT Warning by Members",
     "rm": (zh_cn and "RM 警告") or "RM Jokes Warning",
@@ -296,6 +297,7 @@ lang: Dict[str, str] = {
     "action_bind": (zh_cn and "绑定频道") or "Bind Channel",
     "action_channel": (zh_cn and "调整邀请提示") or "Adjust Invite Text",
     "action_close": (zh_cn and "关闭入群通道") or "Close Group Channel",
+    "action_hold": (zh_cn and "设置置顶保持") or "Set Pinned Hold",
     "action_keyword": (zh_cn and "调整关键词") or "Adjust Keywords",
     "action_open": (zh_cn and "开启入群通道") or "Open Group Channel",
     "action_ot": (zh_cn and "调整 OT 提示") or "Adjust OT Tip",
@@ -334,6 +336,7 @@ all_commands: List[str] = [
     "channel",
     "config",
     "config_tip",
+    "hold",
     "keyword",
     "ot",
     "resend",
@@ -367,6 +370,7 @@ default_config: Dict[str, Union[bool, int, str]] = {
     "channel_text": lang["description_channel"],
     "channel_button": lang["button_channel"],
     "channel_link": "",
+    "hold": 0,
     "keyword": "",
     "keyword_button": "",
     "keyword_link": "",
@@ -383,6 +387,7 @@ default_config: Dict[str, Union[bool, int, str]] = {
 
 default_message_data: Dict[str, Tuple[int, int]] = {
     "channel": (0, 0),
+    "hold": (0, 0),
     "keyword": (0, 0),
     "ot": (0, 0),
     "rm": (0, 0),
@@ -445,7 +450,7 @@ sender: str = "TIP"
 
 should_hide: bool = False
 
-version: str = "0.1.7"
+version: str = "0.1.8"
 
 welcomed_ids: Dict[int, Set[int]] = {}
 # welcomed_ids = {
@@ -487,6 +492,7 @@ message_ids: Dict[int, Dict[str, Tuple[int, int]]] = {}
 # message_ids = {
 #     -10012345678: {
 #         "channel": (123, 1512345678),
+#         "hold": (123, 1512345678),
 #         "keyword": (124, 1512345678),
 #         "ot": (125, 1512345678),
 #         "rm": (126, 1512345678),
@@ -544,6 +550,7 @@ configs: Dict[int, Dict[str, Union[bool, int, str]]] = {}
 #         "channel_text": "text",
 #         "channel_button": "text",
 #         "channel_link": "",
+#         "hold": 0,
 #         "keyword": "",
 #         "keyword_button": "",
 #         "keyword_link": "",

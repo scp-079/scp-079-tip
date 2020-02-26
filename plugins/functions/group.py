@@ -53,20 +53,19 @@ def get_config_text(config: dict) -> str:
     try:
         # Basic
         default_text = (lambda x: lang("default") if x else lang("custom"))(config.get("default"))
-        captcha_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("captcha"))
-        alone_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("alone"))
-        clean_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("clean"))
-        resend_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("resend"))
+        result += f"{lang('config')}{lang('colon')}{code(default_text)}\n"
+
+        # CAPTCHA, alone, clean, resend
+        for the_type in ["captcha", "alone", "clean", "resend"]:
+            the_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get(the_type))
+            result += f"{lang(the_type)}{lang('colon')}{code(the_text)}\n"
+
+        # Channel
         channel_text = (lambda x: config["channel"] if x else lang("disabled"))(config.get("channel"))
-        result += (f"{lang('config')}{lang('colon')}{code(default_text)}\n"
-                   f"{lang('captcha')}{lang('colon')}{code(captcha_text)}\n"
-                   f"{lang('alone')}{lang('colon')}{code(alone_text)}\n"
-                   f"{lang('clean')}{lang('colon')}{code(clean_text)}\n"
-                   f"{lang('resend')}{lang('colon')}{code(resend_text)}\n"
-                   f"{lang('channel')}{lang('colon')}{code(channel_text)}\n")
+        result += f"{lang('channel')}{lang('colon')}{code(channel_text)}\n"
 
         # Others
-        for the_type in ["keyword", "ot", "rm", "welcome"]:
+        for the_type in ["hold", "keyword", "ot", "rm", "welcome"]:
             the_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get(the_type))
             result += f"{lang(the_type)}{lang('colon')}{code(the_text)}\n"
     except Exception as e:
