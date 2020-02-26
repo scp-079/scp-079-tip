@@ -440,6 +440,7 @@ def hold(client: Client, message: Message) -> bool:
 
         # Hold the message
         glovar.configs[gid]["hold"] = r_message.message_id
+        save("configs")
         thread(pin_chat_message, (client, gid, r_message.message_id))
 
         # Generate the text
