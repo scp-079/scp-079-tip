@@ -465,7 +465,7 @@ def keyword(client: Client, message: Message) -> bool:
                 action=lang("config_change"),
                 aid=aid,
                 config_type="keyword",
-                more=command_type
+                more="text"
             )
         else:
             # Config keyword message button
