@@ -25,7 +25,7 @@ from .. import glovar
 from .channel import share_data, share_regex_count
 from .etc import code, general_link, get_now, lang, thread
 from .file import save
-from .group import delete_message, leave_group, re_pin
+from .group import delete_message, leave_group
 from .telegram import get_admins, get_group_info, send_message
 from .tip import get_invite_link
 
