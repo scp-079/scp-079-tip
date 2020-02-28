@@ -306,6 +306,10 @@ def pin(client: Client, message: Message) -> bool:
         # Basic data
         gid = message.chat.id
 
+        # Check flood status
+        if gid in glovar.flooded_ids:
+            return True
+
         # Read config
         mid = glovar.configs[gid].get("hold")
 
