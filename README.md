@@ -4,9 +4,8 @@ This bot is used to send tips.
 
 ## How to use
 
-- See the [manual](https://telegra.ph/SCP-079-TIP-12-04)
-- See [this article](https://scp-079.org/tip/) to build a bot by yourself
-- [README](https://scp-079.org/readme/) of the SCP-079 Project
+- Read [the document](https://scp-079.org/tip/) to learn more
+- [README](https://scp-079.org/readme/) of the SCP-079 Project's demo bots
 - Discuss [group](https://t.me/SCP_079_CHAT)
 
 ## Requirements

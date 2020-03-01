@@ -23,7 +23,7 @@ from pyrogram import Client, Filters, Message
 from .. import glovar
 from ..functions.channel import get_debug_text
 from ..functions.etc import code, general_link, get_filename, get_forward_name, get_full_name, get_now, get_text
-from ..functions.etc import lang, mention_id, thread
+from ..functions.etc import lang, mention_id, t2t, thread
 from ..functions.file import save
 from ..functions.filters import authorized_group, channel_pinned, class_d, declared_message, exchange_channel
 from ..functions.filters import from_user, hide_channel, is_ban_text, is_bio_text, is_class_d_user, is_declared_message
@@ -36,7 +36,7 @@ from ..functions.receive import receive_config_reply, receive_config_show, recei
 from ..functions.receive import receive_help_welcome, receive_leave_approve, receive_regex, receive_refresh
 from ..functions.receive import receive_remove_bad, receive_remove_score, receive_remove_watch, receive_rollback
 from ..functions.receive import receive_text_data, receive_user_score, receive_watch_user
-from ..functions.telegram import get_admins, get_user_bio, pin_chat_message, send_message
+from ..functions.telegram import get_admins, get_user_full, pin_chat_message, send_message
 from ..functions.timers import backup_files, send_count
 from ..functions.tip import tip_keyword, tip_rm, tip_welcome
 
@@ -164,7 +164,12 @@ def check_join(client: Client, message: Message) -> bool:
                 return True
 
             # Check bio
-            bio = get_user_bio(client, uid, True, True)
+            user = get_user_full(client, uid)
+
+            if not user or not user.about:
+                bio = ""
+            else:
+                bio = t2t(user.about, True, True)
 
             if bio and (is_bio_text(bio) or is_wb_text(bio, False)):
                 return True
