@@ -496,6 +496,28 @@ def keyword(client: Client, message: Message) -> bool:
         text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
                 f"{lang('action')}{lang('colon')}{code(lang('action_keyword'))}\n")
 
+        # Show the config
+        if not command_type or (command_type and command_type in {"text", "button", "link"} and not command_context):
+            # Check command
+            if not command_type:
+                command_type = "text"
+
+            # Text prefix
+            text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                    f"{lang('action')}{lang('colon')}{code(lang('action_show'))}\n")
+
+            # Get the config
+            result = glovar.configs[gid].get(f"keyword_{command_type}") or lang("reason_none")
+            text += (f"{lang('result')}{lang('colon')}" + "-" * 24 + "\n\n"
+                     f"{code_block(result)}\n")
+
+            # Check the text
+            if len(text) > 4000:
+                text = code_block(result)
+
+            # Send the report message
+            return thread(send_report_message, (20, client, gid, text))
+
         # Check command format
         if not command_type or command_type not in {"text", "button", "link"} or not command_context:
             text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
@@ -650,6 +672,24 @@ def ot(client: Client, message: Message) -> bool:
         elif not command_type:
             return tip_ot(client, gid)
 
+        # Show the config
+        if command_type in {"text", "button", "link"} and not command_context:
+            # Text prefix
+            text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                    f"{lang('action')}{lang('colon')}{code(lang('action_show'))}\n")
+
+            # Get the config
+            result = glovar.configs[gid].get(f"ot_{command_type}") or lang("reason_none")
+            text += (f"{lang('result')}{lang('colon')}" + "-" * 24 + "\n\n"
+                     f"{code_block(result)}\n")
+
+            # Check the text
+            if len(text) > 4000:
+                text = code_block(result)
+
+            # Send the report message
+            return thread(send_report_message, (20, client, gid, text))
+
         # Text prefix
         text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
                 f"{lang('action')}{lang('colon')}{code(lang('action_ot'))}\n")
@@ -781,6 +821,24 @@ def rm(client: Client, message: Message) -> bool:
         elif not command_type:
             return tip_rm(client, gid, text)
 
+        # Show the config
+        if command_type in {"text", "button", "link"} and not command_context:
+            # Text prefix
+            text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                    f"{lang('action')}{lang('colon')}{code(lang('action_show'))}\n")
+
+            # Get the config
+            result = glovar.configs[gid].get(f"rm_{command_type}") or lang("reason_none")
+            text += (f"{lang('result')}{lang('colon')}" + "-" * 24 + "\n\n"
+                     f"{code_block(result)}\n")
+
+            # Check the text
+            if len(text) > 4000:
+                text = code_block(result)
+
+            # Send the report message
+            return thread(send_report_message, (20, client, gid, text))
+
         # Text prefix
         text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
                 f"{lang('action')}{lang('colon')}{code(lang('action_rm'))}\n")
@@ -909,6 +967,28 @@ def welcome(client: Client, message: Message) -> bool:
         # Text prefix
         text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
                 f"{lang('action')}{lang('colon')}{code(lang('action_welcome'))}\n")
+
+        # Show the config
+        if not command_type or (command_type and command_type in {"text", "button", "link"} and not command_context):
+            # Check command
+            if not command_type:
+                command_type = "text"
+
+            # Text prefix
+            text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                    f"{lang('action')}{lang('colon')}{code(lang('action_show'))}\n")
+
+            # Get the config
+            result = glovar.configs[gid].get(f"welcome_{command_type}") or lang("reason_none")
+            text += (f"{lang('result')}{lang('colon')}" + "-" * 24 + "\n\n"
+                     f"{code_block(result)}\n")
+
+            # Check the text
+            if len(text) > 4000:
+                text = code_block(result)
+
+            # Send the report message
+            return thread(send_report_message, (20, client, gid, text))
 
         # Check command format
         if not command_type or command_type not in {"text", "button", "link"} or not command_context:
