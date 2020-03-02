@@ -484,6 +484,8 @@ def is_keyword_text(message: Message) -> (int, str):
 
         # Find keyword in text
         for keyword in keywords:
+            key = ""
+
             if keyword.startswith("{{") and keyword.endswith("}}"):
                 key = keyword[2:-2]
 
@@ -498,7 +500,10 @@ def is_keyword_text(message: Message) -> (int, str):
             if message_text == keywords[keyword]:
                 continue
 
-            if is_class_c(None, message) and message_text == keywords[keyword]:
+            if key:
+                keyword = key
+
+            if is_class_c(None, message) and message_text == keyword:
                 return rid, keywords[keyword]
             else:
                 return 0, keywords[keyword]
