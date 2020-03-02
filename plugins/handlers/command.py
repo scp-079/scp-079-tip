@@ -1008,7 +1008,7 @@ def welcome(client: Client, message: Message) -> bool:
                 and ("$mention_name" not in command_context and "$mention_id" not in command_context)
                 and glovar.captcha_id in glovar.admin_ids[gid]
                 and glovar.configs[gid].get("captcha")):
-            text += f"{lang('tip')}{lang('colon')}{lang('tip_captcha')}\n"
+            text += f"{lang('tip')}{lang('colon')}{code(lang('tip_captcha'))}\n"
 
         send_debug(
             client=client,
