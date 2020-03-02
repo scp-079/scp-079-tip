@@ -457,11 +457,12 @@ def is_high_score_user(user: User) -> float:
     return 0.0
 
 
-def is_keyword_text(message: Message) -> str:
+def is_keyword_text(message: Message) -> (int, str):
     # Check if the text includes keywords
     try:
         # Basic data
         gid = message.chat.id
+        rid = message.reply_to_message and message.reply_to_message.message_id
 
         # Check config
         if not glovar.configs[gid].get("keyword") or not glovar.configs[gid].get("keyword_text"):
@@ -475,12 +476,17 @@ def is_keyword_text(message: Message) -> str:
 
         # Find keyword in text
         for keyword in keywords:
-            if keyword in message_text:
-                return keywords[keyword]
+            if keyword not in message_text:
+                continue
+
+            if is_class_c(None, message) and message_text == keyword:
+                return rid, keywords[keyword]
+            else:
+                return 0, keywords[keyword]
     except Exception as e:
         logger.warning(f"Is keyword text error: {e}", exc_info=True)
 
-    return ""
+    return 0, ""
 
 
 def is_nm_text(text: str) -> bool:

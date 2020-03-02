@@ -197,12 +197,17 @@ def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
     return result
 
 
-def tip_keyword(client: Client, message: Message, text: str) -> bool:
+def tip_keyword(client: Client, message: Message, text: str, mid: int) -> bool:
     # Send keyword tip
     try:
         # Basic data
         gid = message.chat.id
-        mid = message.message_id
+
+        if mid:
+            delete_message(client, gid, message.message_id)
+        else:
+            mid = message.message_id
+
         now = get_now()
 
         # Get the markup

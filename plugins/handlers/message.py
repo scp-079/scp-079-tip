@@ -110,10 +110,10 @@ def check(client: Client, message: Message) -> bool:
             return True
 
         # Check keyword
-        detection = is_keyword_text(message)
+        rid, detection = is_keyword_text(message)
 
         if detection:
-            return tip_keyword(client, message, detection)
+            return tip_keyword(client, message, detection, rid)
 
         # Check rm
         detection = is_rm_text(message)
