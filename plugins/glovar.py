@@ -315,6 +315,13 @@ lang: Dict[str, str] = {
     "description_rm": (zh_cn and "请勿开 rm 命令类玩笑") or "Please do not joke about the rm command",
     "description_welcome": (zh_cn and "你好，$mention_name") or "Hello $mention_name",
     "pinned_message": (zh_cn and "置顶消息") or "Pinned Message",
+    "tip": (zh_cn and "提示") or "Tip",
+    "tip_captcha": ((zh_cn and ("检测到 CAPTCHA 在群组中，并且您开启了过审欢迎，故入群欢迎自动调整到非回复模式。"
+                                "建议您的欢迎消息中包含 $mention_name 字段，以合理提及具体用户"))
+                    or ("Detected that CAPTCHA is in the group, and you have enabled the welcome after CAPTCHA mode, "
+                        "so the welcome will automatically adjust to alone mode. "
+                        "It is recommended that you include a $mention_name field in your welcome text "
+                        "to reasonably mention specific user")),
     "type": (zh_cn and "类别") or "Type",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",

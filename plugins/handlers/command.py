@@ -1003,6 +1003,12 @@ def welcome(client: Client, message: Message) -> bool:
         glovar.configs[gid][f"welcome_{command_type}"] = command_context
         save("configs")
         text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
+
+        if (("$mention_name" not in command_context and "$mention_id" not in command_context)
+                and glovar.captcha_id in glovar.admin_ids[gid]
+                and glovar.configs[gid].get("captcha")):
+            text += f"{lang('tip')}{lang('colon')}{lang('tip_captcha')}\n"
+
         send_debug(
             client=client,
             chat=message.chat,
