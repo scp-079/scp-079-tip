@@ -485,22 +485,20 @@ def is_keyword_text(message: Message) -> (int, str):
         # Find keyword in text
         for keyword in keywords:
             if keyword.startswith("{{") and keyword.endswith("}}"):
-                keyword = keyword[2:-2]
+                key = keyword[2:-2]
 
-                if not keyword:
+                if not key:
                     continue
 
-                if message_text != keyword:
+                if message_text != key:
                     continue
-
-                keyword = f"{{{keyword}}}"
             elif keyword not in message_text:
                 continue
 
             if message_text == keywords[keyword]:
                 continue
 
-            if is_class_c(None, message) and message_text in {keywords.get("keyword"), keywords.get(f"{{{keyword}}}")}:
+            if is_class_c(None, message) and message_text == keywords[keyword]:
                 return rid, keywords[keyword]
             else:
                 return 0, keywords[keyword]
