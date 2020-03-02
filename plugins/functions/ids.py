@@ -57,6 +57,9 @@ def init_group_id(gid: int) -> bool:
         if glovar.members.get(gid) is None:
             glovar.members[gid] = {}
 
+        if glovar.keyworded_ids.get(gid) is None:
+            glovar.keyworded_ids[gid] = {}
+
         if glovar.welcomed_ids.get(gid) is None:
             glovar.welcomed_ids[gid] = set()
 

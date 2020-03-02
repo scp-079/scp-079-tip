@@ -206,6 +206,15 @@ def tip_keyword(client: Client, message: Message, text: str, mid: int) -> bool:
         if mid:
             delete_message(client, gid, message.message_id)
         else:
+            uid = message.from_user.id
+
+            if text in glovar.keyworded_ids[gid].get(uid, set()):
+                return True
+
+            if not glovar.keyworded_ids[gid].get(uid, set()):
+                glovar.keyworded_ids[gid][uid] = set()
+
+            glovar.keyworded_ids[gid][uid].add(text)
             mid = message.message_id
 
         now = get_now()

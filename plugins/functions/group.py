@@ -121,6 +121,7 @@ def leave_group(client: Client, gid: int) -> bool:
 
         glovar.declared_message_ids.pop(gid, set())
         glovar.members.pop(gid, {})
+        glovar.keyworded_ids.pop(gid, {})
         glovar.welcomed_ids.pop(gid, set())
 
         return True

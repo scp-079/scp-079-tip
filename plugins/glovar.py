@@ -465,7 +465,14 @@ sender: str = "TIP"
 
 should_hide: bool = False
 
-version: str = "0.1.8"
+keyworded_ids: Dict[int, Dict[int, Set[str]]] = {}
+# keyworded_ids = {
+#     -10012345678: {
+#         12345678: {""}
+#     }
+# }
+
+version: str = "0.1.9"
 
 welcomed_ids: Dict[int, Set[int]] = {}
 # welcomed_ids = {

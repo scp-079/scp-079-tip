@@ -471,15 +471,32 @@ def is_keyword_text(message: Message) -> (int, str):
         # Get the message text
         message_text = get_text(message).lower()
 
+        # Check message text
+        if not message_text:
+            return 0, ""
+
         # Get keywords
         keywords = get_keywords(glovar.configs[gid]["keyword_text"])
 
         # Find keyword in text
         for keyword in keywords:
-            if keyword not in message_text:
+            if keyword.startswith("{{") and keyword.endswith("}}"):
+                keyword = keyword[2:-2]
+
+                if not keyword:
+                    continue
+
+                if message_text != keyword:
+                    continue
+
+                keyword = f"{{{keyword}}}"
+            elif keyword not in message_text:
                 continue
 
-            if is_class_c(None, message) and message_text == keyword:
+            if message_text == keywords[keyword]:
+                continue
+
+            if is_class_c(None, message) and message_text in {keywords.get("keyword"), keywords.get(f"{{{keyword}}}")}:
                 return rid, keywords[keyword]
             else:
                 return 0, keywords[keyword]
