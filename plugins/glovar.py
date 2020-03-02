@@ -379,7 +379,7 @@ default_config: Dict[str, Union[bool, int, str]] = {
     "keyword_text": "",
     "keyword_button": "",
     "keyword_link": "",
-    "ot": False,
+    "ot": True,
     "ot_text": lang["description_ot"],
     "ot_button": "",
     "ot_link": "",
