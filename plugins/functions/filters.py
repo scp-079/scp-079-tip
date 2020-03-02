@@ -501,9 +501,11 @@ def is_keyword_text(message: Message) -> (int, str):
                 continue
 
             if key:
-                keyword = key
+                word = key
+            else:
+                word = keyword
 
-            if is_class_c(None, message) and message_text == keyword:
+            if is_class_c(None, message) and message_text == word:
                 return rid, keywords[keyword]
             else:
                 return 0, keywords[keyword]
