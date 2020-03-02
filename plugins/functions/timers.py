@@ -88,11 +88,7 @@ def interval_min_01(client: Client) -> bool:
             if not glovar.configs[gid].get("channel"):
                 continue
 
-            get_invite_link(
-                client=client,
-                the_type="edit",
-                gid=gid
-            )
+            thread(get_invite_link, (client, "edit", gid), False)
 
         return True
     except Exception as e:
