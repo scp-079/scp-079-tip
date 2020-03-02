@@ -468,6 +468,10 @@ def is_keyword_text(message: Message) -> (int, str):
         if not glovar.configs[gid].get("keyword") or not glovar.configs[gid].get("keyword_text"):
             return 0, ""
 
+        # Check message:
+        if message.forward_from and message.forward_from.is_self:
+            return 0, ""
+
         # Get the message text
         message_text = get_text(message).lower()
 
