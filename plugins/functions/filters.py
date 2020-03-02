@@ -466,7 +466,7 @@ def is_keyword_text(message: Message) -> (int, str):
 
         # Check config
         if not glovar.configs[gid].get("keyword") or not glovar.configs[gid].get("keyword_text"):
-            return ""
+            return 0, ""
 
         # Get the message text
         message_text = get_text(message).lower()
