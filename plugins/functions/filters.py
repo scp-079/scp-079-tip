@@ -507,6 +507,8 @@ def is_keyword_text(message: Message) -> (int, str):
 
             if is_class_c(None, message) and message_text == word:
                 return rid, keywords[keyword]
+            elif is_class_c(None, message):
+                return 0, ""
             else:
                 return 0, keywords[keyword]
     except Exception as e:
