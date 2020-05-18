@@ -60,6 +60,8 @@ def receive_add_bad(data: dict) -> bool:
 
 def receive_captcha_flood(data: dict) -> bool:
     # Receive captcha flood status
+    result = False
+
     try:
         # Basic data
         gid = data["group_id"]
@@ -73,11 +75,11 @@ def receive_captcha_flood(data: dict) -> bool:
 
         save("flooded_ids")
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Receive captcha flood error: {e}", exc_info=True)
 
-    return False
+    return result
 
 
 def receive_help_welcome(client: Client, data: dict) -> bool:

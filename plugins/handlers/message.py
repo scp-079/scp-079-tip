@@ -143,11 +143,15 @@ def check_join(client: Client, message: Message) -> bool:
 
         # Check config
         if not glovar.configs[gid].get("welcome"):
-            return True
+            return False
 
         # Word with CAPTCHA
         if glovar.configs[gid].get("captcha") and glovar.captcha_id in glovar.admin_ids[gid]:
-            return True
+            return False
+
+        # Check group status
+        if gid in glovar.flooded_ids:
+            return False
 
         for new in message.new_chat_members:
             # Basic data
