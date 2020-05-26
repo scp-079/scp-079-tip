@@ -25,7 +25,7 @@ from ..functions.channel import get_debug_text
 from ..functions.etc import code, general_link, get_filename, get_forward_name, get_full_name, get_now, get_text
 from ..functions.etc import lang, mention_id, t2t, thread
 from ..functions.file import save
-from ..functions.filters import authorized_group, channel_pinned, class_d, declared_message, exchange_channel
+from ..functions.filters import aio, authorized_group, channel_pinned, class_d, declared_message, exchange_channel
 from ..functions.filters import from_user, hide_channel, is_ban_text, is_bio_text, is_class_d_user, is_declared_message
 from ..functions.filters import is_high_score_user, is_keyword_text, is_nm_text, is_regex_text, is_rm_text
 from ..functions.filters import is_watch_user, is_wb_text, new_group, test_group
@@ -338,7 +338,7 @@ def pin(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message((Filters.incoming or glovar.aio) & Filters.channel
+@Client.on_message((Filters.incoming | aio) & Filters.channel
                    & ~Filters.command(glovar.all_commands, glovar.prefix)
                    & exchange_channel)
 def process_data(client: Client, message: Message) -> bool:
