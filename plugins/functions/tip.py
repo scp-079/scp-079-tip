@@ -175,20 +175,20 @@ def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
             text = text_list[i]
             link = link_list[i]
 
-            if length <= 6 and (len(text_list) % 3) and not (len(text_list) % 2) and len(markup_list[-1]) == 2:
+            if length <= 6 and (length % 3) and not (length % 2) and len(markup_list[-1]) == 2:
                 markup_list.append([])
 
             elif len(markup_list[-1]) == 3:
                 markup_list.append([])
 
             elif (len(markup_list[-1]) == 2
-                    and all(get_length(m.text) <= 12 for m in markup_list[-1])
-                    and get_length(text) <= 12):
+                  and get_length(text) <= 12
+                  and all(get_length(m.text) <= 12 for m in markup_list[-1])):
                 pass
 
             elif (len(markup_list[-1]) == 1
-                    and len(markup_list[-1][-1].text) <= 18
-                    and get_length(text) <= 18):
+                  and get_length(text) <= 18
+                  and get_length(markup_list[-1][-1].text) <= 18):
                 pass
 
             elif markup_list[-1]:
