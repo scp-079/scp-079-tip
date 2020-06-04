@@ -178,38 +178,26 @@ def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
             if length <= 6 and (len(text_list) % 3) and not (len(text_list) % 2) and len(markup_list[-1]) == 2:
                 markup_list.append([])
 
-            if len(markup_list[-1]) == 3:
+            elif len(markup_list[-1]) == 3:
                 markup_list.append([])
 
-            if (len(markup_list[-1]) == 2
+            elif (len(markup_list[-1]) == 2
                     and all(get_length(m.text) <= 12 for m in markup_list[-1])
                     and get_length(text) <= 12):
-                markup_list[-1].append(
-                    InlineKeyboardButton(
-                        text=text,
-                        url=link_list[i]
-                    )
-                )
-                continue
+                pass
 
-            if (len(markup_list[-1]) == 1
+            elif (len(markup_list[-1]) == 1
                     and len(markup_list[-1][-1].text) <= 18
                     and get_length(text) <= 18):
-                markup_list[-1].append(
-                    InlineKeyboardButton(
-                        text=text,
-                        url=link
-                    )
-                )
-                continue
+                pass
 
-            if markup_list[-1]:
+            elif markup_list[-1]:
                 markup_list.append([])
 
             markup_list[-1].append(
                 InlineKeyboardButton(
-                    text=text_list[i],
-                    url=link_list[i]
+                    text=text,
+                    url=link
                 )
             )
 
