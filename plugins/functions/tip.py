@@ -170,7 +170,7 @@ def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
         if len(text_list) != len(link_list) or len(text_list) > 6:
             return None
 
-        if len(text_list) == 4:
+        if len(text_list) in {2, 4}:
             limit = 2
             limit_length = 18
         else:
