@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import Optional
+from typing import List, Optional
 
 from pyrogram import ChatMember, Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
@@ -156,11 +156,9 @@ def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
     result = None
 
     try:
-        # Read the config
         text = glovar.configs[gid].get(f"{the_type}_button")
         link = glovar.configs[gid].get(f"{the_type}_link")
 
-        # Check the config
         if not text or not link:
             return None
 
@@ -170,22 +168,42 @@ def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
         if len(text_list) != len(link_list) or len(text_list) > 6:
             return None
 
-        if len(text_list) in {2, 4}:
-            limit = 2
-            limit_length = 18
-        else:
-            limit = 3
-            limit_length = 12
-
-        # Generate
-        markup_list = [[]]
+        length = len(text_list)
+        markup_list: List[List[InlineKeyboardButton]] = [[]]
 
         for i in range(len(text_list)):
-            if (markup_list[-1] != []
-                    and (False
-                         or get_length(text_list[i]) > limit_length
-                         or get_length(markup_list[-1][-1].text) > limit_length
-                         or len(markup_list[-1]) == limit)):
+            text = text_list[i]
+            link = link_list[i]
+
+            if length <= 6 and (len(text_list) % 3) and not (len(text_list) % 2) and len(markup_list[-1]) == 2:
+                markup_list.append([])
+
+            if len(markup_list[-1]) == 3:
+                markup_list.append([])
+
+            if (len(markup_list[-1]) == 2
+                    and all(get_length(m.text) <= 12 for m in markup_list[-1])
+                    and get_length(text) <= 12):
+                markup_list[-1].append(
+                    InlineKeyboardButton(
+                        text=text,
+                        url=link_list[i]
+                    )
+                )
+                continue
+
+            if (len(markup_list[-1]) == 1
+                    and len(markup_list[-1][-1].text) <= 18
+                    and get_length(text) <= 18):
+                markup_list[-1].append(
+                    InlineKeyboardButton(
+                        text=text,
+                        url=link
+                    )
+                )
+                continue
+
+            if markup_list[-1]:
                 markup_list.append([])
 
             markup_list[-1].append(
