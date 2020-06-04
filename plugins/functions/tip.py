@@ -154,6 +154,7 @@ def get_keywords(text: str) -> dict:
 def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
     # Get the group button config
     result = None
+
     try:
         # Read the config
         text = glovar.configs[gid].get(f"{the_type}_button")
