@@ -22,7 +22,7 @@ from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from ..functions.channel import get_debug_text
-from ..functions.etc import code, general_link, get_filename, get_forward_name, get_full_name, get_now, get_text
+from ..functions.etc import code, delay, general_link, get_filename, get_forward_name, get_full_name, get_now, get_text
 from ..functions.etc import lang, mention_id, t2t, thread
 from ..functions.file import save
 from ..functions.filters import aio, authorized_group, channel_pinned, class_d, declared_message, exchange_channel
@@ -310,32 +310,35 @@ def init_group(client: Client, message: Message) -> bool:
                    & channel_pinned & ~declared_message)
 def pin(client: Client, message: Message) -> bool:
     # Pin the held message
+    result = False
+
     glovar.locks["message"].acquire()
+
     try:
         # Basic data
         gid = message.chat.id
 
         # Check flood status
         if gid in glovar.flooded_ids:
-            return True
+            return False
 
         # Read config
         mid = glovar.configs[gid].get("hold")
 
         # Check config
         if not mid:
-            return True
+            return False
 
         # Pin the message
-        thread(pin_chat_message, (client, gid, mid))
+        delay(3, pin_chat_message, [client, gid, mid])
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Pin error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
 
-    return False
+    return result
 
 
 @Client.on_message((Filters.incoming | aio) & Filters.channel
