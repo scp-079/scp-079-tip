@@ -61,7 +61,10 @@ def backup_files(client: Client) -> bool:
 
 def interval_min_01(client: Client) -> bool:
     # Execute every minute
+    result = True
+
     glovar.locks["message"].acquire()
+
     try:
         # Basic data
         now = get_now()
@@ -88,20 +91,23 @@ def interval_min_01(client: Client) -> bool:
             if not glovar.configs[gid].get("channel"):
                 continue
 
-            thread(get_invite_link, (client, "edit", gid), False)
+            thread(get_invite_link, (client, "edit", gid), daemon=False)
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Interval min 01 error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
 
-    return False
+    return result
 
 
 def resend_link(client: Client) -> bool:
     # Resend the invite link
+    result = False
+
     glovar.locks["message"].acquire()
+
     try:
         # Proceed
         for gid in list(glovar.configs):
@@ -120,7 +126,7 @@ def resend_link(client: Client) -> bool:
     finally:
         glovar.locks["message"].release()
 
-    return False
+    return result
 
 
 def reset_data(client: Client) -> bool:

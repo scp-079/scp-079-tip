@@ -34,7 +34,10 @@ logger = logging.getLogger(__name__)
 
 def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = False, reason: str = "") -> bool:
     # Get a new invite link
+    result = False
+
     glovar.locks["channel"].acquire()
+
     try:
         # Basic data
         now = get_now()
@@ -104,17 +107,20 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
         # Send new message
         result = send_message(client, cid, text, None, markup)
 
-        if result:
-            glovar.message_ids[gid]["channel"] = (result.message_id, now)
-            save("message_ids")
-            mid and delete_message(client, cid, mid)
-            return True
+        if not result:
+            return False
+
+        glovar.message_ids[gid]["channel"] = (result.message_id, now)
+        save("message_ids")
+        mid and delete_message(client, cid, mid)
+
+        result = True
     except Exception as e:
         logger.warning(f"New invite link error: {e}", exc_info=True)
     finally:
         glovar.locks["channel"].release()
 
-    return False
+    return result
 
 
 def get_keywords(text: str) -> dict:
