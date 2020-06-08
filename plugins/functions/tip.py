@@ -53,7 +53,7 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
             return False
 
         # Check the link time
-        if not manual and now - time < glovar.time_channel:
+        if not manual and the_type != "send" and now - time < glovar.time_channel:
             return False
 
         # Generate link
