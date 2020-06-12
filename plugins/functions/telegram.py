@@ -157,20 +157,22 @@ def export_chat_invite_link(client: Client, cid: int) -> Union[bool, str, None]:
     return result
 
 
+@retry
 def get_admins(client: Client, cid: int) -> Union[bool, List[ChatMember], None]:
     # Get a group's admins
     result = None
+
     try:
-        flood_wait = True
-        while flood_wait:
-            flood_wait = False
-            try:
-                result = client.get_chat_members(chat_id=cid, filter="administrators")
-            except FloodWait as e:
-                flood_wait = True
-                wait_flood(e)
-            except (ChannelInvalid, ChannelPrivate, PeerIdInvalid):
-                return False
+        chat = get_chat(client, cid)
+
+        if isinstance(chat, Chat) and not chat.members_count:
+            return False
+
+        result = client.get_chat_members(chat_id=cid, filter="administrators")
+    except FloodWait as e:
+        raise e
+    except (ChannelInvalid, ChannelPrivate, PeerIdInvalid):
+        return False
     except Exception as e:
         logger.warning(f"Get admins in {cid} error: {e}", exc_info=True)
 
