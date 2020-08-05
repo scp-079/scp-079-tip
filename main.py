@@ -25,16 +25,25 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from pyrogram import Client
 
 from plugins import glovar
-from plugins.functions.timers import backup_files, interval_min_01
+from plugins.functions.timers import backup_files, interval_min_01, log_rotation
 from plugins.functions.timers import resend_link, reset_data, send_count, update_admins, update_status
+from plugins.start import init, renew
 
 # Enable logging
 logger = logging.getLogger(__name__)
 
+# Init
+init()
+
+# Renew session
+renew()
+
 # Config session
 app = Client(
     session_name="bot",
-    bot_token=glovar.bot_token
+    bot_token=glovar.bot_token,
+    workdir=glovar.SESSION_DIR_PATH,
+    config_file=glovar.CONFIG_PATH
 )
 app.start()
 
@@ -50,6 +59,7 @@ scheduler.add_job(backup_files, "cron", [app], hour=20)
 scheduler.add_job(send_count, "cron", [app], hour=21)
 scheduler.add_job(reset_data, "cron", [app], day=glovar.date_reset, hour=22)
 scheduler.add_job(update_admins, "cron", [app], hour=22, minute=30)
+scheduler.add_job(log_rotation, "cron", hour=23, minute=59)
 scheduler.start()
 
 # Hold

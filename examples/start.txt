@@ -1,0 +1,6 @@
+Here's a tip
+
+++++++
+
+Document || https://scp-079.org/tip/
+Source Code || https://github.com/scp-079/scp-079-tip/
