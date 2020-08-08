@@ -1,1 +1,160 @@
 # English
+
+# Admin
+admin: Admin
+admin_group: Group Admin
+admin_project: Project Admin
+
+# Basic
+action: Action
+clear: Clear Data
+description: Description
+disabled: Disabled
+enabled: Enabled
+name: Name
+reason: Reason
+reset: Reset Data
+result: Result
+rollback: Rollback
+score: Score
+status_failed: Failed
+status_succeeded: Succeeded
+type: Type
+
+# Command
+command_date: 命令发送时间
+command_flood: 命令发送频繁，请稍后重试
+command_lack: Lack of Parameter
+command_para: Incorrect Command Parameter
+command_type: Incorrect Command Type
+command_usage: Incorrect Usage
+
+# Config
+config: Settings
+config_button: Press the Button to Config
+config_change: Change Config
+config_create: Create Config Session
+config_go: Go to Config
+config_locked: Config is Locked
+config_show: Show Config
+config_updated: Updated
+custom: Custom
+default: Default
+captcha: Welcome After CAPTCHA
+alone: Alone Mode
+clean: Clean Mode
+resend: Resend Invite Link Everyday
+channel: Entry Channel
+hold: Hold the Pinned Message
+keyword: Custom Keywords
+ot: OT Warning by Members
+rm: RM Jokes Warning
+welcome: Welcome Message
+
+# Debug
+triggered_by: Triggered By
+
+# Emergency
+auto_fix: Auto Fix
+emergency_channel: Emergency Channel
+exchange_invalid: Exchange Channel Invalid
+issue: Issue
+protocol_1: Initiate Protocol 1
+transfer_channel: Transfer Channel
+
+# Group
+group_id: Group ID
+group_name: Group Name
+inviter: Inviter
+leave_approve: Approve to Leave the Group
+leave_auto: Leave automatically
+reason_admin: Failed to Fetch Admin List
+reason_leave: Not Admin in Group
+reason_none: No Data
+reason_permissions: Missing Permissions
+reason_unauthorized: Unauthorized
+reason_user: Missing USER
+refresh: Refresh Admin Lists
+status_joined: Joined the Group
+status_left: Left the Group
+
+# More
+privacy: Not Forwarded Due to Privacy Reason
+cannot_forward: The Message Cannot be Forwarded to Channel
+
+# Message Types
+gam: Game
+ser: Service
+
+# Record
+contact: Contact Info
+from_name: Forward Name
+level: Level
+project_origin: Original Project
+message_freq: Message Frequency
+message_game: Game Short Name
+message_lang: Message Language
+message_len: Message Length
+message_type: Message Type
+more: Extra Info
+rule: Rule
+status: Status
+user_bio: User Bio
+user_id: User ID
+user_name: User Name
+user_score: User Score
+
+# Special
+action_bind: Bind Channel
+action_channel: Adjust Invite Text
+action_close: Close Group Channel
+action_hold: Hold the Pinned Message
+action_keyword: Adjust Keywords
+action_open: Open Group Channel
+action_ot: Adjust OT Tip
+action_resend: Resend Group Link Message
+action_rm: Adjust RM Tip
+action_show: Show the Config Text
+action_welcome: Adjust Welcome Tip
+button_channel: Click to Join
+description_channel: Please click the button below to join the chat group
+description_close: According to the group's settings, the group link will not be provided
+  at this time. Please try again later
+description_ot: OT Warning
+description_rm: Please do not joke about the rm command
+description_welcome: Hello $mention_name
+pinned_message: Pinned Message
+tip: Tip
+tip_captcha: Detected that CAPTCHA is in the group, and you have enabled the welcome
+  after CAPTCHA mode, so the welcome will automatically adjust to alone mode. It is
+  recommended that you include a $mention_name field in your welcome text to reasonably
+  mention specific user
+
+# Symbol
+colon: ": "
+
+# Terminate
+auto_ban: Auto Ban
+auto_delete: Auto Delete
+auto_kick: Auto Kick
+auto_restrict: Auto Restrict
+global_delete: Global Delete
+name_ban: Ban by Name
+name_examine: Name Examination
+name_recheck: Name Recheck
+op_downgrade: Operation Downgrade
+op_upgrade: Operation Upgrade
+rule_custom: Custom Rule
+rule_global: Global Rule
+score_ban: Ban by Score
+score_user: High Score
+watch_ban: Watch Ban
+watch_delete: Watch Delete
+watch_user: Watched User
+
+# Version
+git_change: 本地修改
+git_date: 提交时间
+git_hash: 哈希值
+project: 项目编号
+version: 版本
