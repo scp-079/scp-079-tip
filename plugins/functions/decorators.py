@@ -58,6 +58,7 @@ def threaded(daemon: bool = True):
 
 
 def timeout(seconds: float = 10):
+    # Set timeout
     def decorator(func):
         def _handle_timeout(_, __):
             raise TimeoutError
