@@ -254,3 +254,23 @@ def share_regex_count(client: Client, word_type: str) -> bool:
         logger.warning(f"Share regex update error: {e}", exc_info=True)
 
     return result
+
+
+def share_regex_remove(client: Client, word_type: str, word: str) -> bool:
+    # Use this function to share regex remove request to REGEX
+    result = False
+
+    try:
+        file = data_to_file(word)
+        result = share_data(
+            client=client,
+            receivers=["REGEX"],
+            action="regex",
+            action_type="remove",
+            data=f"{word_type}_words",
+            file=file
+        )
+    except Exception as e:
+        logger.warning(f"Share regex remove error: {e}", exc_info=True)
+
+    return result
