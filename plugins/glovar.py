@@ -127,7 +127,7 @@ time_welcome: int = 0
 try:
     not exists(CONFIG_PATH) and raise_error(f"{CONFIG_PATH} does not exists")
     config = RawConfigParser()
-    config.read("config.ini")
+    config.read(CONFIG_PATH)
 
     # [basic]
     bot_token = config.get("basic", "bot_token", fallback=bot_token)
