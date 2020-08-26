@@ -563,16 +563,16 @@ file_list += [f"{f}_words" for f in regex]
 for file in file_list:
     try:
         try:
-            if exists(f"data/{file}") or exists(f"data/.{file}"):
-                with open(f"data/{file}", "rb") as f:
+            if exists(f"{PICKLE_PATH}/{file}") or exists(f"{PICKLE_BACKUP_PATH}/{file}"):
+                with open(f"{PICKLE_PATH}/{file}", "rb") as f:
                     locals()[f"{file}"] = pickle.load(f)
             else:
-                with open(f"data/{file}", "wb") as f:
+                with open(f"{PICKLE_PATH}/{file}", "wb") as f:
                     pickle.dump(eval(f"{file}"), f)
         except Exception as e:
             logger.error(f"Load data {file} error: {e}", exc_info=True)
 
-            with open(f"data/.{file}", "rb") as f:
+            with open(f"{PICKLE_BACKUP_PATH}/{file}", "rb") as f:
                 locals()[f"{file}"] = pickle.load(f)
     except Exception as e:
         logger.critical(f"Load data {file} backup error: {e}", exc_info=True)
