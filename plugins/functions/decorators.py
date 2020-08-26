@@ -18,6 +18,7 @@
 
 import logging
 from functools import wraps
+from signal import alarm, ITIMER_REAL, setitimer, SIGALRM, signal
 
 from pyrogram.errors import FloodWait
 
@@ -53,4 +54,21 @@ def threaded(daemon: bool = True):
         def wrapper(*args, **kwargs):
             return thread(func, args, kwargs, daemon)
         return wrapper
+    return decorator
+
+
+def timeout(seconds: float = 10):
+    def decorator(func):
+        def _handle_timeout(_, __):
+            raise TimeoutError
+
+        def wrapper(*args, **kwargs):
+            signal(SIGALRM, _handle_timeout)
+            setitimer(ITIMER_REAL, seconds)
+            try:
+                result = func(*args, **kwargs)
+            finally:
+                alarm(0)
+            return result
+        return wraps(func)(wrapper)
     return decorator
