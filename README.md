@@ -31,6 +31,7 @@ This bot is used to send tips.
         - `group.py` : Functions about group
         - `ids.py` : Modify id lists
         - `markup.py` : Get reply markup
+        - `program.py` : Functions about program
         - `receive.py` : Receive data from exchange channel
         - `telegram.py` : Some telegram functions
         - `timers.py` : Timer functions

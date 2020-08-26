@@ -17,14 +17,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from subprocess import run
 from time import sleep
 
 from pyrogram import Client
 
 from .. import glovar
 from .channel import share_data, share_regex_count
-from .etc import code, general_link, get_now, lang, thread
-from .file import save
+from .etc import code, general_link, get_now, get_readable_time, lang, thread
+from .file import move_file, save
 from .group import delete_message, leave_group
 from .telegram import get_admins, get_group_info, send_message
 from .tip import get_invite_link
@@ -98,6 +99,25 @@ def interval_min_01(client: Client) -> bool:
         logger.warning(f"Interval min 01 error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
+
+    return result
+
+
+def log_rotation() -> bool:
+    # Log rotation
+    result = False
+
+    try:
+        move_file(f"{glovar.LOG_PATH}/log", f"{glovar.LOG_PATH}/log-{get_readable_time(the_format='%Y%m%d')}")
+
+        with open(f"{glovar.LOG_PATH}/log", "w", encoding="utf-8") as f:
+            f.write("")
+
+        run(f"find {glovar.LOG_PATH}/log-* -mtime +30 -delete", shell=True)
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Log rotation error: {e}", exc_info=True)
 
     return result
 

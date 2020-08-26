@@ -26,6 +26,7 @@ command_date: 命令发送时间
 command_flood: 命令发送频繁，请稍后重试
 command_lack: 命令参数缺失
 command_para: 命令参数有误
+command_received: 已接收到指令
 command_type: 命令类别有误
 command_usage: 用法有误
 
@@ -77,6 +78,11 @@ reason_user: 缺失 USER
 refresh: 刷新群管列表
 status_joined: 已加入群组
 status_left: 已退出群组
+
+# Program
+program_restart: 重启程序
+program_update: 更新程序
+program_updating: 程序正在执行更新
 
 # More
 privacy: 可能涉及隐私而未转发

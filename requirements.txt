@@ -1,5 +1,5 @@
 APScheduler==3.6.3
-cffi==1.14.1
+cffi==1.14.2
 cryptography==3.0
 emoji==0.6.0
 OpenCC==1.1.1.post1
@@ -9,6 +9,7 @@ pycparser==2.20
 Pyrogram==0.18.0
 PySocks==1.7.1
 pytz==2020.1
+PyYAML==5.3.1
 six==1.15.0
 TgCrypto==1.2.1
 tzlocal==2.1

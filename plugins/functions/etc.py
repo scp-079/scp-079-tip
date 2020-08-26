@@ -22,6 +22,7 @@ from copy import deepcopy
 from html import escape
 from json import dumps
 from random import choice, uniform
+from re import sub
 from string import ascii_letters, digits
 from threading import Thread, Timer
 from time import localtime, sleep, strftime, time
@@ -29,7 +30,7 @@ from typing import Any, Callable, Optional, Union
 from unicodedata import normalize
 
 from cryptography.fernet import Fernet
-from opencc import convert
+from opencc import OpenCC
 from pyrogram import Message, User
 from pyrogram.errors import FloodWait
 
@@ -37,6 +38,9 @@ from .. import glovar
 
 # Enable logging
 logger = logging.getLogger(__name__)
+
+# Init Opencc
+converter = OpenCC(config="t2s.json")
 
 
 def bold(text: Any) -> str:
@@ -356,8 +360,9 @@ def get_text(message: Message, normal: bool = False, printable: bool = False) ->
 def lang(text: str) -> str:
     # Get the text
     result = ""
+
     try:
-        result = glovar.lang.get(text, text)
+        result = glovar.lang_dict.get(text, text)
     except Exception as e:
         logger.warning(f"Lang error: {e}", exc_info=True)
 
@@ -410,27 +415,32 @@ def random_str(i: int) -> str:
     return text
 
 
-def t2t(text: str, normal: bool, printable: bool) -> str:
+def t2t(text: str, normal: bool, printable: bool, pure: bool = False) -> str:
     # Convert the string, text to text
+    result = text
+
     try:
-        if not text:
+        if not result:
             return ""
 
-        if normal:
+        if glovar.normalize and normal:
             for special in ["spc", "spe"]:
-                text = "".join(eval(f"glovar.{special}_dict").get(t, t) for t in text)
+                result = "".join(eval(f"glovar.{special}_dict").get(t, t) for t in result)
 
-            text = normalize("NFKC", text)
+            result = normalize("NFKC", result)
+
+        if glovar.normalize and normal and "Hans" in glovar.lang:
+            result = converter.convert(result)
 
         if printable:
-            text = "".join(t for t in text if t.isprintable() or t in {"\n", "\r", "\t"})
+            result = "".join(t for t in result if t.isprintable() or t in {"\n", "\r", "\t"})
 
-        if normal and glovar.zh_cn:
-            text = convert(text, config="t2s.json")
+        if pure:
+            result = sub(r"""[^\da-zA-Z一-龥.,:'"?!~;()。，？！～@“”]""", "", result)
     except Exception as e:
         logger.warning(f"T2T error: {e}", exc_info=True)
 
-    return text
+    return result
 
 
 def thread(target: Callable, args: tuple, kwargs: dict = None, daemon: bool = True) -> bool:
@@ -449,11 +459,11 @@ def thread(target: Callable, args: tuple, kwargs: dict = None, daemon: bool = Tr
 
 def wait_flood(e: FloodWait) -> bool:
     # Wait flood secs
-    try:
-        sleep(e.x + uniform(0.5, 1.0))
+    result = False
 
-        return True
+    try:
+        result = sleep(e.x + uniform(0.5, 1.0)) or True
     except Exception as e:
         logger.warning(f"Wait flood error: {e}", exc_info=True)
 
-    return False
+    return result
