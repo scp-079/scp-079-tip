@@ -240,6 +240,24 @@ def version_0_2_0() -> bool:
         with open("data/pickle/configs", "wb") as f:
             pickle.dump(configs, f)
 
+        # Create pinned_ids
+        pinned_ids = {}
+
+        for gid in list(configs):
+            pinned_ids[gid] = 0
+
+            if configs[gid].get("hold") and isinstance(int, configs[gid]["hold"]):
+                pinned_ids[gid] = configs[gid]["hold"]
+                configs[gid]["hold"] = True
+            elif not isinstance(bool, configs[gid]["hold"]):
+                configs[gid]["hold"] = False
+
+        with open("data/pickle/pinned_ids", "wb") as f:
+            pickle.dump(pinned_ids, f)
+
+        with open("data/pickle/configs", "wb") as f:
+            pickle.dump(configs, f)
+
         # Create keywords data
         keywords = {}
 
@@ -278,6 +296,12 @@ def version_0_2_0() -> bool:
 
         with open("data/pickle/configs", "wb") as f:
             pickle.dump(configs, f)
+
+        # Create ots data
+
+        # Create rms data
+
+        # Create welcomes data
 
         print("Version 0.2.0 updated!")
 

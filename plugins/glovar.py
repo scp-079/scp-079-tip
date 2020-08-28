@@ -484,6 +484,13 @@ bad_ids: Dict[str, Set[int]] = {
 flooded_ids: Set[int] = set()
 # flooded_ids = {-10012345678}
 
+group_ids: Dict[str, int] = {
+    "captcha": 0,
+    "manage": 0,
+    "regex": 0,
+    "ticket": 0
+}
+
 lack_group_ids: Set[int] = set()
 # lack_group_ids = {-10012345678}
 
@@ -657,8 +664,8 @@ for word_type in regex:
 # }
 
 # Load data
-file_list: List[str] = ["admin_ids", "bad_ids", "flooded_ids", "lack_group_ids", "left_group_ids", "message_ids",
-                        "pinned_ids", "trust_ids", "user_ids", "watch_ids", "white_ids",
+file_list: List[str] = ["admin_ids", "bad_ids", "flooded_ids", "group_ids", "lack_group_ids", "left_group_ids",
+                        "message_ids", "pinned_ids", "trust_ids", "user_ids", "watch_ids", "white_ids",
                         "channels", "configs", "current", "keywords", "ots", "rms", "starts", "token", "welcomes"]
 file_list += [f"{f}_words" for f in regex]
 
