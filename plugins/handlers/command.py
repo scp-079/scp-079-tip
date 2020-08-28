@@ -21,7 +21,8 @@ import re
 from copy import deepcopy
 from subprocess import run, PIPE
 
-from pyrogram import Client, Filters, Message
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
 from .. import glovar
 from ..functions.channel import get_debug_text, send_debug, share_data
@@ -37,7 +38,7 @@ from ..functions.tip import get_invite_link, get_keywords, tip_ot, tip_rm, tip_w
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["channel"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["channel"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def channel(client: Client, message: Message) -> bool:
@@ -53,7 +54,7 @@ def channel(client: Client, message: Message) -> bool:
     glovar.locks["message"].acquire()
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         aid = message.from_user.id
@@ -157,7 +158,7 @@ def channel(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["close"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["close"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def close_channel(client: Client, message: Message) -> bool:
@@ -173,7 +174,7 @@ def close_channel(client: Client, message: Message) -> bool:
     glovar.locks["message"].acquire()
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         aid = message.from_user.id
@@ -223,7 +224,7 @@ def close_channel(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["config"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["config"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def config(client: Client, message: Message) -> bool:
@@ -238,7 +239,7 @@ def config(client: Client, message: Message) -> bool:
 
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         # Check command format
@@ -299,7 +300,7 @@ def config(client: Client, message: Message) -> bool:
     except Exception as e:
         logger.warning(f"Config error: {e}", exc_info=True)
     finally:
-        if is_class_c(None, message):
+        if is_class_c(None, None, message):
             delay(3, delete_message, [client, gid, mid])
         else:
             delete_message(client, gid, mid)
@@ -307,8 +308,8 @@ def config(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group
-                   & Filters.command([f"config_{glovar.sender.lower()}"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group
+                   & filters.command([f"config_{glovar.sender.lower()}"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def config_directly(client: Client, message: Message) -> bool:
@@ -323,7 +324,7 @@ def config_directly(client: Client, message: Message) -> bool:
 
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         aid = message.from_user.id
@@ -406,7 +407,7 @@ def config_directly(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["hold"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["hold"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def hold(client: Client, message: Message) -> bool:
@@ -422,7 +423,7 @@ def hold(client: Client, message: Message) -> bool:
     glovar.locks["message"].acquire()
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         aid = message.from_user.id
@@ -471,7 +472,7 @@ def hold(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["keyword"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["keyword"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def keyword(client: Client, message: Message) -> bool:
@@ -487,7 +488,7 @@ def keyword(client: Client, message: Message) -> bool:
     glovar.locks["message"].acquire()
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         aid = message.from_user.id
@@ -582,7 +583,7 @@ def keyword(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["open"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["open"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def open_channel(client: Client, message: Message) -> bool:
@@ -598,7 +599,7 @@ def open_channel(client: Client, message: Message) -> bool:
     glovar.locks["message"].acquire()
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         aid = message.from_user.id
@@ -644,7 +645,7 @@ def open_channel(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["ot"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["ot"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def ot(client: Client, message: Message) -> bool:
@@ -660,7 +661,7 @@ def ot(client: Client, message: Message) -> bool:
     glovar.locks["message"].acquire()
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         aid = message.from_user.id
@@ -729,7 +730,7 @@ def ot(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["resend"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["resend"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def resend(client: Client, message: Message) -> bool:
@@ -745,7 +746,7 @@ def resend(client: Client, message: Message) -> bool:
     glovar.locks["message"].acquire()
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         aid = message.from_user.id
@@ -791,7 +792,7 @@ def resend(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["rm"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["rm"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def rm(client: Client, message: Message) -> bool:
@@ -807,7 +808,7 @@ def rm(client: Client, message: Message) -> bool:
     glovar.locks["message"].acquire()
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         aid = message.from_user.id
@@ -878,7 +879,7 @@ def rm(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["show"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["show"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def show(client: Client, message: Message) -> bool:
@@ -894,7 +895,7 @@ def show(client: Client, message: Message) -> bool:
     glovar.locks["message"].acquire()
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         aid = message.from_user.id
@@ -938,7 +939,7 @@ def show(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["welcome"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["welcome"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def welcome(client: Client, message: Message) -> bool:
@@ -954,7 +955,7 @@ def welcome(client: Client, message: Message) -> bool:
     glovar.locks["message"].acquire()
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         aid = message.from_user.id
@@ -1033,7 +1034,7 @@ def welcome(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["version"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["version"], glovar.prefix)
                    & test_group
                    & from_user)
 def version(client: Client, message: Message) -> bool:

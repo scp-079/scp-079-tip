@@ -19,7 +19,8 @@
 import logging
 from typing import List, Optional
 
-from pyrogram import ChatMember, Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram import Client
+from pyrogram.types import ChatMember, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
 from .etc import code, get_full_name, get_length, get_now, lang, mention_id, mention_name
@@ -126,6 +127,7 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
 def get_keywords(text: str) -> dict:
     # Get keywords
     result = {}
+
     try:
         # Check the text
         if not text:

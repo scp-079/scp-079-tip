@@ -308,8 +308,10 @@ def update_admins(client: Client) -> bool:
 
 def update_status(client: Client, the_type: str) -> bool:
     # Update running status to BACKUP
+    result = False
+
     try:
-        share_data(
+        result = share_data(
             client=client,
             receivers=["BACKUP"],
             action="backup",
@@ -319,9 +321,7 @@ def update_status(client: Client, the_type: str) -> bool:
                 "backup": glovar.backup
             }
         )
-
-        return True
     except Exception as e:
         logger.warning(f"Update status error: {e}", exc_info=True)
 
-    return False
+    return result

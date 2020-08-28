@@ -47,6 +47,10 @@ def init_group_id(gid: int) -> bool:
             glovar.trust_ids[gid] = set()
             save("trust_ids")
 
+        if glovar.channels.get(gid) is None:
+            glovar.channels[gid] = deepcopy(glovar.default_channel_data)
+            save("channels")
+
         if glovar.configs.get(gid) is None:
             glovar.configs[gid] = deepcopy(glovar.default_config)
             save("configs")

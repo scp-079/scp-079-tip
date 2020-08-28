@@ -22,9 +22,10 @@
 import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from pyrogram import Client
+from pyrogram import Client, idle
 
 from plugins import glovar
+from plugins.functions.etc import delay
 from plugins.functions.timers import backup_files, interval_min_01, log_rotation
 from plugins.functions.timers import resend_link, reset_data, send_count, update_admins, update_status
 from plugins.start import init, renew
@@ -48,7 +49,7 @@ app = Client(
 app.start()
 
 # Send online status
-update_status(app, "online")
+delay(3, update_status, [app, "online"])
 
 # Timer
 scheduler = BackgroundScheduler(job_defaults={"misfire_grace_time": 60})
@@ -63,7 +64,7 @@ scheduler.add_job(log_rotation, "cron", hour=23, minute=59)
 scheduler.start()
 
 # Hold
-app.idle()
+idle()
 
 # Stop
 app.stop()

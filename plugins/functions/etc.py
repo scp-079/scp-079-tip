@@ -31,8 +31,8 @@ from unicodedata import normalize
 
 from cryptography.fernet import Fernet
 from opencc import OpenCC
-from pyrogram import Message, User
 from pyrogram.errors import FloodWait
+from pyrogram.types import Message, User
 
 from .. import glovar
 

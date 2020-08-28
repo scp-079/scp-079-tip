@@ -18,7 +18,8 @@
 
 import logging
 
-from pyrogram import Client, Message
+from pyrogram import Client
+from pyrogram.types import Message
 
 from .etc import code, delay, get_text, lang, thread
 from .filters import is_class_c
@@ -56,7 +57,7 @@ def delete_shared_command(client: Client, message: Message) -> bool:
         mid = message.message_id
 
         # Delete the command
-        if is_class_c(None, message):
+        if is_class_c(None, None, message):
             delay(5, delete_message, [client, gid, mid])
         else:
             delete_message(client, gid, mid)

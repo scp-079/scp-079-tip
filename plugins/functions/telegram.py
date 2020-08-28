@@ -19,13 +19,14 @@
 import logging
 from typing import Iterable, List, Optional, Union
 
-from pyrogram import Chat, ChatMember, ChatPreview, Client
-from pyrogram import InlineKeyboardMarkup, Message
-from pyrogram.api.functions.users import GetFullUser
-from pyrogram.api.types import InputPeerUser, InputPeerChannel, UserFull
-from pyrogram.errors import ButtonDataInvalid, ChatAdminRequired, ChatNotModified, ChannelInvalid, ChannelPrivate
+from pyrogram import Client
+from pyrogram.errors import ButtonDataInvalid, ButtonUrlInvalid, ChatAdminRequired, ChatNotModified, ChannelInvalid, ChannelPrivate
 from pyrogram.errors import FloodWait, MessageDeleteForbidden, PeerIdInvalid, QueryIdInvalid
 from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotParticipant
+from pyrogram.raw.base import InputChannel, InputUser, InputPeer
+from pyrogram.raw.functions.users import GetFullUser
+from pyrogram.raw.types import UserFull
+from pyrogram.types import Chat, ChatMember, ChatPreview, InlineKeyboardMarkup, Message, ReplyKeyboardMarkup
 
 from .. import glovar
 from .decorators import retry
@@ -251,23 +252,20 @@ def get_group_info(client: Client, chat: Union[int, Chat], cache: bool = True) -
     return group_name, group_link
 
 
+@retry
 def get_user_full(client: Client, uid: int) -> Optional[UserFull]:
     # Get a full user
     result = None
+
     try:
         user_id = resolve_peer(client, uid)
 
         if not user_id:
             return None
 
-        flood_wait = True
-        while flood_wait:
-            flood_wait = False
-            try:
-                result = client.send(GetFullUser(id=user_id))
-            except FloodWait as e:
-                flood_wait = True
-                wait_flood(e)
+        result = client.send(GetFullUser(id=user_id))
+    except FloodWait as e:
+        raise e
     except Exception as e:
         logger.warning(f"Get user {uid} full error: {e}", exc_info=True)
 
@@ -316,20 +314,17 @@ def pin_chat_message(client: Client, cid: int, mid: int) -> Optional[bool]:
     return result
 
 
-def resolve_peer(client: Client, pid: Union[int, str]) -> Union[bool, InputPeerChannel, InputPeerUser, None]:
+@retry
+def resolve_peer(client: Client, pid: Union[int, str]) -> Union[bool, InputChannel, InputPeer, InputUser, None]:
     # Get an input peer by id
     result = None
+
     try:
-        flood_wait = True
-        while flood_wait:
-            flood_wait = False
-            try:
-                result = client.resolve_peer(pid)
-            except FloodWait as e:
-                flood_wait = True
-                wait_flood(e)
-            except (PeerIdInvalid, UsernameInvalid, UsernameNotOccupied):
-                return False
+        result = client.resolve_peer(pid)
+    except FloodWait as e:
+        raise e
+    except (PeerIdInvalid, UsernameInvalid, UsernameNotOccupied):
+        return False
     except Exception as e:
         logger.warning(f"Resolve peer {pid} error: {e}", exc_info=True)
 
@@ -367,33 +362,30 @@ def send_document(client: Client, cid: int, document: str, file_ref: str = None,
     return result
 
 
+@retry
 def send_message(client: Client, cid: int, text: str, mid: int = None,
-                 markup: InlineKeyboardMarkup = None) -> Union[bool, Message, None]:
+                 markup: Union[InlineKeyboardMarkup, ReplyKeyboardMarkup] = None) -> Union[bool, Message, None]:
     # Send a message to a chat
     result = None
+
     try:
         if not text.strip():
             return None
 
-        flood_wait = True
-        while flood_wait:
-            flood_wait = False
-            try:
-                result = client.send_message(
-                    chat_id=cid,
-                    text=text,
-                    parse_mode="html",
-                    disable_web_page_preview=True,
-                    reply_to_message_id=mid,
-                    reply_markup=markup
-                )
-            except FloodWait as e:
-                flood_wait = True
-                wait_flood(e)
-            except ButtonDataInvalid:
-                logger.warning(f"Send message to {cid} - invalid markup: {markup}")
-            except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, PeerIdInvalid):
-                return False
+        result = client.send_message(
+            chat_id=cid,
+            text=text,
+            parse_mode="html",
+            disable_web_page_preview=True,
+            reply_to_message_id=mid,
+            reply_markup=markup
+        )
+    except FloodWait as e:
+        raise e
+    except (ButtonDataInvalid, ButtonUrlInvalid):
+        logger.warning(f"Send message to {cid} - invalid markup: {markup}")
+    except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, PeerIdInvalid):
+        return False
     except Exception as e:
         logger.warning(f"Send message to {cid} error: {e}", exc_info=True)
 
@@ -435,39 +427,25 @@ def send_photo(client: Client, cid: int, photo: str, file_ref: str = None, capti
 
 
 def send_report_message(secs: int, client: Client, cid: int, text: str, mid: int = None,
-                        markup: InlineKeyboardMarkup = None) -> Optional[Message]:
+                        markup: InlineKeyboardMarkup = None) -> Optional[bool]:
     # Send a message that will be auto deleted to a chat
     result = None
-    try:
-        if not text.strip():
-            return None
 
-        flood_wait = True
-        while flood_wait:
-            flood_wait = False
-            try:
-                result = client.send_message(
-                    chat_id=cid,
-                    text=text,
-                    parse_mode="html",
-                    disable_web_page_preview=True,
-                    reply_to_message_id=mid,
-                    reply_markup=markup
-                )
-            except FloodWait as e:
-                flood_wait = True
-                wait_flood(e)
-            except ButtonDataInvalid:
-                logger.warning(f"Send report message to {cid} - invalid markup: {markup}")
-            except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, PeerIdInvalid):
-                return None
+    try:
+        result = send_message(
+            client=client,
+            cid=cid,
+            text=text,
+            mid=mid,
+            markup=markup
+        )
 
         if not result:
             return None
 
         mid = result.message_id
         mids = [mid]
-        delay(secs, delete_messages, [client, cid, mids])
+        result = delay(secs, delete_messages, [client, cid, mids])
     except Exception as e:
         logger.warning(f"Send report message to {cid} error: {e}", exc_info=True)
 

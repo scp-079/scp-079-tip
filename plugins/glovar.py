@@ -20,15 +20,13 @@ import logging
 import pickle
 from codecs import getdecoder
 from configparser import RawConfigParser
-from os import mkdir
 from os.path import exists
-from shutil import rmtree
 from string import ascii_lowercase
 from threading import Lock
 from typing import Dict, List, Set, Tuple, Union
 
-from emoji import UNICODE_EMOJI
-from pyrogram import Chat, ChatMember
+from pyrogram import emoji
+from pyrogram.types import Chat, ChatMember
 from yaml import safe_load
 
 from .checker import check_all, raise_error
@@ -36,6 +34,7 @@ from .version import version_control
 
 # Path variables
 CONFIG_PATH = "data/config/config.ini"
+CUSTOM_LANG_PATH = "data/config/custom.yml"
 LOG_PATH = "data/log"
 PICKLE_BACKUP_PATH = "data/pickle/backup"
 PICKLE_PATH = "data/pickle"
@@ -87,6 +86,7 @@ exchange_channel_id: int = 0
 hide_channel_id: int = 0
 logging_channel_id: int = 0
 test_group_id: int = 0
+tip_channel_id: int = 0
 
 # [custom]
 default_group_link: str = "https://t.me/SCP_079_DEBUG"
@@ -155,6 +155,7 @@ try:
     hide_channel_id = int(config.get("channels", "hide_channel_id", fallback=hide_channel_id))
     logging_channel_id = int(config.get("channels", "logging_channel_id", fallback=logging_channel_id))
     test_group_id = int(config.get("channels", "test_group_id", fallback=test_group_id))
+    tip_channel_id = int(config.get("channels", "tip_channel_id", fallback=tip_channel_id))
 
     # [custom]
     default_group_link = config.get("custom", "default_group_link", fallback=default_group_link)
@@ -230,7 +231,8 @@ check_all(
             "exchange_channel_id": exchange_channel_id,
             "hide_channel_id": hide_channel_id,
             "logging_channel_id": logging_channel_id,
-            "test_group_id": test_group_id
+            "test_group_id": test_group_id,
+            "tip_channel_id": tip_channel_id
         },
         "custom": {
             "default_group_link": default_group_link,
@@ -274,9 +276,10 @@ check_all(
 
 # Language Dictionary
 lang_dict: dict = {}
+LANG_PATH = CUSTOM_LANG_PATH if exists(CUSTOM_LANG_PATH) else f"languages/{lang}.yml"
 
 try:
-    with open(f"languages/{lang}.yml", "r", encoding="utf-8") as f:
+    with open(LANG_PATH, "r", encoding="utf-8") as f:
         lang_dict = safe_load(f)
 except Exception as e:
     logger.critical(f"Reading language YAML file failed: {e}", exc_info=True)
@@ -285,6 +288,7 @@ except Exception as e:
 # Init
 
 all_commands: List[str] = [
+    "cancel",
     "channel",
     "config",
     "config_tip",
@@ -295,9 +299,10 @@ all_commands: List[str] = [
     "restart",
     "rm",
     "show",
-    "welcome",
+    "start",
     "update",
-    "version"
+    "version",
+    "welcome"
 ]
 
 bot_ids: Set[int] = {avatar_id, captcha_id, clean_id, index_id, lang_id, long_id,
@@ -313,43 +318,58 @@ declared_message_ids: Dict[int, Set[int]] = {}
 #     -10012345678: {123}
 # }
 
-default_config: Dict[str, Union[bool, int, str]] = {
+default_channel_data: Dict[str, Union[int, str]] = {
+    "aid": 0,
+    "id": 0,
+    "text": lang_dict.get("description_channel"),
+    "button": lang_dict.get("button_channel"),
+    "link": ""
+}
+
+default_config: Dict[str, Union[bool, int]] = {
     "default": True,
     "lock": 0,
     "captcha": True,
     "alone": False,
     "clean": True,
     "resend": False,
-    "channel": 0,
-    "channel_text": lang_dict.get("description_channel"),
-    "channel_button": lang_dict.get("button_channel"),
-    "channel_link": "",
-    "hold": 0,
+    "channel": False,
+    "cancel": False,
+    "hold": False,
     "keyword": True,
-    "keyword_text": "",
-    "keyword_button": "",
-    "keyword_link": "",
+    "white": False,
     "ot": True,
-    "ot_text": lang_dict.get("description_ot"),
-    "ot_button": "",
-    "ot_link": "",
-    "rm": False,
-    "rm_text": lang_dict.get("description_rm"),
-    "rm_button": "",
-    "rm_link": "",
-    "welcome": False,
-    "welcome_text": lang_dict.get("description_welcome"),
-    "welcome_button": "",
-    "welcome_link": "",
+    "rm": True,
+    "welcome": True
 }
 
-default_message_data: Dict[str, Tuple[int, int]] = {
+default_keyword_data: Dict[str, Union[int, Dict[str, Dict[str, Union[int, str, Set[str]]]]]] = {
+    "lock": 0,
+    "aid": 0,
+    "kwd": {}
+}
+
+default_message_data: Dict[str, Union[Tuple[int, int], Dict[str, Tuple[int, int]]]] = {
     "channel": (0, 0),
     "hold": (0, 0),
-    "keyword": (0, 0),
+    "keywords": {},
     "ot": (0, 0),
     "rm": (0, 0),
     "welcome": (0, 0)
+}
+
+default_ot_data: Dict[str, Union[int, str]] = {
+    "aid": 0,
+    "reply": lang_dict.get("description_ot"),
+    "old": ""
+}
+
+default_rm_data: Dict[str, Union[int, str]] = {
+    "aid": 0,
+    "reply": lang_dict.get("description_rm"),
+    "old": "",
+    "count": 0,
+    "today": 0
 }
 
 default_user_status: Dict[str, Dict[str, float]] = {
@@ -365,7 +385,22 @@ default_user_status: Dict[str, Dict[str, float]] = {
     }
 }
 
-emoji_set: Set[str] = set(UNICODE_EMOJI)
+default_welcome_data: Dict[str, Union[int, str]] = {
+    "aid": 0,
+    "reply": lang_dict.get("description_welcome"),
+    "old": "",
+    "count": 0,
+    "today": 0
+}
+
+emoji_set: Set[str] = {v for k, v in vars(emoji).items() if not k.startswith("_")}
+
+keyworded_ids: Dict[int, Dict[int, Set[str]]] = {}
+# keyworded_ids = {
+#     -10012345678: {
+#         12345678: {"tag"}
+#     }
+# }
 
 locks: Dict[str, Lock] = {
     "admin": Lock(),
@@ -388,6 +423,7 @@ regex: Dict[str, bool] = {
     "bio": False,
     "con": False,
     "del": False,
+    "fcnm": False,
     "fil": False,
     "iml": False,
     "pho": False,
@@ -407,31 +443,27 @@ sender: str = "TIP"
 
 should_hide: bool = False
 
-keyworded_ids: Dict[int, Dict[int, Set[str]]] = {}
-# keyworded_ids = {
-#     -10012345678: {
-#         12345678: {""}
-#     }
-# }
+started_ids: Set[int] = set()
+# started_ids = {12345678}
 
-version: str = "0.1.9"
+updating: bool = False
+
+version: str = "0.2.0"
 
 welcomed_ids: Dict[int, Set[int]] = {}
 # welcomed_ids = {
 #     -10012345678: {12345678}
 # }
 
+# Load data from TXT file
+
+if exists(START_PATH):
+    with open(START_PATH, "r", encoding="utf-8") as f:
+        start_text = f.read()
+else:
+    start_text = ""
+
 # Load data from pickle
-
-# Init dir
-try:
-    rmtree("tmp")
-except Exception as e:
-    logger.info(f"Remove tmp error: {e}")
-
-for path in ["data", "tmp"]:
-    if not exists(path):
-        mkdir(path)
 
 # Init ids variables
 
@@ -463,11 +495,18 @@ message_ids: Dict[int, Dict[str, Tuple[int, int]]] = {}
 #     -10012345678: {
 #         "channel": (123, 1512345678),
 #         "hold": (123, 1512345678),
-#         "keyword": (124, 1512345678),
+#         "keywords": {
+#             "tag": (124, 1512345678)
+#         },
 #         "ot": (125, 1512345678),
 #         "rm": (126, 1512345678),
 #         "welcome": (127, 1512345678)
 #     }
+# }
+
+pinned_ids: Dict[int, int] = {}
+# pinned_ids = {
+#     -10012345678: 123
 # }
 
 trust_ids: Dict[int, Set[int]] = {}
@@ -497,14 +536,27 @@ watch_ids: Dict[str, Dict[int, int]] = {
 }
 # watch_ids = {
 #     "ban": {
-#         12345678: 0
+#         12345678: 1512345678
 #     },
 #     "delete": {
-#         12345678: 0
+#         12345678: 1512345678
 #     }
 # }
 
+white_ids: Set[int] = set()
+# white_ids = {12345678}
+
 # Init data variables
+
+channels: Dict[int, Dict[str, Union[int, str]]] = {}
+# channels = {
+#     -10012345678: {
+#         "id": 0,
+#         "text": "text",
+#         "button": "text",
+#         "link": ""
+#     }
+# }
 
 configs: Dict[int, Dict[str, Union[bool, int, str]]] = {}
 # configs = {
@@ -515,35 +567,85 @@ configs: Dict[int, Dict[str, Union[bool, int, str]]] = {}
 #         "alone": False,
 #         "clean": True,
 #         "resend": False,
-#         "channel": 0,
-#         "channel_text": "text",
-#         "channel_button": "text",
-#         "channel_link": "",
-#         "hold": 0,
+#         "channel": False,
+#         "cancel": False,
+#         "hold": False,
 #         "keyword": True,
-#         "keyword_text": "string",
-#         "keyword_button": "",
-#         "keyword_link": "",
+#         "white": False,
 #         "ot": False,
-#         "ot_text": "string",
-#         "ot_button": "",
-#         "ot_link": "",
 #         "rm": False,
-#         "rm_text": "string",
-#         "rm_button": "",
-#         "rm_link": "",
-#         "welcome": False,
-#         "welcome_text": "string",
-#         "welcome_button": "",
-#         "welcome_link": ""
+#         "welcome": False
 #     }
 # }
 
 current: str = ""
 # current = "0.0.1"
 
+keywords: Dict[int, Dict[str, Union[int, Dict[str, Dict[str, Union[int, str, Set[str]]]]]]] = {}
+# keywords = {
+#     -10012345678: {
+#         "lock": 1512345678,
+#         "aid": 12345678,
+#         "kwd": {
+#             "tag": {
+#                 "words": {"keyword1", "keyword2"},
+#                 "reply": "text",
+#                 "modes": {"include"},
+#                 "actions": {"reply"},
+#                 "target": "member",
+#                 "time": 300,
+#                 "raw": "text",
+#                 "count": 0,
+#                 "today": 0
+#             }
+#         }
+#
+#     }
+# }
+
+ots: Dict[int, Dict[str, Union[int, str]]] = {}
+# ots = {
+#     -10012345678: {
+#         "aid": 12345678,
+#         "reply": "text",
+#         "old": "old reply"
+#     }
+# }
+
+rms: Dict[int, Dict[str, Union[int, str]]] = {}
+# rms = {
+#     -10012345678: {
+#         "aid": 12345678,
+#         "reply": "text",
+#         "old": "old reply",
+#         "count": 8,
+#         "today": 1
+#     }
+# }
+
+starts: Dict[str, Dict[str, Union[int, str]]] = {}
+# starts = {
+#     "random": {
+#         "until": 1512345678,
+#         "cid": -10012345678,
+#         "uid": 12345678,
+#         "action": "act"
+#     }
+# }
+
 token: str = ""
 # token = "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+
+welcomes: Dict[int, Dict[str, Union[int, str]]] = {}
+# welcomes = {
+#     -10012345678: {
+#         "aid": 12345678,
+#         "reply": "text",
+#         "old": "old reply",
+#         "count": 8,
+#         "today": 1
+#     }
+# }
 
 # Init word variables
 
@@ -556,8 +658,8 @@ for word_type in regex:
 
 # Load data
 file_list: List[str] = ["admin_ids", "bad_ids", "flooded_ids", "lack_group_ids", "left_group_ids", "message_ids",
-                        "trust_ids", "user_ids", "watch_ids",
-                        "configs", "current", "token"]
+                        "pinned_ids", "trust_ids", "user_ids", "watch_ids", "white_ids",
+                        "channels", "configs", "current", "keywords", "ots", "rms", "starts", "token", "welcomes"]
 file_list += [f"{f}_words" for f in regex]
 
 for file in file_list:

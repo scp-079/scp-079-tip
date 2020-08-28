@@ -24,6 +24,7 @@ This bot is used to send tips.
     - functions
         - `channel.py` : Functions about channel
         - `command.py` : Functions about command
+        - `config.py` : Functions about group settings
         - `decorators.py` : Some decorators
         - `etc.py` : Miscellaneous
         - `file.py` : Save files

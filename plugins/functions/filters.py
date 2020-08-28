@@ -22,7 +22,8 @@ from copy import deepcopy
 from string import ascii_lowercase
 from typing import Match, Optional, Union
 
-from pyrogram import CallbackQuery, Filters, Message, User
+from pyrogram import filters
+from pyrogram.types import CallbackQuery, Message, User
 
 from .. import glovar
 from .etc import get_text
@@ -34,7 +35,7 @@ from .tip import get_keywords
 logger = logging.getLogger(__name__)
 
 
-def is_aio(_, __) -> bool:
+def is_aio(_, __, ___) -> bool:
     # Check if the program is under all-in-one mode
     result = False
 
@@ -46,7 +47,7 @@ def is_aio(_, __) -> bool:
     return result
 
 
-def is_authorized_group(_, update: Union[CallbackQuery, Message]) -> bool:
+def is_authorized_group(_, __, update: Union[CallbackQuery, Message]) -> bool:
     # Check if the message is send from the authorized group
     try:
         if isinstance(update, CallbackQuery):
@@ -67,7 +68,7 @@ def is_authorized_group(_, update: Union[CallbackQuery, Message]) -> bool:
     return False
 
 
-def is_channel_pinned(_, message: Message) -> bool:
+def is_channel_pinned(_, __, message: Message) -> bool:
     # Check if the message is sent by the linked channel
     try:
         if (not message.service
@@ -80,7 +81,7 @@ def is_channel_pinned(_, message: Message) -> bool:
     return False
 
 
-def is_class_c(_, message: Message) -> bool:
+def is_class_c(_, __, message: Message) -> bool:
     # Check if the message is sent from Class C personnel
     try:
         if not message.from_user:
@@ -99,7 +100,7 @@ def is_class_c(_, message: Message) -> bool:
     return False
 
 
-def is_class_d(_, message: Message) -> bool:
+def is_class_d(_, __, message: Message) -> bool:
     # Check if the message is Class D object
     try:
         if message.from_user:
@@ -111,7 +112,7 @@ def is_class_d(_, message: Message) -> bool:
     return False
 
 
-def is_class_e(_, message: Message, test: bool = False) -> bool:
+def is_class_e(_, __, message: Message, test: bool = False) -> bool:
     # Check if the message is Class E object
     try:
         if message.from_user and not test:
@@ -123,7 +124,7 @@ def is_class_e(_, message: Message, test: bool = False) -> bool:
     return False
 
 
-def is_declared_message(_, message: Message) -> bool:
+def is_declared_message(_, __, message: Message) -> bool:
     # Check if the message is declared by other bots
     try:
         if not message.chat:
@@ -139,7 +140,7 @@ def is_declared_message(_, message: Message) -> bool:
     return False
 
 
-def is_exchange_channel(_, message: Message) -> bool:
+def is_exchange_channel(_, __, message: Message) -> bool:
     # Check if the message is sent from the exchange channel
     try:
         if not message.chat:
@@ -157,7 +158,7 @@ def is_exchange_channel(_, message: Message) -> bool:
     return False
 
 
-def is_from_user(_, message: Message) -> bool:
+def is_from_user(_, __, message: Message) -> bool:
     # Check if the message is sent from a user
     try:
         if message.from_user and message.from_user.id != 777000:
@@ -168,7 +169,7 @@ def is_from_user(_, message: Message) -> bool:
     return False
 
 
-def is_hide_channel(_, message: Message) -> bool:
+def is_hide_channel(_, __, message: Message) -> bool:
     # Check if the message is sent from the hide channel
     try:
         if not message.chat:
@@ -184,7 +185,7 @@ def is_hide_channel(_, message: Message) -> bool:
     return False
 
 
-def is_new_group(_, message: Message) -> bool:
+def is_new_group(_, __, message: Message) -> bool:
     # Check if the bot joined a new group
     try:
         new_users = message.new_chat_members
@@ -199,7 +200,7 @@ def is_new_group(_, message: Message) -> bool:
     return False
 
 
-def is_test_group(_, update: Union[CallbackQuery, Message]) -> bool:
+def is_test_group(_, __, update: Union[CallbackQuery, Message]) -> bool:
     # Check if the message is sent from the test group
     try:
         if isinstance(update, CallbackQuery):
@@ -220,62 +221,62 @@ def is_test_group(_, update: Union[CallbackQuery, Message]) -> bool:
     return False
 
 
-aio = Filters.create(
+aio = filters.create(
     func=is_aio,
     name="AIO"
 )
 
-authorized_group = Filters.create(
+authorized_group = filters.create(
     func=is_authorized_group,
     name="Authorized Group"
 )
 
-channel_pinned = Filters.create(
+channel_pinned = filters.create(
     func=is_channel_pinned,
     name="Channel Pinned"
 )
 
-class_c = Filters.create(
+class_c = filters.create(
     func=is_class_c,
     name="Class C"
 )
 
-class_d = Filters.create(
+class_d = filters.create(
     func=is_class_d,
     name="Class D"
 )
 
-class_e = Filters.create(
+class_e = filters.create(
     func=is_class_e,
     name="Class E"
 )
 
-declared_message = Filters.create(
+declared_message = filters.create(
     func=is_declared_message,
     name="Declared message"
 )
 
-exchange_channel = Filters.create(
+exchange_channel = filters.create(
     func=is_exchange_channel,
     name="Exchange Channel"
 )
 
-from_user = Filters.create(
+from_user = filters.create(
     func=is_from_user,
     name="From User"
 )
 
-hide_channel = Filters.create(
+hide_channel = filters.create(
     func=is_hide_channel,
     name="Hide Channel"
 )
 
-new_group = Filters.create(
+new_group = filters.create(
     func=is_new_group,
     name="New Group"
 )
 
-test_group = Filters.create(
+test_group = filters.create(
     func=is_test_group,
     name="Test Group"
 )
@@ -522,9 +523,9 @@ def is_keyword_text(message: Message) -> (int, str):
             else:
                 word = keyword
 
-            if is_class_c(None, message) and message_text == word:
+            if is_class_c(None, None, message) and message_text == word:
                 return rid, keywords[keyword]
-            elif is_class_c(None, message):
+            elif is_class_c(None, None, message):
                 return 0, ""
             else:
                 return 0, keywords[keyword]
@@ -593,7 +594,7 @@ def is_rm_text(message: Message) -> str:
         gid = message.chat.id
 
         # Check admin
-        if is_class_c(None, message):
+        if is_class_c(None, None, message):
             return ""
 
         # Check config

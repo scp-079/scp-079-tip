@@ -19,7 +19,8 @@
 import logging
 from typing import Optional
 
-from pyrogram import ChatMember, Client
+from pyrogram import Client
+from pyrogram.types import ChatMember
 
 from .. import glovar
 from .etc import code, lang, thread
