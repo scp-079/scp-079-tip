@@ -222,13 +222,19 @@ def version_0_2_0() -> bool:
         # Create channels data
         channels = {}
 
+        with open("data/pickle/message_ids", "rb") as f:
+            message_ids = pickle.load(f)
+
         for gid in list(configs):
-            channels[gid] = {}
-            channels[gid]["aid"] = 0
-            channels[gid]["id"] = configs[gid].get("channel")
-            channels[gid]["text"] = configs[gid].get("channel_text")
-            channels[gid]["button"] = configs[gid].get("channel_button")
-            channels[gid]["link"] = configs[gid].get("channel_link")
+            channels[gid] = {
+                "aid": 0,
+                "cid": configs[gid].get("channel", 0),
+                "mid": message_ids[gid].get("channel", (0, 0))[0],
+                "time": 0,
+                "text": configs[gid].get("channel_text"),
+                "button": configs[gid].get("channel_button"),
+                "link": configs[gid].get("channel_link")
+            }
             configs[gid]["channel"] = bool(configs[gid].get("channel"))
             configs[gid].pop("channel_text", None)
             configs[gid].pop("channel_button", None)
@@ -274,18 +280,17 @@ def version_0_2_0() -> bool:
                 while keywords[gid].get(key):
                     key = random_str(8)
 
-                keywords[gid][key] = {}
-                keywords[gid][key]["words"] = {o.strip() for o in old_keyword.split("||")}
-                keywords[gid][key]["words"].discard("")
-                origin = old_keywords[old_keyword]
-                keywords[gid][key]["reply"] = get_reply("keyword", configs[gid], origin)
-                keywords[gid][key]["modes"] = {"include"}
-                keywords[gid][key]["actions"] = {"reply"}
-                keywords[gid][key]["target"] = "all"
-                keywords[gid][key]["time"] = 300
-                keywords[gid][key]["raw"] = f"{old_keyword}\n+++\n{keywords[gid][key]['reply']}"
-                keywords[gid][key]["count"] = 0
-                keywords[gid][key]["today"] = 0
+                keywords[gid][key] = {
+                    "words": {o.strip() for o in old_keyword.split("||") if o.strip()},
+                    "reply": get_reply("keyword", configs[gid], old_keywords[old_keyword]),
+                    "modes": {"include"},
+                    "actions": {"reply"},
+                    "target": "all",
+                    "time": 300,
+                    "raw": f"{old_keyword}\n+++\n{keywords[gid][key]['reply']}",
+                    "count": 0,
+                    "today": 0
+                }
 
             configs[gid].pop("keyword_text", None)
             configs[gid].pop("keyword_button", None)
@@ -298,10 +303,67 @@ def version_0_2_0() -> bool:
             pickle.dump(configs, f)
 
         # Create ots data
+        ots = {}
+
+        for gid in list(configs):
+            ots[gid] = {
+                "aid": 0,
+                "reply": get_reply("ot", configs[gid], configs[gid].get("ot_text", "")),
+                "old": "",
+                "count": 0,
+                "today": 0
+            }
+            configs[gid].pop("ot_text", None)
+            configs[gid].pop("ot_button", None)
+            configs[gid].pop("ot_link", None)
+
+        with open("data/pickle/ots", "wb") as f:
+            pickle.dump(ots, f)
+
+        with open("data/pickle/configs", "wb") as f:
+            pickle.dump(configs, f)
 
         # Create rms data
+        rms = {}
+
+        for gid in list(configs):
+            rms[gid] = {
+                "aid": 0,
+                "reply": get_reply("rm", configs[gid], configs[gid].get("rm_text", "")),
+                "old": "",
+                "count": 0,
+                "today": 0
+            }
+            configs[gid].pop("rm_text", None)
+            configs[gid].pop("rm_button", None)
+            configs[gid].pop("rm_link", None)
+
+        with open("data/pickle/rms", "wb") as f:
+            pickle.dump(rms, f)
+
+        with open("data/pickle/configs", "wb") as f:
+            pickle.dump(configs, f)
 
         # Create welcomes data
+        welcomes = {}
+
+        for gid in list(configs):
+            welcomes[gid] = {
+                "aid": 0,
+                "reply": get_reply("welcome", configs[gid], configs[gid].get("welcome_text", "")),
+                "old": "",
+                "count": 0,
+                "today": 0
+            }
+            configs[gid].pop("welcome_text", None)
+            configs[gid].pop("welcome_button", None)
+            configs[gid].pop("welcome_link", None)
+
+        with open("data/pickle/welcomes", "wb") as f:
+            pickle.dump(welcomes, f)
+
+        with open("data/pickle/configs", "wb") as f:
+            pickle.dump(configs, f)
 
         print("Version 0.2.0 updated!")
 

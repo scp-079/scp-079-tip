@@ -320,7 +320,9 @@ declared_message_ids: Dict[int, Set[int]] = {}
 
 default_channel_data: Dict[str, Union[int, str]] = {
     "aid": 0,
-    "id": 0,
+    "cid": 0,
+    "mid": 0,
+    "time": 0,
     "text": lang_dict.get("description_channel"),
     "button": lang_dict.get("button_channel"),
     "link": ""
@@ -350,8 +352,6 @@ default_keyword_data: Dict[str, Union[int, Dict[str, Dict[str, Union[int, str, S
 }
 
 default_message_data: Dict[str, Union[Tuple[int, int], Dict[str, Tuple[int, int]]]] = {
-    "channel": (0, 0),
-    "hold": (0, 0),
     "keywords": {},
     "ot": (0, 0),
     "rm": (0, 0),
@@ -500,8 +500,6 @@ left_group_ids: Set[int] = set()
 message_ids: Dict[int, Dict[str, Tuple[int, int]]] = {}
 # message_ids = {
 #     -10012345678: {
-#         "channel": (123, 1512345678),
-#         "hold": (123, 1512345678),
 #         "keywords": {
 #             "tag": (124, 1512345678)
 #         },
@@ -558,7 +556,10 @@ white_ids: Set[int] = set()
 channels: Dict[int, Dict[str, Union[int, str]]] = {}
 # channels = {
 #     -10012345678: {
-#         "id": 0,
+#         "aid": 12345678,
+#         "cid": -10012345678,
+#         "mid": 123,
+#         "time": 1512345678,
 #         "text": "text",
 #         "button": "text",
 #         "link": ""
