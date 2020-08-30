@@ -348,7 +348,7 @@ default_config: Dict[str, Union[bool, int]] = {
 default_keyword_data: Dict[str, Union[int, Dict[str, Dict[str, Union[int, str, Set[str]]]]]] = {
     "lock": 0,
     "aid": 0,
-    "kwd": {}
+    "kwds": {}
 }
 
 default_message_data: Dict[str, Union[Tuple[int, int], Dict[str, Tuple[int, int]]]] = {
@@ -599,14 +599,16 @@ keywords: Dict[int, Dict[str, Union[int, Dict[str, Dict[str, Union[int, str, Set
 #     -10012345678: {
 #         "lock": 1512345678,
 #         "aid": 12345678,
-#         "kwd": {
+#         "kwds": {
 #             "tag": {
+#                 "time": 1512345678,
+#                 "aid": 12345678,
 #                 "words": {"keyword1", "keyword2"},
 #                 "reply": "text",
 #                 "modes": {"include"},
 #                 "actions": {"reply"},
 #                 "target": "member",
-#                 "time": 300,
+#                 "destruct": 300,
 #                 "raw": "text",
 #                 "count": 0,
 #                 "today": 0
@@ -636,13 +638,14 @@ rms: Dict[int, Dict[str, Union[int, str]]] = {}
 #     }
 # }
 
-starts: Dict[str, Dict[str, Union[int, str]]] = {}
+starts: Dict[str, Dict[str, Union[bool, int, str]]] = {}
 # starts = {
 #     "random": {
 #         "until": 1512345678,
 #         "cid": -10012345678,
 #         "uid": 12345678,
-#         "action": "act"
+#         "action": "act",
+#         "active": False
 #     }
 # }
 

@@ -18,6 +18,7 @@
 
 import logging
 from copy import deepcopy
+from re import search
 from typing import Dict, List, Set, Union
 
 from pyrogram import Client
@@ -27,9 +28,9 @@ from .. import glovar
 from .channel import send_debug
 from .command import command_error
 from .decorators import threaded
-from .etc import button_data, code, general_link, get_now, lang, thread
+from .etc import code, general_link, get_now, lang, thread
 from .file import delete_file, file_txt, save
-from .markup import get_inline
+from .markup import get_text_and_markup
 from .telegram import get_group_info, send_document, send_message, send_report_message
 
 # Enable logging
@@ -77,7 +78,47 @@ def get_config_text(config: dict) -> str:
     return result
 
 
-def keyword_add(client: Client, message: Message, gid: int, key: str, text: str, the_type: str = "add") -> bool:
+def kwds_get(text: str) -> List[str]:
+    # Get keyword settings
+    result = []
+
+    try:
+        # Check the text
+        if not text.strip():
+            return []
+
+        # Get text list
+        text_list = [t.strip() for t in text.split("\n+++\n") if t.strip()]
+
+        # Check the text list
+        if not text_list or len(text_list) < 2:
+            return []
+
+        # Check modes
+        if len(text_list) < 3:
+            text_list.append("include")
+
+        # Check actions
+        if len(text_list) < 4:
+            text_list.append("reply")
+
+        # Check target
+        if len(text_list) < 5:
+            text_list.append("member")
+
+        # Check destruct
+        if len(text_list) < 6:
+            text_list.append("300")
+
+        # Get result
+        result = text_list
+    except Exception as e:
+        logger.warning(f"Kwds get error: {e}", exc_info=True)
+
+    return result
+
+
+def kwds_add(client: Client, message: Message, gid: int, key: str, text: str, the_type: str = "add") -> bool:
     # Add or edit a custom keyword
     result = False
 
@@ -89,106 +130,127 @@ def keyword_add(client: Client, message: Message, gid: int, key: str, text: str,
         now = get_now()
 
         # Check questions count
-        if the_type == "add" and len(glovar.questions[gid]["qns"]) >= 20:
-            return command_error(client, message, lang(f"action_qns_{the_type}"), lang("error_exceed_qns"),
-                                 report=False)
+        if the_type == "add" and len(glovar.keywords[gid]["kwds"]) >= 100:
+            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("error_exceed_kwds"),
+                                 report=False, private=True)
 
         # Get text list
-        text_list = [t.strip() for t in text.split("\n+++\n") if t.strip()]
+        text_list = kwds_get(text)
 
         # Check the text list
-        if not text_list or len(text_list) < 2:
-            return command_error(client, message, lang(f"action_qns_{the_type}"), lang("command_para"), report=False)
+        if not text_list:
+            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
+                                 report=False, private=True)
 
-        # Get question and answers
-        question = text_list[0]
-        correct = text_list[1]
-        wrong = text_list[-1]
+        # Get keywords
+        words = {w.strip() for w in text_list[0].split("||") if w.strip()}
 
-        # Check the question
-        if len(question) > 140:
-            return command_error(client, message, lang(f"action_qns_{the_type}"), lang("command_para"),
-                                 lang("error_exceed_qn"), False)
+        # Check the words
+        if not words:
+            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
+                                 report=False, private=True)
 
-        correct_list = {c.strip() for c in correct.split("\n") if c.strip()}
+        # Get reply
+        reply = text_list[1]
+        
+        # Check reply
+        if len(reply) > 4000:
+            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
+                                 lang("error_exceed_reply"), report=False, private=True)
 
-        if wrong == correct:
-            wrong_list = set()
-        else:
-            wrong_list = {w.strip() for w in wrong.split("\n") if w.strip()}
+        # Get modes
+        modes = {m.strip() for m in text_list[2].split() if m.strip()}
 
-        # Check the answers
-        if any(w in correct_list for w in wrong_list):
-            return command_error(client, message, lang(f"action_qns_{the_type}"), lang("command_para"),
-                                 lang("error_duplicated"), False)
+        # Check the modes
+        if not all(m in {"include", "exact", "case"} for m in modes):
+            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
+                                 lang("error_kwds_modes_invalid"), report=False, private=True)
+        elif not any(m in {"include", "exact"} for m in modes):
+            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
+                                 lang("error_kwds_modes_lack"), report=False, private=True)
+        elif "include" in modes and "exact" in modes:
+            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
+                                 lang("error_kwds_modes_conflict"), report=False, private=True)
 
-        if len(correct_list | wrong_list) > 6:
-            return command_error(client, message, lang(f"action_qns_{the_type}"), lang("command_para"),
-                                 lang("error_exceed_answers"), False)
+        # Get the actions
+        actions = {a.strip() for a in text_list[3].split() if a.strip()}
 
-        if any(len(a.encode()) > 64 for a in correct_list) or any(len(a.encode()) > 64 for a in wrong_list):
-            return command_error(client, message, lang(f"action_qns_{the_type}"), lang("command_para"),
-                                 lang("error_exceed_answer"), False)
+        if not all(a in {"reply", "delete", "ban", "restrict"}
+                   or search(r"^ban-\d{3,8}$", a)
+                   or search(r"^restrict-\d{3,8}$", a)
+                   for a in actions):
+            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
+                                 lang("error_kwds_actions_invalid"), report=False, private=True)
+        elif any(a.startswith("ban") for a in actions) and any(a.startswith("restrict") for a in actions):
+            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
+                                 lang("error_kwds_actions_conflict"), report=False, private=True)
 
-        # Add or edit the answer
+        # Get target
+        target = text_list[4]
+
+        # Check the target
+        if target not in {"member", "admin", "all"}:
+            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
+                                 lang("error_kwds_target_invalid"), report=False, private=True)
+
+        # Get destruct
+        destruct = text_list[5]
+
+        # Check the destruct
+        if not search(r"^\n{3,5}$", destruct):
+            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
+                                 lang("error_kwds_destruct_invalid"), report=False, private=True)
+        
         if the_type == "add":
-            glovar.questions[gid]["qns"][key] = {
+            glovar.keywords[gid]["kwds"][key] = {
                 "time": now,
                 "aid": aid,
-                "question": question,
-                "correct": correct_list,
-                "wrong": wrong_list,
-                "issued": 0,
-                "engaged": 0,
-                "solved": 0
+                "words": words,
+                "reply": reply,
+                "modes": modes,
+                "actions": actions,
+                "target": target,
+                "destruct": destruct,
+                "raw": text,
+                "count": 0,
+                "today": 0
             }
         else:
-            glovar.questions[gid]["qns"][key]["time"] = now
-            glovar.questions[gid]["qns"][key]["aid"] = aid
-            glovar.questions[gid]["qns"][key]["question"] = question
-            glovar.questions[gid]["qns"][key]["correct"] = correct_list
-            glovar.questions[gid]["qns"][key]["wrong"] = wrong_list
-
+            glovar.keywords[gid]["kwds"][key]["time"] = now
+            glovar.keywords[gid]["kwds"][key]["aid"] = aid
+            glovar.keywords[gid]["kwds"][key]["words"] = words
+            glovar.keywords[gid]["kwds"][key]["reply"] = reply
+            glovar.keywords[gid]["kwds"][key]["modes"] = modes
+            glovar.keywords[gid]["kwds"][key]["actions"] = actions
+            glovar.keywords[gid]["kwds"][key]["target"] = target
+            glovar.keywords[gid]["kwds"][key]["destruct"] = destruct
+            glovar.keywords[gid]["kwds"][key]["raw"] = text
+        
         # Save the data
-        save("questions")
+        save("keywords")
 
-        # Generate the text
+        # Generate the text and the markup
         group_name, group_link = get_group_info(client, gid)
         text = (f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
                 f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang(f'action_qns_{the_type}'))}\n"
+                f"{lang('action')}{lang('colon')}{code(lang(f'action_kwds_{the_type}'))}\n"
                 f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n" + code("-" * 24) + "\n"
-                f"{lang('qns_key')}{lang('colon')}{code(key)}\n" + code("-" * 24) + "\n"
-                f"{lang('question')}{lang('colon')}{code(question)}\n" + code("-" * 24) + "\n")
-        text += "\n".join("\t" * 4 + f"■ {code(c)}" for c in correct_list) + "\n"
-        text += "\n".join("\t" * 4 + f"□ {code(w)}" for w in wrong_list) + "\n"
-
-        # Generate the markup
-        buttons = []
-        answers = list(correct_list | wrong_list)
-        answers = get_answers(answers)
-
-        for answer in answers:
-            buttons.append(
-                {
-                    "text": answer,
-                    "data": button_data("none")
-                }
-            )
-
-        markup = get_inline(buttons)
+                f"{lang('kwds_key')}{lang('colon')}{code(key)}\n" + code("-" * 24) + "\n"
+                f"{lang('keyword')}{lang('colon')}{code(lang('comma').join(words))}\n" + code("-" * 24) + "\n")
+        reply_text, markup = get_text_and_markup(reply)
+        text += reply_text
 
         # Send the report message
         thread(send_message, (client, cid, text, mid, markup))
 
         result = True
     except Exception as e:
-        logger.warning(f"Keyword add error: {e}", exc_info=True)
+        logger.warning(f"Kwds add error: {e}", exc_info=True)
 
     return result
 
 
-def keyword_remove(client: Client, message: Message, gid: int, key: str) -> bool:
+def kwds_remove(client: Client, message: Message, gid: int, key: str) -> bool:
     # Remove a custom keyword
     result = False
 
@@ -216,13 +278,13 @@ def keyword_remove(client: Client, message: Message, gid: int, key: str) -> bool
 
         result = True
     except Exception as e:
-        logger.warning(f"Keyword remove error: {e}", exc_info=True)
+        logger.warning(f"Kwds remove error: {e}", exc_info=True)
 
     return result
 
 
 @threaded()
-def keyword_show(client: Client, message: Message, gid: int, file: bool = False) -> bool:
+def kwds_show(client: Client, message: Message, gid: int, file: bool = False) -> bool:
     # Show all custom keywords
     result = False
 
@@ -282,12 +344,12 @@ def keyword_show(client: Client, message: Message, gid: int, file: bool = False)
 
         result = True
     except Exception as e:
-        logger.warning(f"Keyword show error: {e}", exc_info=True)
+        logger.warning(f"Kwds show error: {e}", exc_info=True)
 
     return result
 
 
-def keyword_show_file(client: Client, message: Message, gid: int,
+def kwds_show_file(client: Client, message: Message, gid: int,
                       questions: Dict[str, Dict[str, Union[int, str, Set[str]]]]) -> bool:
     # Show all custom keywords as TXT file
     result = False
@@ -345,13 +407,13 @@ def keyword_show_file(client: Client, message: Message, gid: int,
 
         result = True
     except Exception as e:
-        logger.warning(f"Qns show file error: {e}", exc_info=True)
+        logger.warning(f"Kwds show file error: {e}", exc_info=True)
 
     return result
 
 
-def start_qns(client: Client, message: Message, key: str) -> bool:
-    # Start qns
+def start_kwds(client: Client, message: Message, key: str) -> bool:
+    # Start kwds
     result = False
 
     try:
@@ -376,7 +438,7 @@ def start_qns(client: Client, message: Message, key: str) -> bool:
 
         result = True
     except Exception as e:
-        logger.warning(f"Start qns error: {e}", exc_info=True)
+        logger.warning(f"Start kwds error: {e}", exc_info=True)
 
     return result
 
