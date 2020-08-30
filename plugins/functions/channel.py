@@ -33,36 +33,6 @@ from .telegram import get_group_info, send_document, send_message
 logger = logging.getLogger(__name__)
 
 
-def ask_for_help(client: Client, level: str, gid: int, uid: int, group: str = "single") -> bool:
-    # Let USER help to delete all message from user, or ban user globally
-    result = False
-
-    try:
-        data = {
-            "group_id": gid,
-            "user_id": uid
-        }
-
-        if level == "ban":
-            data["type"] = (glovar.configs[gid].get("restrict", False) and "restrict") or "ban"
-        elif level == "delete":
-            data["type"] = group
-
-        data["delete"] = glovar.configs[gid].get("delete", True)
-
-        result = share_data(
-            client=client,
-            receivers=["USER"],
-            action="help",
-            action_type=level,
-            data=data
-        )
-    except Exception as e:
-        logger.warning(f"Ask for help error: {e}", exc_info=True)
-
-    return result
-
-
 def declare_message(client: Client, gid: int, mid: int) -> bool:
     # Declare a message
     result = False
