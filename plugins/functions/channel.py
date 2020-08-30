@@ -21,7 +21,7 @@ from json import dumps
 from typing import List, Union
 
 from pyrogram import Client
-from pyrogram.types import Chat
+from pyrogram.types import Chat, Message
 
 from .. import glovar
 from .decorators import threaded
@@ -31,6 +31,58 @@ from .telegram import get_group_info, send_document, send_message
 
 # Enable logging
 logger = logging.getLogger(__name__)
+
+
+def ask_for_help(client: Client, level: str, gid: int, uid: int, group: str = "single") -> bool:
+    # Let USER help to delete all message from user, or ban user globally
+    result = False
+
+    try:
+        data = {
+            "group_id": gid,
+            "user_id": uid
+        }
+
+        if level == "ban":
+            data["type"] = (glovar.configs[gid].get("restrict", False) and "restrict") or "ban"
+        elif level == "delete":
+            data["type"] = group
+
+        data["delete"] = glovar.configs[gid].get("delete", True)
+
+        result = share_data(
+            client=client,
+            receivers=["USER"],
+            action="help",
+            action_type=level,
+            data=data
+        )
+    except Exception as e:
+        logger.warning(f"Ask for help error: {e}", exc_info=True)
+
+    return result
+
+
+def declare_message(client: Client, gid: int, mid: int) -> bool:
+    # Declare a message
+    result = False
+
+    try:
+        glovar.declared_message_ids[gid].add(mid)
+        result = share_data(
+            client=client,
+            receivers=glovar.receivers["declare"],
+            action="update",
+            action_type="declare",
+            data={
+                "group_id": gid,
+                "message_id": mid
+            }
+        )
+    except Exception as e:
+        logger.warning(f"Declare message error: {e}", exc_info=True)
+
+    return result
 
 
 def exchange_to_hide(client: Client) -> bool:
@@ -117,7 +169,9 @@ def get_debug_text(client: Client, context: Union[int, Chat, List[int]]) -> str:
 
 
 @threaded()
-def send_debug(client: Client, chat: Chat, action: str, aid: int,
+def send_debug(client: Client, chat: Chat, action: str,
+               uid: int, aid: int = 0,
+               em: Message = 0,
                config_type: str = "", more: str = "") -> bool:
     # Send the debug message
     result = False
@@ -127,8 +181,17 @@ def send_debug(client: Client, chat: Chat, action: str, aid: int,
             return False
 
         text = get_debug_text(client, chat)
-        text += (f"{lang('admin_group')}{lang('colon')}{code(aid)}\n"
-                 f"{lang('action')}{lang('colon')}{code(action)}\n")
+
+        if uid:
+            text += f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
+
+        text += f"{lang('action')}{lang('colon')}{code(action)}\n"
+
+        if aid:
+            text += f"{lang('admin_group')}{lang('colon')}{code(aid)}\n"
+
+        if em:
+            text += f"{lang('triggered_by')}{lang('colon')}{general_link(em.message_id, em.link)}\n"
 
         if config_type:
             text += f"{lang('type')}{lang('colon')}{code(config_type)}\n"
@@ -171,8 +234,8 @@ def share_data(client: Client, receivers: List[str], action: str, action_type: s
                 data=data
             )
             result = send_message(client, channel_id, text)
-            return ((result is False and not glovar.should_hide)
-                    and share_data_failed(client, receivers, action, action_type, data, file, encrypt))
+            return ((result is not False or glovar.should_hide)
+                    or share_data_failed(client, receivers, action, action_type, data, file, encrypt))
 
         # Share with a file
         text = format_data(
@@ -194,8 +257,8 @@ def share_data(client: Client, receivers: List[str], action: str, action_type: s
         result = send_document(client, channel_id, file_path, None, text)
 
         if not result:
-            return ((result is False and not glovar.should_hide)
-                    and share_data_failed(client, receivers, action, action_type, data, file, encrypt))
+            return ((result is not False or glovar.should_hide)
+                    or share_data_failed(client, receivers, action, action_type, data, file, encrypt))
 
         # Delete the tmp file
         for f in {file, file_path}:

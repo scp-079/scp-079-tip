@@ -417,6 +417,11 @@ members: Dict[int, Dict[int, ChatMember]] = {}
 #     }
 # }
 
+receivers: Dict[str, List[str]] = {
+    "declare": ["ANALYZE", "AVATAR", "CAPTCHA", "CLEAN", "LANG", "LONG",
+                "NOFLOOD", "NOPORN", "NOSPAM", "TIP", "USER", "WARN", "WATCH"]
+}
+
 regex: Dict[str, bool] = {
     "ad": False,
     "ban": False,
