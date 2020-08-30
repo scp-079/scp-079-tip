@@ -78,7 +78,7 @@ def get_config_text(config: dict) -> str:
     return result
 
 
-def kwds_get(text: str) -> List[str]:
+def kws_get(text: str) -> List[str]:
     # Get keyword settings
     result = []
 
@@ -113,12 +113,12 @@ def kwds_get(text: str) -> List[str]:
         # Get result
         result = text_list
     except Exception as e:
-        logger.warning(f"Kwds get error: {e}", exc_info=True)
+        logger.warning(f"Kws get error: {e}", exc_info=True)
 
     return result
 
 
-def kwds_add(client: Client, message: Message, gid: int, key: str, text: str, the_type: str = "add") -> bool:
+def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the_type: str = "add") -> bool:
     # Add or edit a custom keyword
     result = False
 
@@ -130,16 +130,16 @@ def kwds_add(client: Client, message: Message, gid: int, key: str, text: str, th
         now = get_now()
 
         # Check questions count
-        if the_type == "add" and len(glovar.keywords[gid]["kwds"]) >= 100:
-            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("error_exceed_kwds"),
+        if the_type == "add" and len(glovar.keywords[gid]["kws"]) >= 100:
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("error_exceed_kws"),
                                  report=False, private=True)
 
         # Get text list
-        text_list = kwds_get(text)
+        text_list = kws_get(text)
 
         # Check the text list
         if not text_list:
-            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  report=False, private=True)
 
         # Get keywords
@@ -147,7 +147,7 @@ def kwds_add(client: Client, message: Message, gid: int, key: str, text: str, th
 
         # Check the words
         if not words:
-            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  report=False, private=True)
 
         # Get reply
@@ -155,7 +155,7 @@ def kwds_add(client: Client, message: Message, gid: int, key: str, text: str, th
         
         # Check reply
         if len(reply) > 4000:
-            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_exceed_reply"), report=False, private=True)
 
         # Get modes
@@ -163,14 +163,14 @@ def kwds_add(client: Client, message: Message, gid: int, key: str, text: str, th
 
         # Check the modes
         if not all(m in {"include", "exact", "case"} for m in modes):
-            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
-                                 lang("error_kwds_modes_invalid"), report=False, private=True)
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
+                                 lang("error_kws_modes_invalid"), report=False, private=True)
         elif not any(m in {"include", "exact"} for m in modes):
-            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
-                                 lang("error_kwds_modes_lack"), report=False, private=True)
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
+                                 lang("error_kws_modes_lack"), report=False, private=True)
         elif "include" in modes and "exact" in modes:
-            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
-                                 lang("error_kwds_modes_conflict"), report=False, private=True)
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
+                                 lang("error_kws_modes_conflict"), report=False, private=True)
 
         # Get the actions
         actions = {a.strip() for a in text_list[3].split() if a.strip()}
@@ -179,30 +179,30 @@ def kwds_add(client: Client, message: Message, gid: int, key: str, text: str, th
                    or search(r"^ban-\d{3,8}$", a)
                    or search(r"^restrict-\d{3,8}$", a)
                    for a in actions):
-            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
-                                 lang("error_kwds_actions_invalid"), report=False, private=True)
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
+                                 lang("error_kws_actions_invalid"), report=False, private=True)
         elif any(a.startswith("ban") for a in actions) and any(a.startswith("restrict") for a in actions):
-            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
-                                 lang("error_kwds_actions_conflict"), report=False, private=True)
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
+                                 lang("error_kws_actions_conflict"), report=False, private=True)
 
         # Get target
         target = text_list[4]
 
         # Check the target
         if target not in {"member", "admin", "all"}:
-            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
-                                 lang("error_kwds_target_invalid"), report=False, private=True)
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
+                                 lang("error_kws_target_invalid"), report=False, private=True)
 
         # Get destruct
         destruct = text_list[5]
 
         # Check the destruct
         if not search(r"^\n{3,5}$", destruct):
-            return command_error(client, message, lang(f"action_kwds_{the_type}"), lang("command_para"),
-                                 lang("error_kwds_destruct_invalid"), report=False, private=True)
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
+                                 lang("error_kws_destruct_invalid"), report=False, private=True)
         
         if the_type == "add":
-            glovar.keywords[gid]["kwds"][key] = {
+            glovar.keywords[gid]["kws"][key] = {
                 "time": now,
                 "aid": aid,
                 "words": words,
@@ -216,15 +216,15 @@ def kwds_add(client: Client, message: Message, gid: int, key: str, text: str, th
                 "today": 0
             }
         else:
-            glovar.keywords[gid]["kwds"][key]["time"] = now
-            glovar.keywords[gid]["kwds"][key]["aid"] = aid
-            glovar.keywords[gid]["kwds"][key]["words"] = words
-            glovar.keywords[gid]["kwds"][key]["reply"] = reply
-            glovar.keywords[gid]["kwds"][key]["modes"] = modes
-            glovar.keywords[gid]["kwds"][key]["actions"] = actions
-            glovar.keywords[gid]["kwds"][key]["target"] = target
-            glovar.keywords[gid]["kwds"][key]["destruct"] = destruct
-            glovar.keywords[gid]["kwds"][key]["raw"] = text
+            glovar.keywords[gid]["kws"][key]["time"] = now
+            glovar.keywords[gid]["kws"][key]["aid"] = aid
+            glovar.keywords[gid]["kws"][key]["words"] = words
+            glovar.keywords[gid]["kws"][key]["reply"] = reply
+            glovar.keywords[gid]["kws"][key]["modes"] = modes
+            glovar.keywords[gid]["kws"][key]["actions"] = actions
+            glovar.keywords[gid]["kws"][key]["target"] = target
+            glovar.keywords[gid]["kws"][key]["destruct"] = destruct
+            glovar.keywords[gid]["kws"][key]["raw"] = text
         
         # Save the data
         save("keywords")
@@ -233,9 +233,9 @@ def kwds_add(client: Client, message: Message, gid: int, key: str, text: str, th
         group_name, group_link = get_group_info(client, gid)
         text = (f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
                 f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang(f'action_kwds_{the_type}'))}\n"
+                f"{lang('action')}{lang('colon')}{code(lang(f'action_kws_{the_type}'))}\n"
                 f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n" + code("-" * 24) + "\n"
-                f"{lang('kwds_key')}{lang('colon')}{code(key)}\n" + code("-" * 24) + "\n"
+                f"{lang('kws_key')}{lang('colon')}{code(key)}\n" + code("-" * 24) + "\n"
                 f"{lang('keyword')}{lang('colon')}{code(lang('comma').join(words))}\n" + code("-" * 24) + "\n")
         reply_text, markup = get_text_and_markup(reply)
         text += reply_text
@@ -245,12 +245,12 @@ def kwds_add(client: Client, message: Message, gid: int, key: str, text: str, th
 
         result = True
     except Exception as e:
-        logger.warning(f"Kwds add error: {e}", exc_info=True)
+        logger.warning(f"Kws add error: {e}", exc_info=True)
 
     return result
 
 
-def kwds_remove(client: Client, message: Message, gid: int, key: str) -> bool:
+def kws_remove(client: Client, message: Message, gid: int, key: str) -> bool:
     # Remove a custom keyword
     result = False
 
@@ -258,11 +258,11 @@ def kwds_remove(client: Client, message: Message, gid: int, key: str) -> bool:
         # Basic data
         cid = message.chat.id
         mid = message.message_id
-        question = glovar.questions[gid]["qns"][key]["question"]
+        words = glovar.keywords[gid]["kws"][key]["words"]
 
         # Pop the data
-        glovar.questions[gid]["qns"].pop(key, {})
-        save("questions")
+        glovar.keywords[gid]["kws"].pop(key, {})
+        save("keywords")
 
         # Generate the text
         group_name, group_link = get_group_info(client, gid)
@@ -271,20 +271,20 @@ def kwds_remove(client: Client, message: Message, gid: int, key: str) -> bool:
                 f"{lang('action')}{lang('colon')}{code(lang('action_qns_remove'))}\n"
                 f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n" + code("-" * 24) + "\n"
                 f"{lang('qns_key')}{lang('colon')}{code(key)}\n" + code("-" * 24) + "\n"
-                f"{lang('question')}{lang('colon')}{code(question)}\n")
+                f"{lang('question')}{lang('colon')}{code(lang('comma').join(words))}\n")
 
         # Send the report message
         thread(send_message, (client, cid, text, mid))
 
         result = True
     except Exception as e:
-        logger.warning(f"Kwds remove error: {e}", exc_info=True)
+        logger.warning(f"Kws remove error: {e}", exc_info=True)
 
     return result
 
 
 @threaded()
-def kwds_show(client: Client, message: Message, gid: int, file: bool = False) -> bool:
+def kws_show(client: Client, message: Message, gid: int, file: bool = False) -> bool:
     # Show all custom keywords
     result = False
 
@@ -294,7 +294,7 @@ def kwds_show(client: Client, message: Message, gid: int, file: bool = False) ->
         mid = message.message_id
 
         with glovar.locks["config"]:
-            questions = glovar.questions[gid]["qns"]
+            questions = glovar.keywords[gid]["kws"]
 
         # Check data
         if not questions:
@@ -344,12 +344,12 @@ def kwds_show(client: Client, message: Message, gid: int, file: bool = False) ->
 
         result = True
     except Exception as e:
-        logger.warning(f"Kwds show error: {e}", exc_info=True)
+        logger.warning(f"Kws show error: {e}", exc_info=True)
 
     return result
 
 
-def kwds_show_file(client: Client, message: Message, gid: int,
+def kws_show_file(client: Client, message: Message, gid: int,
                       questions: Dict[str, Dict[str, Union[int, str, Set[str]]]]) -> bool:
     # Show all custom keywords as TXT file
     result = False
@@ -407,13 +407,13 @@ def kwds_show_file(client: Client, message: Message, gid: int,
 
         result = True
     except Exception as e:
-        logger.warning(f"Kwds show file error: {e}", exc_info=True)
+        logger.warning(f"Kws show file error: {e}", exc_info=True)
 
     return result
 
 
-def start_kwds(client: Client, message: Message, key: str) -> bool:
-    # Start kwds
+def start_kws(client: Client, message: Message, key: str) -> bool:
+    # Start kws
     result = False
 
     try:
@@ -438,7 +438,7 @@ def start_kwds(client: Client, message: Message, key: str) -> bool:
 
         result = True
     except Exception as e:
-        logger.warning(f"Start kwds error: {e}", exc_info=True)
+        logger.warning(f"Start kws error: {e}", exc_info=True)
 
     return result
 

@@ -348,7 +348,7 @@ default_config: Dict[str, Union[bool, int]] = {
 default_keyword_data: Dict[str, Union[int, Dict[str, Dict[str, Union[int, str, Set[str]]]]]] = {
     "lock": 0,
     "aid": 0,
-    "kwds": {}
+    "kws": {}
 }
 
 default_message_data: Dict[str, Union[Tuple[int, int], Dict[str, Tuple[int, int]]]] = {
@@ -599,7 +599,7 @@ keywords: Dict[int, Dict[str, Union[int, Dict[str, Dict[str, Union[int, str, Set
 #     -10012345678: {
 #         "lock": 1512345678,
 #         "aid": 12345678,
-#         "kwds": {
+#         "kws": {
 #             "tag": {
 #                 "time": 1512345678,
 #                 "aid": 12345678,
