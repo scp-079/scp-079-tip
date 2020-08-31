@@ -17,13 +17,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import List, Optional
 
 from pyrogram import Client
 from pyrogram.types import ChatMember, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
-from .etc import code, get_full_name, get_length, get_now, lang, mention_id, mention_name
+from .etc import code, get_full_name, get_now, lang, mention_id, mention_name
 from .file import save
 from .group import delete_message
 from .telegram import edit_message_text, export_chat_invite_link, send_message
@@ -44,9 +43,9 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
         now = get_now()
 
         # Read the config
-        cid = glovar.configs[gid].get("channel")
-        channel_text = glovar.configs[gid].get("channel_text")
-        channel_button = glovar.configs[gid].get("channel_button")
+        cid = glovar.channels[gid].get("cid", 0)
+        text = glovar.channels[gid].get("text")
+        button = glovar.channels[gid].get("button")
         mid, time = glovar.message_ids[gid].get("channel", (0, 0))
 
         # Check the config
@@ -62,8 +61,8 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
 
         # Check the link
         if link is False:
-            glovar.configs[gid]["channel"] = 0
-            save("configs")
+            glovar.channels[gid]["cid"] = 0
+            save("channels")
             glovar.message_ids[gid]["channel"] = (0, 0)
             save("message_ids")
             delete_message(client, cid, mid)
@@ -72,16 +71,15 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
             return False
 
         # Update the link
-        glovar.configs[gid]["channel_link"] = link
-        save("configs")
+        glovar.channels[gid]["link"] = link
+        save("channels")
 
-        # Generate text and markup
-        text = channel_text
+        # Generate markup
         markup = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
-                        text=channel_button,
+                        text=button,
                         url=link
                     )
                 ]
@@ -104,6 +102,8 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
                 glovar.message_ids[gid]["channel"] = (mid, now)
                 save("message_ids")
                 return True
+            elif result is False:
+                return False
 
         # Send new message
         result = send_message(client, cid, text, None, markup)
@@ -120,98 +120,6 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
         logger.warning(f"New invite link error: {e}", exc_info=True)
     finally:
         glovar.locks["channel"].release()
-
-    return result
-
-
-def get_keywords(text: str) -> dict:
-    # Get keywords
-    result = {}
-
-    try:
-        # Check the text
-        if not text:
-            return {}
-
-        text_list = [t for t in text.split("\n+++") if t]
-
-        if not text_list or len(text_list) % 2 != 0:
-            return {}
-
-        # Get keyword_list
-        keyword_list = [t.strip() for t in text_list[0::2]]
-        reply_list = [t.strip() for t in text_list[1::2]]
-
-        # Get keyword dict
-        result = {}
-
-        for i in range(len(keyword_list)):
-            keyword = keyword_list[i]
-            reply = reply_list[i]
-
-            k_list = [k.strip() for k in keyword.split("||") if k.strip()]
-
-            for k in k_list:
-                result[k.lower()] = reply
-    except Exception as e:
-        logger.warning(f"Get keywords error: {e}", exc_info=True)
-
-    return result
-
-
-def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
-    # Get the group button config
-    result = None
-
-    try:
-        text = glovar.configs[gid].get(f"{the_type}_button")
-        link = glovar.configs[gid].get(f"{the_type}_link")
-
-        if not text or not link:
-            return None
-
-        text_list = [u.strip() for u in text.split("||") if u.strip()]
-        link_list = [u.strip() for u in link.split("||") if u.strip()]
-
-        if len(text_list) != len(link_list) or len(text_list) > 6:
-            return None
-
-        length = len(text_list)
-        markup_list: List[List[InlineKeyboardButton]] = [[]]
-
-        for i in range(len(text_list)):
-            text = text_list[i]
-            link = link_list[i]
-
-            if length <= 6 and (length % 3) and not (length % 2) and len(markup_list[-1]) == 2:
-                markup_list.append([])
-
-            elif len(markup_list[-1]) == 3:
-                markup_list.append([])
-
-            elif (len(markup_list[-1]) == 2
-                  and get_length(text) <= 12
-                  and all(get_length(m.text) <= 12 for m in markup_list[-1])):
-                pass
-
-            elif (len(markup_list[-1]) == 1
-                  and get_length(text) <= 18
-                  and get_length(markup_list[-1][-1].text) <= 18):
-                pass
-
-            elif markup_list[-1]:
-                markup_list.append([])
-
-            markup_list[-1].append(
-                InlineKeyboardButton(
-                    text=text,
-                    url=link
-                )
-            )
-
-        result = InlineKeyboardMarkup(markup_list)
-    except Exception as e:
-        logger.warning(f"Get button config error: {e}", exc_info=True)
 
     return result
 

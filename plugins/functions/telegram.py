@@ -21,8 +21,8 @@ from typing import Iterable, List, Optional, Union
 
 from pyrogram import Client
 from pyrogram.errors import ButtonDataInvalid, ButtonUrlInvalid, ChatAdminRequired, ChatNotModified, ChannelInvalid
-from pyrogram.errors import ChannelPrivate, FloodWait, MessageDeleteForbidden, MessageNotModified, PeerIdInvalid
-from pyrogram.errors import QueryIdInvalid, UsernameInvalid, UsernameNotOccupied, UserNotParticipant
+from pyrogram.errors import ChannelPrivate, FloodWait, MessageDeleteForbidden, MessageIdInvalid, MessageNotModified
+from pyrogram.errors import PeerIdInvalid, QueryIdInvalid, UsernameInvalid, UsernameNotOccupied, UserNotParticipant
 from pyrogram.raw.base import InputChannel, InputUser, InputPeer
 from pyrogram.raw.functions.users import GetFullUser
 from pyrogram.raw.types import UserFull
@@ -130,9 +130,10 @@ def edit_message_text(client: Client, cid: int, mid: int, text: str,
         raise e
     except (ButtonDataInvalid, ButtonUrlInvalid):
         logger.warning(f"Edit message {mid} text in {cid} - invalid markup: {markup}")
-    except MessageNotModified:
+    except MessageIdInvalid:
+        logger.warning(f"Edit message {mid} text in {cid} - invalid mid")
         return None
-    except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, PeerIdInvalid):
+    except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, PeerIdInvalid, MessageNotModified):
         return False
     except Exception as e:
         logger.warning(f"Edit message {mid} in {cid} error: {e}", exc_info=True)
