@@ -66,34 +66,34 @@ def check(client: Client, message: Message) -> bool:
         # Check the forward from name
         forward_name = get_forward_name(message, True, True)
 
-        if forward_name and is_nm_text(forward_name):
+        if forward_name and is_nm_text(client, forward_name):
             return True
 
         # Check the user's name
         name = get_full_name(message.from_user, True, True)
 
-        if name and is_nm_text(name):
+        if name and is_nm_text(client, name):
             return True
 
         # Check the text
         message_text = get_text(message, True, True)
 
-        if is_ban_text(message_text, False):
+        if is_ban_text(client, message_text, False):
             return True
 
-        if is_regex_text("del", message_text):
+        if is_regex_text(client, "del", message_text):
             return True
 
         # File name
         filename = get_filename(message, True, True)
 
-        if is_ban_text(filename, False):
+        if is_ban_text(client, filename, False):
             return True
 
-        if is_regex_text("fil", filename):
+        if is_regex_text(client, "fil", filename):
             return True
 
-        if is_regex_text("del", filename):
+        if is_regex_text(client, "del", filename):
             return True
 
         # User status
@@ -117,7 +117,7 @@ def check(client: Client, message: Message) -> bool:
             return tip_keyword(client, message, detection, rid)
 
         # Check rm
-        detection = is_rm_text(message)
+        detection = is_rm_text(client, message)
 
         if detection:
             return tip_rm(client, gid, detection, mid)
@@ -165,7 +165,7 @@ def check_join(client: Client, message: Message) -> bool:
             # Check name
             name = get_full_name(new, True, True)
 
-            if name and (is_nm_text(name) or is_wb_text(name, False)):
+            if name and (is_nm_text(client, name) or is_wb_text(client, name, False)):
                 return True
 
             # Check bio
@@ -176,7 +176,7 @@ def check_join(client: Client, message: Message) -> bool:
             else:
                 bio = t2t(user.about, True, True)
 
-            if bio and (is_bio_text(bio) or is_wb_text(bio, False)):
+            if bio and (is_bio_text(client, bio) or is_wb_text(client, bio, False)):
                 return True
 
             # Check declare status

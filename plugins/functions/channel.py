@@ -26,7 +26,7 @@ from pyrogram.types import Chat, Message
 from .. import glovar
 from .decorators import threaded
 from .etc import code, code_block, general_link, lang, thread
-from .file import crypt_file, data_to_file, delete_file, get_new_path
+from .file import crypt_file, data_to_file, delete_file, get_new_path, save
 from .telegram import get_group_info, send_document, send_message
 
 # Enable logging
@@ -295,6 +295,8 @@ def share_regex_remove(client: Client, word_type: str, word: str) -> bool:
     result = False
 
     try:
+        eval(f"glovar.{word_type}_words").pop(word, 0)
+        save(f"{word_type}_words")
         file = data_to_file(word)
         result = share_data(
             client=client,
