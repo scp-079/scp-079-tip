@@ -24,9 +24,10 @@ from pyrogram import Client
 
 from .. import glovar
 from .channel import share_data, share_regex_count
+from .decorators import threaded
 from .etc import code, general_link, get_now, get_readable_time, lang, thread
 from .file import move_file, save
-from .group import delete_message, leave_group
+from .group import delete_message, leave_group, save_admins
 from .telegram import get_admins, get_group_info, send_message
 from .tip import get_invite_link
 
@@ -34,8 +35,11 @@ from .tip import get_invite_link
 logger = logging.getLogger(__name__)
 
 
+@threaded()
 def backup_files(client: Client) -> bool:
     # Backup data files to BACKUP
+    result = False
+
     try:
         for file in glovar.file_list:
             # Check
@@ -53,11 +57,11 @@ def backup_files(client: Client) -> bool:
             )
             sleep(5)
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Backup error: {e}", exc_info=True)
 
-    return False
+    return result
 
 
 def interval_min_01(client: Client) -> bool:
@@ -72,24 +76,46 @@ def interval_min_01(client: Client) -> bool:
 
         # Delete tips
         for gid in list(glovar.message_ids):
-            if not glovar.configs[gid].get("clean"):
+            # Check clean mode config
+            if not glovar.configs[gid].get("clean", True):
                 continue
 
-            for the_type in ["keyword", "ot", "rm", "welcome"]:
+            # Destruct keywords messages
+            for key in list(glovar.message_ids[gid]["keywords"]):
+                mid, time = glovar.message_ids[gid]["keywords"][key]
+                keyword = glovar.keywords[gid].get(key, {})
+
+                if not keyword:
+                    glovar.message_ids[gid]["keywords"].pop(key, (0, 0))
+                    delete_message(client, gid, mid)
+                    continue
+
+                destruct = glovar.keywords[gid]["kws"][key]["destruct"]
+
+                if now - time < destruct:
+                    continue
+
+                glovar.message_ids[gid]["keywords"][key] = (0, 0)
+                delete_message(client, gid, mid)
+
+            # Destruct ot, rm, welcome message
+            for the_type in ["ot", "rm", "welcome"]:
                 mid, time = glovar.message_ids[gid][the_type]
 
                 if not mid:
                     continue
 
-                if now - time > eval(f"glovar.time_{the_type}"):
-                    glovar.message_ids[gid][the_type] = (0, 0)
-                    delete_message(client, gid, mid)
+                if now - time < eval(f"glovar.time_{the_type}"):
+                    continue
+
+                glovar.message_ids[gid][the_type] = (0, 0)
+                delete_message(client, gid, mid)
 
         save("message_ids")
 
         # Generate a new invite link
         for gid in list(glovar.configs):
-            if not glovar.configs[gid].get("channel"):
+            if not glovar.configs[gid].get("channel", False):
                 continue
 
             thread(get_invite_link, (client, "edit", gid), daemon=False)
@@ -97,6 +123,26 @@ def interval_min_01(client: Client) -> bool:
         result = True
     except Exception as e:
         logger.warning(f"Interval min 01 error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
+
+    return result
+
+
+def interval_min_10() -> bool:
+    # Execute every 10 minutes
+    result = False
+
+    glovar.locks["message"].acquire()
+    
+    try:
+        # Clear keyworded users
+        for gid in list(glovar.keyworded_ids):
+            glovar.keyworded_ids[gid] = {}
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Interval min 10 error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
 
@@ -131,7 +177,7 @@ def resend_link(client: Client) -> bool:
     try:
         # Proceed
         for gid in list(glovar.configs):
-            if not glovar.configs[gid].get("resend"):
+            if not glovar.configs[gid].get("resend", False):
                 continue
 
             get_invite_link(
@@ -140,7 +186,7 @@ def resend_link(client: Client) -> bool:
                 gid=gid
             )
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Resend link error: {e}", exc_info=True)
     finally:
@@ -151,9 +197,13 @@ def resend_link(client: Client) -> bool:
 
 def reset_data(client: Client) -> bool:
     # Reset user data every month
+    result = False
+
     glovar.locks["message"].acquire()
+
     try:
         glovar.bad_ids = {
+            "channels": set(),
             "users": set()
         }
         save("bad_ids")
@@ -175,18 +225,21 @@ def reset_data(client: Client) -> bool:
                 f"{lang('action')}{lang('colon')}{code(lang('reset'))}\n")
         thread(send_message, (client, glovar.debug_channel_id, text))
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Reset data error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
 
-    return False
+    return result
 
 
 def send_count(client: Client) -> bool:
     # Send regex count to REGEX
+    result = False
+
     glovar.locks["regex"].acquire()
+
     try:
         for word_type in glovar.regex:
             share_regex_count(client, word_type)
@@ -197,86 +250,32 @@ def send_count(client: Client) -> bool:
 
             save(f"{word_type}_words")
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Send count error: {e}", exc_info=True)
     finally:
         glovar.locks["regex"].release()
 
-    return False
+    return result
 
 
 def update_admins(client: Client) -> bool:
     # Update admin list every day
+    result = False
+
     glovar.locks["admin"].acquire()
+
     try:
+        # Basic data
         group_list = list(glovar.admin_ids)
 
+        # Check groups
         for gid in group_list:
-            should_leave = True
-            reason = "permissions"
+            group_name, group_link = get_group_info(client, gid)
             admin_members = get_admins(client, gid)
 
-            if admin_members and any([admin.user.is_self for admin in admin_members]):
-                # Admin list
-                glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
-                                         if (((not admin.user.is_bot and not admin.user.is_deleted)
-                                              and admin.can_delete_messages
-                                              and admin.can_restrict_members)
-                                             or admin.status == "creator"
-                                             or admin.user.id in glovar.bot_ids)}
-                save("admin_ids")
-
-                # Trust list
-                glovar.trust_ids[gid] = {admin.user.id for admin in admin_members
-                                         if ((not admin.user.is_bot and not admin.user.is_deleted)
-                                             or admin.user.id in glovar.bot_ids)}
-                save("trust_ids")
-
-                if glovar.user_id not in glovar.admin_ids[gid]:
-                    reason = "user"
-                else:
-                    for admin in admin_members:
-                        if (admin.user.is_self
-                                and admin.can_delete_messages
-                                and admin.can_invite_users
-                                and admin.can_pin_messages):
-                            should_leave = False
-
-                if not should_leave:
-                    glovar.lack_group_ids.discard(gid)
-                    save("lack_group_ids")
-                    continue
-
-                if gid in glovar.lack_group_ids:
-                    continue
-
-                glovar.lack_group_ids.add(gid)
-                save("lack_group_ids")
-
-                group_name, group_link = get_group_info(client, gid)
-                share_data(
-                    client=client,
-                    receivers=["MANAGE"],
-                    action="leave",
-                    action_type="request",
-                    data={
-                        "group_id": gid,
-                        "group_name": group_name,
-                        "group_link": group_link,
-                        "reason": reason
-                    }
-                )
-                reason = lang(f"reason_{reason}")
-                project_link = general_link(glovar.project_name, glovar.project_link)
-                debug_text = (f"{lang('project')}{lang('colon')}{project_link}\n"
-                              f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
-                              f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
-                              f"{lang('status')}{lang('colon')}{code(reason)}\n")
-                thread(send_message, (client, glovar.debug_channel_id, debug_text))
-            elif admin_members is False or any([admin.user.is_self for admin in admin_members]) is False:
-                # Bot is not in the chat, leave automatically without approve
-                group_name, group_link = get_group_info(client, gid)
+            # Bot is not in the chat, leave automatically without approve
+            if admin_members is False or any(admin.user.is_self for admin in admin_members) is False:
                 leave_group(client, gid)
                 share_data(
                     client=client,
@@ -296,14 +295,64 @@ def update_admins(client: Client) -> bool:
                               f"{lang('status')}{lang('colon')}{code(lang('leave_auto'))}\n"
                               f"{lang('reason')}{lang('colon')}{code(lang('reason_leave'))}\n")
                 thread(send_message, (client, glovar.debug_channel_id, debug_text))
+                continue
 
-        return True
+            # Check the admin list
+            if not (admin_members and any([admin.user.is_self for admin in admin_members])):
+                continue
+
+            # Save the admin list
+            save_admins(gid, admin_members)
+
+            # Ignore the group
+            if gid in glovar.lack_group_ids:
+                continue
+
+            # Check the permissions
+            if glovar.user_id not in glovar.admin_ids[gid]:
+                reason = "user"
+            elif any(admin.user.is_self
+                     and admin.can_delete_messages
+                     and admin.can_restrict_members
+                     and admin.can_invite_users
+                     and admin.can_pin_messages
+                     for admin in admin_members):
+                glovar.lack_group_ids.discard(gid)
+                save("lack_group_ids")
+                continue
+            else:
+                reason = "permissions"
+                glovar.lack_group_ids.add(gid)
+                save("lack_group_ids")
+
+            # Send the leave request
+            share_data(
+                client=client,
+                receivers=["MANAGE"],
+                action="leave",
+                action_type="request",
+                data={
+                    "group_id": gid,
+                    "group_name": group_name,
+                    "group_link": group_link,
+                    "reason": reason
+                }
+            )
+            reason = lang(f"reason_{reason}")
+            project_link = general_link(glovar.project_name, glovar.project_link)
+            debug_text = (f"{lang('project')}{lang('colon')}{project_link}\n"
+                          f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
+                          f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
+                          f"{lang('status')}{lang('colon')}{code(reason)}\n")
+            thread(send_message, (client, glovar.debug_channel_id, debug_text))
+
+        result = True
     except Exception as e:
         logger.warning(f"Update admin error: {e}", exc_info=True)
     finally:
         glovar.locks["admin"].release()
 
-    return False
+    return result
 
 
 def update_status(client: Client, the_type: str) -> bool:

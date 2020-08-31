@@ -352,7 +352,7 @@ default_keyword_data: Dict[str, Union[int, Dict[str, Dict[str, Union[int, str, S
     "kws": {}
 }
 
-default_message_data: Dict[str, Union[Tuple[int, int], Dict[str, Tuple[int, int]]]] = {
+default_message_data: Dict[str, Union[Dict[str, Tuple[int, int]], Tuple[int, int]]] = {
     "keywords": {},
     "ot": (0, 0),
     "rm": (0, 0),
@@ -503,7 +503,7 @@ lack_group_ids: Set[int] = set()
 left_group_ids: Set[int] = set()
 # left_group_ids = {-10012345678}
 
-message_ids: Dict[int, Dict[str, Tuple[int, int]]] = {}
+message_ids: Dict[int, Dict[str, Union[Dict[str, Tuple[int, int]], Tuple[int, int]]]] = {}
 # message_ids = {
 #     -10012345678: {
 #         "keywords": {

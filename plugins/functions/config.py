@@ -108,7 +108,7 @@ def kws_get(text: str) -> List[str]:
 
         # Check destruct
         if len(text_list) < 6:
-            text_list.append("300")
+            text_list.append(str(glovar.time_keyword))
 
         # Get result
         result = text_list
