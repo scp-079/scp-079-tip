@@ -294,6 +294,7 @@ all_commands: List[str] = [
     "config_tip",
     "hold",
     "keyword",
+    "kws",
     "ot",
     "resend",
     "restart",
