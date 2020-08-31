@@ -18,16 +18,16 @@
 
 import logging
 from json import dumps
-from typing import List, Union
+from typing import List, Optional, Union
 
 from pyrogram import Client
-from pyrogram.types import Chat, Message
+from pyrogram.types import Chat, Message, User
 
 from .. import glovar
-from .decorators import threaded
-from .etc import code, code_block, general_link, lang, thread
+from .decorators import retry, threaded
+from .etc import code, code_block, general_link, get_forward_name, get_full_name, lang, thread
 from .file import crypt_file, data_to_file, delete_file, get_new_path, save
-from .telegram import get_group_info, send_document, send_message
+from .telegram import forward_messages, get_group_info, send_document, send_message
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -99,6 +99,71 @@ def format_data(sender: str, receivers: List[str], action: str, action_type: str
         result = code_block(dumps(data, indent=4))
     except Exception as e:
         logger.warning(f"Format data error: {e}", exc_info=True)
+
+    return result
+
+
+@retry
+def forward_evidence(client: Client, message: Message, user: User, level: str, rule: str,
+                     keyword: str, forward: bool = False, name: bool = False,
+                     more: str = None) -> Optional[Union[bool, Message]]:
+    # Forward the message to the logging channel as evidence
+    result = None
+
+    try:
+        # Basic information
+        uid = user.id
+        text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
+                f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
+                f"{lang('level')}{lang('colon')}{code(level)}\n"
+                f"{lang('rule')}{lang('colon')}{code(rule)}\n")
+        text += f"{lang('keyword')}{lang('colon')}{code(keyword)}\n"
+
+        # Additional information
+        if message.game:
+            text += (f"{lang('message_type')}{lang('colon')}{code(lang('gam'))}\n"
+                     f"{lang('message_game')}{lang('colon')}{code(message.game.short_name)}\n")
+        elif message.service:
+            text += f"{lang('message_type')}{lang('colon')}{code(lang('ser'))}\n"
+
+        # Name information
+        if forward and name:
+            text += f"{lang('from_name')}{lang('colon')}{code(get_forward_name(message))}\n"
+        elif name:
+            text += f"{lang('user_name')}{lang('colon')}{code(get_full_name(user))}\n"
+
+        # Extra information
+        if message.contact or message.location or message.venue or message.video_note or message.voice:
+            text += f"{lang('more')}{lang('colon')}{code(lang('privacy'))}\n"
+        elif message.game or message.service:
+            text += f"{lang('more')}{lang('colon')}{code(lang('cannot_forward'))}\n"
+        elif more:
+            text += f"{lang('more')}{lang('colon')}{code(more)}\n"
+
+        # DO NOT try to forward these types of message
+        if (message.contact
+                or message.location
+                or message.venue
+                or message.video_note
+                or message.voice
+                or message.game
+                or message.service):
+            result = send_message(client, glovar.logging_channel_id, text)
+            return result
+
+        # Forward the evidence
+        result = forward_messages(
+            client=client,
+            cid=glovar.tip_channel_id,
+            fid=message.chat.id,
+            mids=[message.message_id]
+        )
+
+        # Attach information
+        result = result.message_id
+        result = send_message(client, glovar.tip_channel_id, text, result)
+    except Exception as e:
+        logger.warning(f"Forward evidence error: {e}", exc_info=True)
 
     return result
 

@@ -152,6 +152,11 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("error_exceed_kws"),
                                  report=False, private=True)
 
+        # Check the text
+        if len(text) > 3000:
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
+                                 lang("error_exceed_raw"), report=False, private=True)
+
         # Get text list
         text_list = kws_get(text)
 
@@ -171,8 +176,8 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
         # Get reply
         reply = text_list[1]
         
-        # Check reply
-        if len(reply) > 4000:
+        # Check the reply
+        if len(reply) > 2000:
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_exceed_reply"), report=False, private=True)
 
@@ -180,7 +185,7 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
         modes = {m.strip() for m in text_list[2].split() if m.strip()}
 
         # Check the modes
-        if not all(m in {"include", "exact", "case"} for m in modes):
+        if not all(m in {"include", "exact", "case", "name", "forward", "pure"} for m in modes):
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_modes_invalid"), report=False, private=True)
         elif not any(m in {"include", "exact"} for m in modes):
