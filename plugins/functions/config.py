@@ -78,6 +78,29 @@ def get_config_text(config: dict) -> str:
     return result
 
 
+def get_words(words: set, exact: bool) -> dict:
+    # Get words dict
+    result = {}
+
+    try:
+        for word in words:
+            if word.startswith("{{") and word.sendswith("}}"):
+                word = word[2:-2]
+
+                if not word:
+                    continue
+
+                result[word] = True
+            elif exact:
+                result[word] = True
+            else:
+                result[word] = False
+    except Exception as e:
+        logger.warning(f"Get words error: {e}", exc_info=True)
+
+    return result
+
+
 def kws_get(text: str) -> List[str]:
     # Get keyword settings
     result = []
@@ -104,7 +127,7 @@ def kws_get(text: str) -> List[str]:
 
         # Check target
         if len(text_list) < 5:
-            text_list.append("member")
+            text_list.append("all")
 
         # Check destruct
         if len(text_list) < 6:
@@ -175,11 +198,15 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
 
         # Get reply
         reply = text_list[1]
+        _, markup = get_text_and_markup(reply)
         
         # Check the reply
         if len(reply) > 2000:
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_exceed_reply"), report=False, private=True)
+        elif markup and sum(len(m) for m in markup.inline_keyboard) > 6:
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
+                                 lang("error_exceed_button"), report=False, private=True)
 
         # Get modes
         modes = {m.strip() for m in text_list[2].split() if m.strip()}
@@ -356,7 +383,7 @@ def kws_show(client: Client, message: Message, gid: int, file: bool = False) -> 
                      f"{lang('kws_destruct')}{lang('colon')}{code(destruct)}\n"
                      f"{lang('kws_count')}{lang('colon')}{code(count)}\n"
                      f"{lang('kws_today')}{lang('colon')}{code(today)}\n"
-                     f"{lang('kws_raw')}{lang('colon')}{code('-' * 8)}\n"
+                     f"{lang('kws_raw')}{lang('colon')}{code('-' * 16)}\n"
                      f"{code_block(raw)}\n\n")
 
         # Send as file
@@ -400,18 +427,18 @@ def kws_show_file(client: Client, message: Message, gid: int,
             count = f"{keywords[key]['count']} {lang('times')}"
             today = f"{keywords[key]['today']} {lang('times')}"
             raw = keywords[key]['raw'].strip()
-            text += code("-" * 24) + "\n\n"
-            text += (f"{lang('kws_key')}{lang('colon')}{code(key)}\n"
-                     f"{lang('modified_by')}{lang('colon')}{code(aid)}\n"
-                     f"{lang('keyword')}{lang('colon')}{code(keyword)}\n"
-                     f"{lang('kws_modes')}{lang('colon')}{code(modes)}\n"
-                     f"{lang('kws_actions')}{lang('colon')}{code(actions)}\n"
-                     f"{lang('kws_target')}{lang('colon')}{code(target)}\n"
-                     f"{lang('kws_destruct')}{lang('colon')}{code(destruct)}\n"
-                     f"{lang('kws_count')}{lang('colon')}{code(count)}\n"
-                     f"{lang('kws_today')}{lang('colon')}{code(today)}\n"
-                     f"{lang('kws_raw')}{lang('colon')}{code('-' * 8)}\n"
-                     f"{code_block(raw)}\n\n")
+            text += "-" * 24 + "\n\n"
+            text += (f"{lang('kws_key')}{lang('colon')}{key}\n"
+                     f"{lang('modified_by')}{lang('colon')}{aid}\n"
+                     f"{lang('keyword')}{lang('colon')}{keyword}\n"
+                     f"{lang('kws_modes')}{lang('colon')}{modes}\n"
+                     f"{lang('kws_actions')}{lang('colon')}{actions}\n"
+                     f"{lang('kws_target')}{lang('colon')}{target}\n"
+                     f"{lang('kws_destruct')}{lang('colon')}{destruct}\n"
+                     f"{lang('kws_count')}{lang('colon')}{count}\n"
+                     f"{lang('kws_today')}{lang('colon')}{today}\n"
+                     f"{lang('kws_raw')}{lang('colon')}{'-' * 16}\n"
+                     f"{raw}\n\n")
 
         # Save to a file
         file = file_txt(text)

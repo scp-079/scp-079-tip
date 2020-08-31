@@ -27,11 +27,11 @@ from pyrogram.types import CallbackQuery, Message, User
 
 from .. import glovar
 from .channel import share_regex_remove
+from .config import get_words
 from .decorators import timeout
-from .etc import get_now, get_text
+from .etc import get_forward_name, get_full_name, get_now, get_text
 from .file import save
 from .ids import init_group_id
-from .tip import get_keywords
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -536,64 +536,210 @@ def is_high_score_user(user: Union[int, User], high: bool = True) -> float:
     return result
 
 
-def is_keyword_text(message: Message) -> (int, str):
-    # Check if the text includes keywords
+def is_keyword_message(message: Message) -> dict:
+    # Check if the message includes keywords
+    result = {}
+
     try:
         # Basic data
         gid = message.chat.id
-        rid = message.reply_to_message and message.reply_to_message.message_id
 
         # Check config
-        if not glovar.configs[gid].get("keyword") or not glovar.configs[gid].get("keyword_text"):
-            return 0, ""
+        if not glovar.configs[gid].get("keyword", True):
+            return {}
 
-        # Check message:
+        # Check message sender:
         if message.forward_from and message.forward_from.is_self:
-            return 0, ""
+            return {}
 
-        # Get the message text
-        message_text = get_text(message).lower()
+        # Get the keywords
+        keywords = glovar.keywords[gid].get("kws", {})
 
-        # Check message text
-        if not message_text:
-            return 0, ""
+        # Check keywords
+        if not keywords:
+            return {}
 
-        # Get keywords
-        keywords = get_keywords(glovar.configs[gid]["keyword_text"])
+        # Loop keywords
+        for key in keywords:
+            modes = keywords[key]["modes"]
+            actions = keywords[key]["actions"]
+            target = keywords[key]["target"]
+            class_c_message = is_class_c(None, None, message)
 
-        # Find keyword in text
-        for keyword in keywords:
-            key = ""
-
-            if keyword.startswith("{{") and keyword.endswith("}}"):
-                key = keyword[2:-2]
-
-                if not key:
-                    continue
-
-                if message_text != key:
-                    continue
-            elif keyword not in message_text:
+            if target == "member" and class_c_message:
+                continue
+            elif target == "admin" and not class_c_message:
+                continue
+            elif (target in {"admin", "all"}
+                    and any(a.startswith("ban") or a.startswith("restrict") for a in actions)
+                    and class_c_message):
                 continue
 
-            if message_text == keywords[keyword]:
-                continue
-
-            if key:
-                word = key
+            if "name" in modes:
+                result = is_keyword_name(message, key)
+            elif "forward" in modes:
+                result = is_keyword_text(message, key, True)
             else:
-                word = keyword
+                result = is_keyword_text(message, key)
 
-            if is_class_c(None, None, message) and message_text == word:
-                return rid, keywords[keyword]
-            elif is_class_c(None, None, message):
-                return 0, ""
-            else:
-                return 0, keywords[keyword]
+            if result:
+                return result
     except Exception as e:
         logger.warning(f"Is keyword text error: {e}", exc_info=True)
 
-    return 0, ""
+    return result
+
+
+def is_keyword_name(message: Message, key: str) -> dict:
+    # Check if the message's sender name includes keywords
+    result = {}
+
+    try:
+        # Basic data
+        gid = message.chat.id
+        match = ""
+
+        # Get keywords
+        keyword = glovar.keywords[gid]["kws"].get(key, {})
+
+        # Check the keyword
+        if not keyword:
+            return {}
+
+        # Get modes
+        modes = keyword["modes"]
+        exact = "exact" in modes or is_class_c(None, None, message)
+        case = "case" in modes
+        pure = "pure" in modes
+        forward = "forward" in modes
+
+        # Get names
+        user_name = get_full_name(message.from_user, True, pure, pure)
+        forward_name = get_forward_name(message, True, pure, pure)
+
+        # Check the forward name
+        if forward and not forward_name:
+            return {}
+
+        # Get words
+        words = get_words(keyword["words"], exact)
+
+        # Get name list
+        if forward:
+            names = [forward_name]
+        else:
+            names = [user_name, forward_name]
+
+        # Get match result
+        for name in names:
+            if not name:
+                continue
+
+            for word in words:
+                match = is_keyword_string(word, name, words[word], case)
+
+                if match:
+                    break
+
+            if match:
+                break
+
+        # Check the match
+        if not match:
+            return {}
+
+        result = {
+            "word": match,
+            "reply": keyword["reply"],
+            "actions": keyword["actions"],
+            "destruct": keyword["destruct"]
+        }
+    except Exception as e:
+        logger.warning(f"Is keyword name error: {e}", exc_info=True)
+
+    return result
+
+
+def is_keyword_string(word: str, text: str, exact: bool, case: bool) -> bool:
+    # Check if the keyword match the string
+    result = False
+
+    try:
+        if not text or not text.strip():
+            return False
+
+        text = text.strip()
+
+        if not case:
+            word = word.lower()
+            text = text.lower()
+
+        if exact and word == text:
+            return True
+        elif not exact and word in text:
+            return True
+    except Exception as e:
+        logger.warning(f"Is keyword string error: {e}", exc_info=True)
+
+    return result
+
+
+def is_keyword_text(message: Message, key: str, forward: bool = False) -> dict:
+    # Check if the message includes keywords
+    result = {}
+
+    try:
+        # Basic data
+        gid = message.chat.id
+        match = ""
+
+        # Check the message
+        if forward and not message.forward_date:
+            return {}
+
+        # Get keywords
+        keyword = glovar.keywords[gid]["kws"].get(key, {})
+
+        # Check the keyword
+        if not keyword:
+            return {}
+
+        # Get modes
+        modes = keyword["modes"]
+        exact = "exact" in modes or is_class_c(None, None, message)
+        case = "case" in modes
+
+        # Get text
+        message_text = get_text(message, True)
+
+        # Check the text
+        if not message_text:
+            return {}
+
+        # Get words
+        words = get_words(keyword["words"], exact)
+
+        # Get match result
+        for word in words:
+            match = is_keyword_string(word, message_text, words[word], case)
+
+            if match:
+                break
+
+        # Check the match
+        if not match:
+            return {}
+
+        result = {
+            "word": match,
+            "reply": keyword["reply"],
+            "actions": keyword["actions"],
+            "destruct": keyword["destruct"]
+        }
+    except Exception as e:
+        logger.warning(f"Is keyword text error: {e}", exc_info=True)
+
+    return result
 
 
 def is_nm_text(client: Client, text: str) -> bool:
