@@ -28,7 +28,7 @@ from .. import glovar
 from .channel import send_debug
 from .command import command_error
 from .decorators import threaded
-from .etc import code, general_link, get_now, lang, thread
+from .etc import code, code_block, general_link, get_now, lang, thread
 from .file import delete_file, file_txt, save
 from .markup import get_text_and_markup
 from .telegram import get_group_info, send_document, send_message, send_report_message
@@ -118,6 +118,24 @@ def kws_get(text: str) -> List[str]:
     return result
 
 
+def kws_action(text: str) -> str:
+    # Get kws action string
+    result = ""
+
+    try:
+        if text in {"reply", "delete", "ban", "restrict"}:
+            return lang(f"kws_actions_{text}")
+
+        if text.startswith("ban-") or text.startswith("restrict-"):
+            time = text.split("-")[1]
+            return lang(f"kws_actions_{text}_time").format(time)
+
+    except Exception as e:
+        logger.warning(f"Kws action error: {e}", exc_info=True)
+
+    return result
+
+
 def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the_type: str = "add") -> bool:
     # Add or edit a custom keyword
     result = False
@@ -129,7 +147,7 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
         mid = message.message_id
         now = get_now()
 
-        # Check questions count
+        # Check keywords count
         if the_type == "add" and len(glovar.keywords[gid]["kws"]) >= 100:
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("error_exceed_kws"),
                                  report=False, private=True)
@@ -268,10 +286,10 @@ def kws_remove(client: Client, message: Message, gid: int, key: str) -> bool:
         group_name, group_link = get_group_info(client, gid)
         text = (f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
                 f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang('action_qns_remove'))}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('action_kws_remove'))}\n"
                 f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n" + code("-" * 24) + "\n"
-                f"{lang('qns_key')}{lang('colon')}{code(key)}\n" + code("-" * 24) + "\n"
-                f"{lang('question')}{lang('colon')}{code(lang('comma').join(words))}\n")
+                f"{lang('kws_key')}{lang('colon')}{code(key)}\n" + code("-" * 24) + "\n"
+                f"{lang('keyword')}{lang('colon')}{code(lang('comma').join(words))}\n")
 
         # Send the report message
         thread(send_message, (client, cid, text, mid))
@@ -293,56 +311,55 @@ def kws_show(client: Client, message: Message, gid: int, file: bool = False) -> 
         cid = message.chat.id
         mid = message.message_id
 
+        # Get keywords
         with glovar.locks["config"]:
-            questions = glovar.keywords[gid]["kws"]
+            keywords = glovar.keywords[gid]["kws"]
 
         # Check data
-        if not questions:
-            return command_error(client, message, lang("action_qns_show"), lang("error_none"), report=False)
+        if not keywords:
+            return command_error(client, message, lang("action_kws_show"), lang("error_none"),
+                                 report=False, private=True)
 
         # Send as file
-        if file or len(questions) > 5:
-            return keyword_show_file(client, message, gid, questions)
+        if file or len(keywords) > 3:
+            return kws_show_file(client, message, gid, keywords)
 
         # Generate the text
         group_name, group_link = get_group_info(client, gid)
         text = (f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
                 f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang('action_qns_show'))}\n"
-                f"{lang('qns_total')}{lang('colon')}{code(len(questions))}\n\n")
+                f"{lang('action')}{lang('colon')}{code(lang('action_kws_show'))}\n"
+                f"{lang('kws_total')}{lang('colon')}{code(len(keywords))}\n\n")
 
-        for key in questions:
-            aid = questions[key]["aid"]
-            question = questions[key]["question"]
-            correct_list = questions[key]["correct"]
-            wrong_list = questions[key]["wrong"]
-            issued = questions[key]["issued"]
-            engaged = questions[key]["engaged"]
-            solved = questions[key]["solved"]
-            percent_passed = (solved / (issued or 1)) * 100
-            percent_engaged = (engaged / (issued or 1)) * 100
-            percent_wrong = ((engaged - solved) / (engaged or 1)) * 100
-
+        for key in keywords:
+            aid = keywords[key]["aid"]
+            keyword = f"{lang('comma')}".join(keywords[key]["words"])
+            modes = f"{lang('comma')}".join(lang(f"kws_modes_{m}") for m in keywords[key]["modes"])
+            actions = f"{lang('comma')}".join(kws_action(a) for a in keywords[key]["actions"])
+            target = lang(f"kws_target_{keywords[key]['target']}")
+            destruct = f"{keywords[key]['destruct']} {lang('seconds')}"
+            count = f"{keywords[key]['count']} {lang('times')}"
+            today = f"{keywords[key]['today']} {lang('times')}"
+            raw = keywords[key]['raw'].strip()
             text += code("-" * 24) + "\n\n"
-            text += (f"{lang('qns_key')}{lang('colon')}{code(key)}\n"
+            text += (f"{lang('kws_key')}{lang('colon')}{code(key)}\n"
                      f"{lang('modified_by')}{lang('colon')}{code(aid)}\n"
-                     f"{lang('qns_issued')}{lang('colon')}{code(issued)}\n"
-                     f"{lang('percent_passed')}{lang('colon')}{code(f'{percent_passed:.1f}%')}\n"
-                     f"{lang('percent_engaged')}{lang('colon')}{code(f'{percent_engaged:.1f}%')}\n"
-                     f"{lang('percent_wrong')}{lang('colon')}{code(f'{percent_wrong:.1f}%')}\n"
-                     f"{lang('question')}{lang('colon')}{code(question)}\n")
-            text += "\n".join("\t" * 4 + f"■ {code(c)}" for c in correct_list) + "\n"
-            text += "\n".join("\t" * 4 + f"□ {code(w)}" for w in wrong_list)
+                     f"{lang('keyword')}{lang('colon')}{code(keyword)}\n"
+                     f"{lang('kws_modes')}{lang('colon')}{code(modes)}\n"
+                     f"{lang('kws_actions')}{lang('colon')}{code(actions)}\n"
+                     f"{lang('kws_target')}{lang('colon')}{code(target)}\n"
+                     f"{lang('kws_destruct')}{lang('colon')}{code(destruct)}\n"
+                     f"{lang('kws_count')}{lang('colon')}{code(count)}\n"
+                     f"{lang('kws_today')}{lang('colon')}{code(today)}\n"
+                     f"{lang('kws_raw')}{lang('colon')}{code('-' * 8)}\n"
+                     f"{code_block(raw)}\n\n")
 
-            if wrong_list:
-                text += "\n\n"
-            else:
-                text += "\n"
+        # Send as file
+        if len(text) > 4000:
+            return kws_show_file(client, message, gid, keywords)
 
         # Send the report message
-        send_message(client, cid, text, mid)
-
-        result = True
+        result = bool(send_message(client, cid, text, mid))
     except Exception as e:
         logger.warning(f"Kws show error: {e}", exc_info=True)
 
@@ -350,7 +367,7 @@ def kws_show(client: Client, message: Message, gid: int, file: bool = False) -> 
 
 
 def kws_show_file(client: Client, message: Message, gid: int,
-                      questions: Dict[str, Dict[str, Union[int, str, Set[str]]]]) -> bool:
+                  keywords: Dict[str, Dict[str, Union[int, str, Set[str]]]]) -> bool:
     # Show all custom keywords as TXT file
     result = False
 
@@ -363,38 +380,33 @@ def kws_show_file(client: Client, message: Message, gid: int,
         group_name, group_link = get_group_info(client, gid)
         caption = (f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
                    f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
-                   f"{lang('action')}{lang('colon')}{code(lang('action_qns_show'))}\n\n")
+                   f"{lang('action')}{lang('colon')}{code(lang('action_kws_show'))}\n\n")
         text = (f"{lang('group_name')}{lang('colon')}{group_name}\n"
                 f"{lang('group_id')}{lang('colon')}{gid}\n"
-                f"{lang('qns_total')}{lang('colon')}{len(questions)}\n\n")
+                f"{lang('kws_total')}{lang('colon')}{len(keywords)}\n\n")
 
-        for key in questions:
-            aid = questions[key]["aid"]
-            question = questions[key]["question"]
-            correct_list = questions[key]["correct"]
-            wrong_list = questions[key]["wrong"]
-            issued = questions[key]["issued"]
-            engaged = questions[key]["engaged"]
-            solved = questions[key]["solved"]
-            percent_passed = (solved / (issued or 1)) * 100
-            percent_engaged = (engaged / (issued or 1)) * 100
-            percent_wrong = ((engaged - solved) / (engaged or 1)) * 100
-
-            text += ("-" * 24) + "\n\n"
-            text += (f"{lang('qns_key')}{lang('colon')}{key}\n"
-                     f"{lang('modified_by')}{lang('colon')}{aid}\n"
-                     f"{lang('qns_issued')}{lang('colon')}{issued}\n"
-                     f"{lang('percent_passed')}{lang('colon')}{f'{percent_passed:.1f}%'}\n"
-                     f"{lang('percent_engaged')}{lang('colon')}{f'{percent_engaged:.1f}%'}\n"
-                     f"{lang('percent_wrong')}{lang('colon')}{f'{percent_wrong:.1f}%'}\n"
-                     f"{lang('question')}{lang('colon')}{question}\n")
-            text += "\n".join("\t" + f"■ {c}" for c in correct_list) + "\n"
-            text += "\n".join("\t" + f"□ {w}" for w in wrong_list)
-
-            if wrong_list:
-                text += "\n\n"
-            else:
-                text += "\n"
+        for key in keywords:
+            aid = keywords[key]["aid"]
+            keyword = f"{lang('comma')}".join(keywords[key]["words"])
+            modes = f"{lang('comma')}".join(lang(f"kws_modes_{m}") for m in keywords[key]["modes"])
+            actions = f"{lang('comma')}".join(kws_action(a) for a in keywords[key]["actions"])
+            target = lang(f"kws_target_{keywords[key]['target']}")
+            destruct = f"{keywords[key]['destruct']} {lang('seconds')}"
+            count = f"{keywords[key]['count']} {lang('times')}"
+            today = f"{keywords[key]['today']} {lang('times')}"
+            raw = keywords[key]['raw'].strip()
+            text += code("-" * 24) + "\n\n"
+            text += (f"{lang('kws_key')}{lang('colon')}{code(key)}\n"
+                     f"{lang('modified_by')}{lang('colon')}{code(aid)}\n"
+                     f"{lang('keyword')}{lang('colon')}{code(keyword)}\n"
+                     f"{lang('kws_modes')}{lang('colon')}{code(modes)}\n"
+                     f"{lang('kws_actions')}{lang('colon')}{code(actions)}\n"
+                     f"{lang('kws_target')}{lang('colon')}{code(target)}\n"
+                     f"{lang('kws_destruct')}{lang('colon')}{code(destruct)}\n"
+                     f"{lang('kws_count')}{lang('colon')}{code(count)}\n"
+                     f"{lang('kws_today')}{lang('colon')}{code(today)}\n"
+                     f"{lang('kws_raw')}{lang('colon')}{code('-' * 8)}\n"
+                     f"{code_block(raw)}\n\n")
 
         # Save to a file
         file = file_txt(text)
@@ -432,8 +444,8 @@ def start_kws(client: Client, message: Message, key: str) -> bool:
         group_name, group_link = get_group_info(client, gid)
         text = (f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
                 f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang('action_qns'))}\n"
-                f"{lang('description')}{lang('colon')}{code(lang('description_qns'))}\n")
+                f"{lang('action')}{lang('colon')}{code(lang('action_kws'))}\n"
+                f"{lang('description')}{lang('colon')}{code(lang('description_kws'))}\n")
         thread(send_message, (client, cid, text, mid))
 
         result = True
