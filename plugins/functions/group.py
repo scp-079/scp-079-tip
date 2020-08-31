@@ -17,61 +17,35 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import Optional
+from typing import List, Optional
 
 from pyrogram import Client
-from pyrogram.types import ChatMember
+from pyrogram.types import ChatMember, InlineKeyboardMarkup, InlineKeyboardButton
 
 from .. import glovar
+from .decorators import threaded
 from .etc import code, lang, thread
 from .file import save
 from .ids import init_group_id
-from .telegram import delete_messages, get_chat_member, leave_chat
+from .telegram import delete_messages, get_chat_member, leave_chat, send_message
 
 # Enable logging
 logger = logging.getLogger(__name__)
 
 
+@threaded()
 def delete_message(client: Client, gid: int, mid: int) -> bool:
     # Delete a single message
+    result = False
+
     try:
         if not gid or not mid:
             return True
 
         mids = [mid]
-        thread(delete_messages, (client, gid, mids))
-
-        return True
+        result = delete_messages(client, gid, mids)
     except Exception as e:
         logger.warning(f"Delete message error: {e}", exc_info=True)
-
-    return False
-
-
-def get_config_text(config: dict) -> str:
-    # Get config text
-    result = ""
-    try:
-        # Basic
-        default_text = (lambda x: lang("default") if x else lang("custom"))(config.get("default"))
-        result += f"{lang('config')}{lang('colon')}{code(default_text)}\n"
-
-        # CAPTCHA, alone, clean, resend
-        for the_type in ["captcha", "alone", "clean", "resend"]:
-            the_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get(the_type))
-            result += f"{lang(the_type)}{lang('colon')}{code(the_text)}\n"
-
-        # Channel, hold
-        for the_type in ["channel", "hold"]:
-            channel_text = (lambda x: config[the_type] if x else lang("disabled"))(config.get(the_type))
-            result += f"{lang(the_type)}{lang('colon')}{code(channel_text)}\n"
-
-        # Others
-        for the_type in ["keyword", "ot", "rm", "welcome"]:
-            the_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get(the_type))
-            result += f"{lang(the_type)}{lang('colon')}{code(the_text)}\n"
-    except Exception as e:
-        logger.warning(f"Get config text error: {e}", exc_info=True)
 
     return result
 
@@ -79,30 +53,36 @@ def get_config_text(config: dict) -> str:
 def get_member(client: Client, gid: int, uid: int, cache: bool = True) -> Optional[ChatMember]:
     # Get a member in the group
     result = None
+
     try:
         if not init_group_id(gid):
             return None
 
         the_cache = glovar.members[gid].get(uid)
 
-        if the_cache:
-            result = the_cache
-        else:
-            result = get_chat_member(client, gid, uid)
+        if cache and the_cache:
+            return the_cache
 
-        if cache and result:
-            glovar.members[gid][uid] = result
+        result = get_chat_member(client, gid, uid)
+
+        if not result:
+            return result
+
+        glovar.members[gid][uid] = result
     except Exception as e:
         logger.warning(f"Get member error: {e}", exc_info=True)
 
     return result
 
 
-def leave_group(client: Client, gid: int) -> bool:
+def leave_group(client: Client, gid: int, reason: str = "") -> bool:
     # Leave a group, clear it's data
+    result = False
+
     try:
         glovar.left_group_ids.add(gid)
         save("left_group_ids")
+        leave_reason(client, gid, reason)
         thread(leave_chat, (client, gid))
 
         glovar.lack_group_ids.discard(gid)
@@ -111,22 +91,98 @@ def leave_group(client: Client, gid: int) -> bool:
         glovar.admin_ids.pop(gid, set())
         save("admin_ids")
 
+        glovar.flooded_ids.discard(gid)
+        save("flooded_ids")
+
         glovar.message_ids.pop(gid, {})
         save("message_ids")
+
+        glovar.pinned_ids.pop(gid, 0)
+        save("pinned_ids")
 
         glovar.trust_ids.pop(gid, set())
         save("trust_ids")
 
+        glovar.channels.pop(gid, {})
+        save("channels")
+
         glovar.configs.pop(gid, {})
         save("configs")
 
+        glovar.keywords.pop(gid, {})
+        save("keywords")
+
+        glovar.ots.pop(gid, {})
+        save("ots")
+
+        glovar.rms.pop(gid, {})
+        save("rms")
+
+        glovar.welcomes.pop(gid, {})
+        save("welcomes")
+
+        glovar.chats.pop(gid, None)
         glovar.declared_message_ids.pop(gid, set())
-        glovar.members.pop(gid, {})
         glovar.keyworded_ids.pop(gid, {})
+        glovar.members.pop(gid, {})
         glovar.welcomed_ids.pop(gid, set())
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Leave group error: {e}", exc_info=True)
 
-    return False
+    return result
+
+
+def leave_reason(client: Client, gid: int, reason: str = "") -> bool:
+    # Send leave reason
+    result = False
+
+    try:
+        if not reason:
+            return False
+
+        text = (f"{lang('action')}{lang('colon')}{code(lang('leave_group'))}\n"
+                f"{lang('reason')}{lang('colon')}{code(glovar.leave_reason)}\n")
+        markup = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        text=glovar.leave_button,
+                        url=glovar.leave_link
+                    )
+                ]
+            ]
+        )
+        result = send_message(client, gid, text, None, markup)
+    except Exception as e:
+        logger.warning(f"Leave reason error: {e}", exc_info=True)
+
+    return result
+
+
+def save_admins(gid: int, admin_members: List[ChatMember]) -> bool:
+    # Save the group's admin list
+    result = False
+
+    try:
+        # Admin list
+        glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
+                                 if (((not admin.user.is_bot and not admin.user.is_deleted)
+                                      and admin.can_delete_messages
+                                      and admin.can_restrict_members)
+                                     or admin.status == "creator"
+                                     or admin.user.id in glovar.bot_ids)}
+        save("admin_ids")
+
+        # Trust list
+        glovar.trust_ids[gid] = {admin.user.id for admin in admin_members
+                                 if ((not admin.user.is_bot and not admin.user.is_deleted)
+                                     or admin.user.id in glovar.bot_ids)}
+        save("trust_ids")
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Save admins error: {e}", exc_info=True)
+
+    return result
