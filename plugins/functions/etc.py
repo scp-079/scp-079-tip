@@ -45,20 +45,25 @@ converter = OpenCC(config="t2s.json")
 
 def bold(text: Any) -> str:
     # Get a bold text
-    try:
-        text = str(text).strip()
+    result = ""
 
-        if text:
-            return f"<b>{escape(text)}</b>"
+    try:
+        result = str(text).strip()
+
+        if not result:
+            return ""
+
+        result = f"<b>{escape(result)}</b>"
     except Exception as e:
         logger.warning(f"Bold error: {e}", exc_info=True)
 
-    return ""
+    return result
 
 
 def button_data(action: str, action_type: str = None, data: Union[int, str] = None) -> Optional[bytes]:
     # Get a button's bytes data
     result = None
+
     try:
         button = {
             "a": action,
@@ -74,28 +79,36 @@ def button_data(action: str, action_type: str = None, data: Union[int, str] = No
 
 def code(text: Any) -> str:
     # Get a code text
-    try:
-        text = str(text).strip()
+    result = ""
 
-        if text:
-            return f"<code>{escape(text)}</code>"
+    try:
+        result = str(text).strip()
+
+        if not result:
+            return ""
+
+        result = f"<code>{escape(result)}</code>"
     except Exception as e:
         logger.warning(f"Code error: {e}", exc_info=True)
 
-    return ""
+    return result
 
 
 def code_block(text: Any) -> str:
     # Get a code block text
-    try:
-        text = str(text).rstrip()
+    result = ""
 
-        if text:
-            return f"<pre>{escape(text)}</pre>"
+    try:
+        result = str(text).rstrip()
+
+        if not result:
+            return ""
+
+        result = f"<pre>{escape(result)}</pre>"
     except Exception as e:
         logger.warning(f"Code block error: {e}", exc_info=True)
 
-    return ""
+    return result
 
 
 def crypt_str(operation: str, text: str, key: bytes) -> str:
@@ -135,12 +148,15 @@ def delay(secs: int, target: Callable, args: list = None) -> bool:
 def general_link(text: Union[int, str], link: str) -> str:
     # Get a general link
     result = ""
+
     try:
         text = str(text).strip()
         link = link.strip()
 
-        if text and link:
-            result = f'<a href="{link}">{escape(text)}</a>'
+        if not (text and link):
+            return ""
+
+        result = f'<a href="{link}">{escape(text)}</a>'
     except Exception as e:
         logger.warning(f"General link error: {e}", exc_info=True)
 
@@ -149,125 +165,97 @@ def general_link(text: Union[int, str], link: str) -> str:
 
 def get_channel_link(message: Union[int, Message]) -> str:
     # Get a channel reference link
-    text = ""
+    result = ""
+
     try:
-        text = "https://t.me/"
+        result = "https://t.me/"
 
         if isinstance(message, int):
-            text += f"c/{str(message)[4:]}"
+            result += f"c/{str(message)[4:]}"
+            return result
+
+        if not message.chat:
+            return result
+
+        if message.chat.username:
+            result += f"{message.chat.username}"
         else:
-            if message.chat.username:
-                text += f"{message.chat.username}"
-            else:
-                cid = message.chat.id
-                text += f"c/{str(cid)[4:]}"
+            cid = message.chat.id
+            result += f"c/{str(cid)[4:]}"
     except Exception as e:
         logger.warning(f"Get channel link error: {e}", exc_info=True)
-
-    return text
-
-
-def get_command_context(message: Message) -> (str, str):
-    # Get the type "a" and the context "b" in "/command a b"
-    command_type = ""
-    command_context = ""
-    try:
-        text = get_text(message)
-        command_list = text.split()
-
-        if len(list(filter(None, command_list))) <= 1:
-            return "", ""
-
-        i = 1
-        command_type = command_list[i]
-
-        while command_type == "" and i < len(command_list):
-            i += 1
-            command_type = command_list[i]
-
-        command_context = text[1 + len(command_list[0]) + i + len(command_type):].strip()
-    except Exception as e:
-        logger.warning(f"Get command context error: {e}", exc_info=True)
-
-    return command_type, command_context
-
-
-def get_command_type(message: Message) -> str:
-    # Get the command type "a" in "/command a"
-    result = ""
-    try:
-        text = get_text(message)
-        command_list = list(filter(None, text.split()))
-        result = text[len(command_list[0]):].strip()
-    except Exception as e:
-        logger.warning(f"Get command type error: {e}", exc_info=True)
 
     return result
 
 
-def get_filename(message: Message, normal: bool = False, printable: bool = False) -> str:
+def get_filename(message: Message, normal: bool = False, printable: bool = False, pure: bool = False) -> str:
     # Get file's filename
-    text = ""
-    try:
-        if message.document:
-            if message.document.file_name:
-                text += message.document.file_name
-        elif message.audio:
-            if message.audio.file_name:
-                text += message.audio.file_name
+    result = ""
 
-        if text:
-            text = t2t(text, normal, printable)
+    try:
+        if not message.media:
+            return ""
+
+        if message.document and message.document.file_name:
+            result = message.document.file_name
+        elif message.audio and message.audio.file_name:
+            result = message.audio.file_name
+
+        result = t2t(result, normal, printable, pure)
     except Exception as e:
         logger.warning(f"Get filename error: {e}", exc_info=True)
 
-    return text
+    return result
 
 
-def get_forward_name(message: Message, normal: bool = False, printable: bool = False) -> str:
+def get_forward_name(message: Message, normal: bool = False, printable: bool = False, pure: bool = False) -> str:
     # Get forwarded message's origin sender's name
-    text = ""
+    result = ""
+
     try:
+        if not message.forward_date:
+            return ""
+
         if message.forward_from:
             user = message.forward_from
-            text = get_full_name(user, normal, printable)
+            result = get_full_name(user, normal, printable, pure)
         elif message.forward_sender_name:
-            text = message.forward_sender_name
+            result = message.forward_sender_name
         elif message.forward_from_chat:
             chat = message.forward_from_chat
-            text = chat.title
+            result = chat.title
 
-        if text:
-            text = t2t(text, normal, printable)
+        result = t2t(result, normal, printable, pure)
     except Exception as e:
         logger.warning(f"Get forward name error: {e}", exc_info=True)
 
-    return text
+    return result
 
 
-def get_full_name(user: User, normal: bool = False, printable: bool = False) -> str:
+def get_full_name(user: User, normal: bool = False, printable: bool = False, pure: bool = False) -> str:
     # Get user's full name
-    text = ""
+    result = ""
+
     try:
         if not user or user.is_deleted:
             return ""
 
-        text = user.first_name
+        result = user.first_name
 
         if user.last_name:
-            text += f" {user.last_name}"
+            result += f" {user.last_name}"
 
-        if text and normal:
-            text = t2t(text, normal, printable)
+        result = t2t(result, normal, printable, pure)
     except Exception as e:
         logger.warning(f"Get full name error: {e}", exc_info=True)
 
-    return text
+    return result
 
 
 def get_int(text: str) -> Optional[int]:
     # Get a int from a string
     result = None
+
     try:
         result = int(text)
     except Exception as e:
@@ -279,6 +267,7 @@ def get_int(text: str) -> Optional[int]:
 def get_length(text: str) -> int:
     # Get the length of the string
     result = 0
+
     try:
         if not text:
             return 0
@@ -314,6 +303,7 @@ def get_length(text: str) -> int:
 def get_now() -> int:
     # Get time for now
     result = 0
+
     try:
         result = int(time())
     except Exception as e:
@@ -337,24 +327,56 @@ def get_readable_time(secs: int = 0, the_format: str = "%Y%m%d%H%M%S") -> str:
     return result
 
 
-def get_text(message: Message, normal: bool = False, printable: bool = False) -> str:
+def get_text(message: Message, normal: bool = False, printable: bool = False, pure: bool = False) -> str:
     # Get message's text
-    text = ""
+    result = ""
+
     try:
         if not message:
             return ""
 
-        the_text = message.text or message.caption
+        message_text = message.text or message.caption
 
-        if the_text:
-            text += the_text
+        if message_text:
+            result += message_text
 
-        if text:
-            text = t2t(text, normal, printable)
+        if not result:
+            return ""
+
+        result = t2t(result, normal, printable, pure)
     except Exception as e:
         logger.warning(f"Get text error: {e}", exc_info=True)
 
-    return text
+    return result
+
+
+def get_text_user(text: str, user: User) -> str:
+    # Get replaced user text
+    result = text
+
+    try:
+        # Basic data
+        uid = user.id
+        name = get_full_name(user)
+
+        # Check input
+        if not text.strip() or not user:
+            return text
+
+        # Replace
+        result = result.replace("$code_id", code(uid))
+        result = result.replace("$code_name", code(name))
+        result = result.replace("$mention_id", mention_id(uid))
+        result = result.replace("$mention_name", mention_name(user))
+
+        if not user or not user.id:
+            return result
+
+        result += mention_text("\U00002060", user.id)
+    except Exception as e:
+        logger.warning(f"Get text user error: {e}", exc_info=True)
+
+    return result
 
 
 def lang(text: str) -> str:
@@ -372,6 +394,7 @@ def lang(text: str) -> str:
 def mention_id(uid: int) -> str:
     # Get a ID mention string
     result = ""
+
     try:
         result = general_link(f"{uid}", f"tg://user?id={uid}")
     except Exception as e:
@@ -383,6 +406,7 @@ def mention_id(uid: int) -> str:
 def mention_name(user: User) -> str:
     # Get a name mention string
     result = ""
+
     try:
         name = get_full_name(user)
         uid = user.id
@@ -396,6 +420,7 @@ def mention_name(user: User) -> str:
 def mention_text(text: str, uid: int) -> str:
     # Get a text mention string
     result = ""
+
     try:
         result = general_link(f"{text}", f"tg://user?id={uid}")
     except Exception as e:
@@ -406,13 +431,14 @@ def mention_text(text: str, uid: int) -> str:
 
 def random_str(i: int) -> str:
     # Get a random string
-    text = ""
+    result = ""
+
     try:
-        text = "".join(choice(ascii_letters + digits) for _ in range(i))
+        result = "".join(choice(ascii_letters + digits) for _ in range(i))
     except Exception as e:
         logger.warning(f"Random str error: {e}", exc_info=True)
 
-    return text
+    return result
 
 
 def t2t(text: str, normal: bool, printable: bool, pure: bool = False) -> str:
