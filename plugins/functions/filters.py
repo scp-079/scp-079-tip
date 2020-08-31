@@ -27,11 +27,11 @@ from pyrogram.types import CallbackQuery, Message, User
 
 from .. import glovar
 from .channel import share_regex_remove
-from .config import get_words
 from .decorators import timeout
 from .etc import get_forward_name, get_full_name, get_now, get_text
 from .file import save
 from .ids import init_group_id
+from .tip import get_words
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -561,11 +561,13 @@ def is_keyword_message(message: Message) -> dict:
 
         # Loop keywords
         for key in keywords:
+            # Config data
             modes = keywords[key]["modes"]
             actions = keywords[key]["actions"]
             target = keywords[key]["target"]
             class_c_message = is_class_c(None, None, message)
 
+            # Check target
             if target == "member" and class_c_message:
                 continue
             elif target == "admin" and not class_c_message:
@@ -575,6 +577,7 @@ def is_keyword_message(message: Message) -> dict:
                     and class_c_message):
                 continue
 
+            # Get result
             if "name" in modes:
                 result = is_keyword_name(message, key)
             elif "forward" in modes:
@@ -582,6 +585,7 @@ def is_keyword_message(message: Message) -> dict:
             else:
                 result = is_keyword_text(message, key)
 
+            # Check result
             if result:
                 return result
     except Exception as e:
@@ -804,30 +808,34 @@ def is_regex_text(client: Client, word_type: str, text: str, ocr: bool = False, 
     return result
 
 
-def is_rm_text(client: Client, message: Message) -> str:
+def is_rm_text(client: Client, message: Message) -> bool:
     # Check if the text is rm text
+    result = False
+
     try:
         # Basic data
         gid = message.chat.id
 
         # Check admin
         if is_class_c(None, None, message):
-            return ""
+            return False
 
         # Check config
-        if not glovar.configs[gid].get("rm") or not glovar.configs[gid].get("rm_text"):
-            return ""
+        if not glovar.configs[gid].get("rm", True) or not glovar.rms[gid].get("reply", ""):
+            return False
 
         # Get the message text
         message_text = get_text(message)
 
         # Check the message_text
-        if is_regex_text(client, "rm", message_text):
-            return glovar.configs[gid]["rm_text"]
+        if not is_regex_text(client, "rm", message_text):
+            return False
+
+        result = True
     except Exception as e:
         logger.warning(f"Is rm text error: {e}", exc_info=True)
 
-    return ""
+    return result
 
 
 def is_watch_user(user: Union[int, User], the_type: str, now: int = 0) -> bool:

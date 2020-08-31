@@ -78,29 +78,6 @@ def get_config_text(config: dict) -> str:
     return result
 
 
-def get_words(words: set, exact: bool) -> dict:
-    # Get words dict
-    result = {}
-
-    try:
-        for word in words:
-            if word.startswith("{{") and word.sendswith("}}"):
-                word = word[2:-2]
-
-                if not word:
-                    continue
-
-                result[word] = True
-            elif exact:
-                result[word] = True
-            else:
-                result[word] = False
-    except Exception as e:
-        logger.warning(f"Get words error: {e}", exc_info=True)
-
-    return result
-
-
 def kws_get(text: str) -> List[str]:
     # Get keyword settings
     result = []

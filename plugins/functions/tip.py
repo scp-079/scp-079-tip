@@ -216,6 +216,29 @@ def get_markup(the_type: str, gid: int) -> Optional[InlineKeyboardMarkup]:
     return result
 
 
+def get_words(words: set, exact: bool) -> dict:
+    # Get words dict
+    result = {}
+
+    try:
+        for word in words:
+            if word.startswith("{{") and word.sendswith("}}"):
+                word = word[2:-2]
+
+                if not word:
+                    continue
+
+                result[word] = True
+            elif exact:
+                result[word] = True
+            else:
+                result[word] = False
+    except Exception as e:
+        logger.warning(f"Get words error: {e}", exc_info=True)
+
+    return result
+
+
 def tip_keyword(client: Client, message: Message, text: str, mid: int) -> bool:
     # Send keyword tip
     try:
