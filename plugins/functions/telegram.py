@@ -26,7 +26,8 @@ from pyrogram.errors import PeerIdInvalid, QueryIdInvalid, UsernameInvalid, User
 from pyrogram.raw.base import InputChannel, InputUser, InputPeer
 from pyrogram.raw.functions.users import GetFullUser
 from pyrogram.raw.types import UserFull
-from pyrogram.types import Chat, ChatMember, ChatPreview, InlineKeyboardMarkup, Message, ReplyKeyboardMarkup, User
+from pyrogram.types import Chat, ChatMember, ChatPermissions, ChatPreview, InlineKeyboardMarkup, Message
+from pyrogram.types import ReplyKeyboardMarkup, User
 
 from .. import glovar
 from .decorators import threaded, retry
@@ -388,6 +389,36 @@ def resolve_peer(client: Client, pid: Union[int, str]) -> Union[bool, InputChann
 
 
 @retry
+def restrict_chat_member(client: Client, cid: int, uid: int, permissions: ChatPermissions,
+                         until_date: int = 0) -> Optional[Chat]:
+    # Restrict a user in a supergroup
+    result = None
+
+    try:
+        result = client.restrict_chat_member(
+            chat_id=cid,
+            user_id=uid,
+            permissions=permissions,
+            until_date=until_date
+        )
+    except FloodWait as e:
+        logger.warning(f"Restrict chat member {uid} in {cid} - Sleep for {e.x} second(s)")
+
+        if until_date:
+            new_date = until_date + e.x
+        else:
+            new_date = 0
+
+        wait_flood(e)
+
+        return restrict_chat_member(client, cid, uid, permissions, new_date)
+    except Exception as e:
+        logger.warning(f"Restrict chat member {uid} in {cid} error: {e}", exc_info=True)
+
+    return result
+
+
+@retry
 def send_document(client: Client, cid: int, document: str, file_ref: str = None, caption: str = "", mid: int = None,
                   markup: Union[InlineKeyboardMarkup, ReplyKeyboardMarkup] = None) -> Union[bool, Message, None]:
     # Send a document to a chat
@@ -499,5 +530,20 @@ def send_report_message(secs: int, client: Client, cid: int, text: str, mid: int
         result = delay(secs, delete_messages, [client, cid, mids])
     except Exception as e:
         logger.warning(f"Send report message to {cid} error: {e}", exc_info=True)
+
+    return result
+
+
+@retry
+def unban_chat_member(client: Client, cid: int, uid: Union[int, str]) -> Optional[bool]:
+    # Unban a user in a group
+    result = None
+
+    try:
+        result = client.unban_chat_member(chat_id=cid, user_id=uid)
+    except FloodWait as e:
+        raise e
+    except Exception as e:
+        logger.warning(f"Unban chat member {uid} in {cid} error: {e}", exc_info=True)
 
     return result

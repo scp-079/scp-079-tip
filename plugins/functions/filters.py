@@ -31,7 +31,6 @@ from .decorators import timeout
 from .etc import get_forward_name, get_full_name, get_now, get_text
 from .file import save
 from .ids import init_group_id
-from .tip import get_words
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -314,6 +313,29 @@ test_group = filters.create(
 )
 
 
+def get_words(words: set, exact: bool) -> dict:
+    # Get words dict
+    result = {}
+
+    try:
+        for word in words:
+            if word.startswith("{{") and word.sendswith("}}"):
+                word = word[2:-2]
+
+                if not word:
+                    continue
+
+                result[word] = True
+            elif exact:
+                result[word] = True
+            else:
+                result[word] = False
+    except Exception as e:
+        logger.warning(f"Get words error: {e}", exc_info=True)
+
+    return result
+
+
 def is_ad_text(client: Client, text: str, ocr: bool, matched: str = "") -> str:
     # Check if the text is ad text
     result = ""
@@ -573,7 +595,8 @@ def is_keyword_message(message: Message) -> dict:
             elif target == "admin" and not class_c_message:
                 continue
             elif (target in {"admin", "all"}
-                    and any(a.startswith("ban") or a.startswith("restrict") for a in actions)
+                    and any(a in {"delete", "kick"} or a.startswith("ban") or a.startswith("restrict")
+                            for a in actions)
                     and class_c_message):
                 continue
 
@@ -653,6 +676,8 @@ def is_keyword_name(message: Message, key: str) -> dict:
             return {}
 
         result = {
+            "key": key,
+            "mid": None,
             "word": match,
             "reply": keyword["reply"],
             "actions": keyword["actions"],
@@ -695,6 +720,7 @@ def is_keyword_text(message: Message, key: str, forward: bool = False) -> dict:
     try:
         # Basic data
         gid = message.chat.id
+        mid = None
         match = ""
 
         # Check the message
@@ -727,7 +753,10 @@ def is_keyword_text(message: Message, key: str, forward: bool = False) -> dict:
         for word in words:
             match = is_keyword_string(word, message_text, words[word], case)
 
-            if match:
+            if match and not forward and message_text.lower() == word.lower() and is_class_c(None, None, message):
+                mid = (message.reply_to_message and message.reply_to_message.message_id) or message.message_id
+                break
+            elif match:
                 break
 
         # Check the match
@@ -735,6 +764,8 @@ def is_keyword_text(message: Message, key: str, forward: bool = False) -> dict:
             return {}
 
         result = {
+            "key": key,
+            "mid": mid,
             "word": match,
             "reply": keyword["reply"],
             "actions": keyword["actions"],
@@ -742,6 +773,26 @@ def is_keyword_text(message: Message, key: str, forward: bool = False) -> dict:
         }
     except Exception as e:
         logger.warning(f"Is keyword text error: {e}", exc_info=True)
+
+    return result
+
+
+def is_keyworded_user(gid: int, key: str, uid: int) -> bool:
+    # Check if the user is keyworded user
+    result = False
+
+    try:
+        if key in glovar.keyworded_ids[gid].get(uid, set()):
+            return True
+
+        if not glovar.keyworded_ids[gid].get(uid, set()):
+            glovar.keyworded_ids[gid][uid] = set()
+
+        glovar.keyworded_ids[gid][uid].add(key)
+
+        result = False
+    except Exception as e:
+        logger.warning(f"Is keyworded user error: {e}", exc_info=True)
 
     return result
 
@@ -834,6 +885,23 @@ def is_rm_text(client: Client, message: Message) -> bool:
         result = True
     except Exception as e:
         logger.warning(f"Is rm text error: {e}", exc_info=True)
+
+    return result
+
+
+def is_should_terminate(message: Message, actions: set) -> bool:
+    # Check if should terminate the user
+    result = False
+
+    try:
+        if (not is_class_c(None, None, message)
+                and any(a in {"delete", "kick"}
+                        or a.startswith("ban")
+                        or a.startswith("restrict")
+                        for a in actions)):
+            return True
+    except Exception as e:
+        logger.warning(f"Is should terminate error: {e}", exc_info=True)
 
     return result
 

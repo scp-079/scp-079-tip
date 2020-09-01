@@ -28,7 +28,7 @@ from .. import glovar
 from .channel import send_debug
 from .command import command_error
 from .decorators import threaded
-from .etc import code, code_block, general_link, get_now, lang, thread
+from .etc import code, code_block, general_link, get_int, get_now, lang, thread
 from .file import delete_file, file_txt, save
 from .markup import get_text_and_markup
 from .telegram import get_group_info, send_document, send_message, send_report_message
@@ -123,7 +123,7 @@ def kws_action(text: str) -> str:
     result = ""
 
     try:
-        if text in {"reply", "delete", "ban", "restrict"}:
+        if text in {"reply", "delete", "kick", "ban", "restrict"}:
             return lang(f"kws_actions_{text}")
 
         if text.startswith("ban-") or text.startswith("restrict-"):
@@ -189,7 +189,7 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
         modes = {m.strip() for m in text_list[2].split() if m.strip()}
 
         # Check the modes
-        if not all(m in {"include", "exact", "case", "name", "forward", "pure"} for m in modes):
+        if not modes or all(m in {"include", "exact", "case", "name", "forward", "pure"} for m in modes):
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_modes_invalid"), report=False, private=True)
         elif not any(m in {"include", "exact"} for m in modes):
@@ -202,13 +202,13 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
         # Get the actions
         actions = {a.strip() for a in text_list[3].split() if a.strip()}
 
-        if not all(a in {"reply", "delete", "ban", "restrict"}
-                   or search(r"^ban-\d{3,8}$", a)
-                   or search(r"^restrict-\d{3,8}$", a)
-                   for a in actions):
+        if not actions or all(a in {"reply", "delete", "kick", "ban", "restrict"}
+                              or search(r"^ban-\d{3,8}$", a)
+                              or search(r"^restrict-\d{3,8}$", a)
+                              for a in actions):
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_actions_invalid"), report=False, private=True)
-        elif any(a.startswith("ban") for a in actions) and any(a.startswith("restrict") for a in actions):
+        elif len([a for a in actions if a == "kick" or a.startswith("ban") or a.startswith("restrict")]) > 1:
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_actions_conflict"), report=False, private=True)
 
@@ -237,7 +237,7 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
                 "modes": modes,
                 "actions": actions,
                 "target": target,
-                "destruct": destruct,
+                "destruct": get_int(destruct),
                 "raw": text,
                 "count": 0,
                 "today": 0

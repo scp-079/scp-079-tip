@@ -117,7 +117,11 @@ def receive_help_welcome(client: Client, data: dict) -> bool:
                 continue
 
             member = get_member(client, group_id, user_id, False)
-            tip_welcome(client, None, member, group_id, message_id)
+
+            if not member.user or member.status not in {"member", "restricted"}:
+                continue
+
+            tip_welcome(client, member.user, group_id, message_id)
 
         result = True
     except Exception as e:
@@ -335,6 +339,26 @@ def receive_file_data(client: Client, message: Message, decrypt: bool = True) ->
             thread(delete_file, (f,))
     except Exception as e:
         logger.warning(f"Receive file error: {e}", exc_info=True)
+
+    return result
+
+
+def receive_ignore_ids(client: Client, message: Message, sender: str) -> bool:
+    # Receive ignore ids
+    result = False
+
+    try:
+        data = receive_file_data(client, message)
+
+        if data is None:
+            return False
+
+        glovar.ignore_ids[sender.lower()] = data
+        save("ignore_ids")
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Receive ignore ids error: {e}", exc_info=True)
 
     return result
 
