@@ -681,7 +681,9 @@ def is_keyword_name(message: Message, key: str) -> dict:
             "word": match,
             "reply": keyword["reply"],
             "actions": keyword["actions"],
-            "destruct": keyword["destruct"]
+            "destruct": keyword["destruct"],
+            "forward": forward,
+            "name": True
         }
     except Exception as e:
         logger.warning(f"Is keyword name error: {e}", exc_info=True)
@@ -769,7 +771,9 @@ def is_keyword_text(message: Message, key: str, forward: bool = False) -> dict:
             "word": match,
             "reply": keyword["reply"],
             "actions": keyword["actions"],
-            "destruct": keyword["destruct"]
+            "destruct": keyword["destruct"],
+            "forward": forward,
+            "name": False
         }
     except Exception as e:
         logger.warning(f"Is keyword text error: {e}", exc_info=True)
