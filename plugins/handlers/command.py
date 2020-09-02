@@ -133,6 +133,7 @@ def channel_config(client: Client, message: Message) -> bool:
     try:
         # Basic data
         gid = message.chat.id
+        aid = message.from_user.id
 
         # Check permission
         if not is_class_c(None, None, message):
@@ -147,10 +148,7 @@ def channel_config(client: Client, message: Message) -> bool:
 
         # Check command format
         if command_type not in {"text", "button"} or not command_context:
-            text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
-                     f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
-            thread(send_report_message, (15, client, gid, text))
-            return True
+            return command_error(client, message, lang("action_channel"), lang("command_usage"))
 
         # Change the button config
         command_context = command_context.strip()
