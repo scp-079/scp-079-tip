@@ -178,7 +178,7 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
         _, markup = get_text_and_markup_tip(gid, reply)
         
         # Check the reply
-        if len(reply) > 2000:
+        if len(reply) > 1500:
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_exceed_reply"), report=False, private=True)
         elif markup is False:

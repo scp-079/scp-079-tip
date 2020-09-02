@@ -34,6 +34,7 @@ from ..functions.etc import (code, code_block, general_link, get_int, get_now, g
 from ..functions.file import save
 from ..functions.filters import authorized_group, from_user, is_class_c, is_from_user, test_group
 from ..functions.group import delete_message
+from ..functions.markup import get_text_and_markup_tip
 from ..functions.program import restart_program, update_program
 from ..functions.telegram import (forward_messages, get_group_info, get_start, pin_chat_message, send_message,
                                   send_report_message)
@@ -582,23 +583,22 @@ def kws(client: Client, message: Message) -> bool:
                    & from_user)
 def ot(client: Client, message: Message) -> bool:
     # OT config
-
-    if not message or not message.chat:
-        return True
-
-    # Basic data
-    gid = message.chat.id
-    mid = message.message_id
+    result = False
 
     glovar.locks["message"].acquire()
+
     try:
+        # Basic data
+        gid = message.chat.id
+        aid = message.from_user.id
+        r_message = message.reply_to_message
+
         # Check permission
         if not is_class_c(None, None, message):
             return True
 
-        aid = message.from_user.id
-        r_message = message.reply_to_message
-        command_type, command_context = get_command_context(message)
+        # Get command type
+        command_type = get_command_type(message)
 
         # Send OT tip
         if r_message:
@@ -606,40 +606,35 @@ def ot(client: Client, message: Message) -> bool:
         elif not command_type:
             return tip_ot(client, gid)
 
-        # Show the config
-        if command_type in {"text", "button", "link"} and not command_context:
-            # Text prefix
-            text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
-                    f"{lang('action')}{lang('colon')}{code(lang('action_show'))}\n")
+        # Check the reply length
+        if len(command_type) > 1500:
+            return command_error(client, message, lang("action_ot"), lang("command_para"),
+                                 lang("error_exceed_reply"))
 
-            # Get the config
-            result = glovar.configs[gid].get(f"ot_{command_type}") or lang("reason_none")
-            text += (f"{lang('result')}{lang('colon')}" + "-" * 24 + "\n\n"
-                     f"{code_block(result)}\n")
+        # Check the reply config
+        _, markup = get_text_and_markup_tip(gid, command_type)
 
-            # Check the text
-            if len(text) > 4000:
-                text = code_block(result)
-
-            # Send the report message
-            return thread(send_report_message, (20, client, gid, text))
-
-        # Text prefix
-        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang('action_ot'))}\n")
-
-        # Check command format
-        if not command_type or command_type not in {"text", "button", "link"} or not command_context:
-            text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
-                     f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
-            thread(send_report_message, (15, client, gid, text))
-            return True
+        if markup is False:
+            return command_error(client, message, lang("action_ot"), lang("command_para"),
+                                 lang("error_markup_invalid"))
 
         # Config OT
-        glovar.configs[gid]["default"] = False
-        glovar.configs[gid][f"ot_{command_type}"] = command_context.strip()
-        save("configs")
-        text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
+        last_editor = glovar.ots[gid]["aid"]
+        glovar.ots[gid]["aid"] = aid
+        glovar.ots[gid]["old"] = deepcopy(glovar.ots[gid].get("reply", ""))
+        glovar.ots[gid]["reply"] = command_type
+        save("ots")
+
+        # Send the report message
+        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('action_ot'))}\n"
+                f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
+                f"{lang('last_editor')}{lang('colon')}{code(last_editor)}\n"
+                f"{lang('old_reply')}{lang('colon')}" + code("-" * 16) + "\n\n")
+        text += code_block(glovar.ots[gid]["old"])
+        send_report_message(20, client, gid, text)
+
+        # Send debug message
         send_debug(
             client=client,
             chat=message.chat,
@@ -649,17 +644,51 @@ def ot(client: Client, message: Message) -> bool:
             more=command_type
         )
 
-        # Send the report message
-        thread(send_report_message, (20, client, gid, text))
-
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Ot error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
-        delete_message(client, gid, mid)
+        delete_normal_command(client, message)
 
-    return False
+    return result
+
+
+@Client.on_message(filters.incoming & filters.group & filters.command(["restart"], glovar.prefix)
+                   & test_group
+                   & from_user)
+def restart(client: Client, message: Message) -> bool:
+    # Restart the program
+    result = False
+
+    try:
+        # Basic data
+        cid = message.chat.id
+        aid = message.from_user.id
+        mid = message.message_id
+
+        # Get command type
+        command_type = get_command_type(message)
+
+        # Check the command type
+        if command_type and command_type.upper() != glovar.sender:
+            return False
+
+        # Generate the text
+        text = (f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
+                f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('program_restart'))}\n"
+                f"{lang('status')}{lang('colon')}{code(lang('command_received'))}\n")
+
+        # Send the report message
+        send_message(client, cid, text, mid)
+
+        # Restart the program
+        result = restart_program()
+    except Exception as e:
+        logger.warning(f"Restart error: {e}", exc_info=True)
+
+    return result
 
 
 @Client.on_message(filters.incoming & filters.group & filters.command(["rm"], glovar.prefix)
