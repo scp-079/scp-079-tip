@@ -187,9 +187,54 @@ def tip_keyword(client: Client, message: Message, data: dict) -> bool:
 
 
 @threaded()
+def tip_saved(client: Client, gid: int, user: User, key: str) -> bool:
+    # Send saved tip
+    result = False
+
+    glovar.locks["message"].acquire()
+
+    try:
+        # Basic data
+        now = get_now()
+
+        # Get keyword
+        keyword = glovar.keywords[gid]["kws"].get(key, {})
+
+        # Check the keyword
+        if not keyword:
+            return False
+
+        # Get the text and markup
+        reply = keyword["reply"]
+        text, markup = get_text_and_markup_tip(gid, reply)
+        text = get_text_user(text, user)
+
+        # Send the tip
+        result = send_message(client, gid, text, None, markup)
+
+        if not result:
+            return False
+
+        mid, _ = glovar.message_ids[gid]["keywords"].get(key, (0, 0))
+        mid and delete_message(client, gid, mid)
+        glovar.message_ids[gid]["keywords"][key] = (result.message_id, now)
+        save("message_ids")
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Tip saved error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
+
+    return result
+
+
+@threaded()
 def tip_ot(client: Client, gid: int, mid: int = None) -> bool:
     # Send OT tip
     result = False
+
+    glovar.locks["message"].acquire()
 
     try:
         # Basic data
@@ -218,6 +263,8 @@ def tip_ot(client: Client, gid: int, mid: int = None) -> bool:
         result = True
     except Exception as e:
         logger.warning(f"Tip ot error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
 
     return result
 
@@ -226,6 +273,8 @@ def tip_ot(client: Client, gid: int, mid: int = None) -> bool:
 def tip_rm(client: Client, gid: int, mid: int = None) -> bool:
     # Send RM tip
     result = False
+
+    glovar.locks["message"].acquire()
 
     try:
         # Basic data
@@ -254,6 +303,8 @@ def tip_rm(client: Client, gid: int, mid: int = None) -> bool:
         result = True
     except Exception as e:
         logger.warning(f"Tip rm error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
     
     return result
 
@@ -262,6 +313,8 @@ def tip_rm(client: Client, gid: int, mid: int = None) -> bool:
 def tip_welcome(client: Client, user: User, gid: int = 0, mid: int = None, force: bool = False) -> bool:
     # Send welcome tip
     result = False
+
+    glovar.locks["message"].acquire()
 
     try:
         # Basic data
@@ -304,5 +357,7 @@ def tip_welcome(client: Client, user: User, gid: int = 0, mid: int = None, force
         result = True
     except Exception as e:
         logger.warning(f"Tip welcome error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
 
     return result
