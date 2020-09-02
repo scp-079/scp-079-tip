@@ -37,7 +37,9 @@ This bot is used to send tips.
         - `telegram.py` : Some telegram functions
         - `timers.py` : Timer functions
         - `tip.py` : Functions about tips
+        - `user.py` : Functions about user and channel object
     - handlers
+        - `callback.py` : Handle callbacks
         - `command.py` : Handle commands
         - `message.py`: Handle messages
     - `checker.py` : Check the format of `config.ini`
