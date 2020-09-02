@@ -203,7 +203,7 @@ def channel_trigger(client: Client, message: Message) -> bool:
 
         # Check permission
         if not is_class_c(None, None, message):
-            return True
+            return False
 
         # Get command
         command = message.command[0]
@@ -595,7 +595,7 @@ def ot(client: Client, message: Message) -> bool:
 
         # Check permission
         if not is_class_c(None, None, message):
-            return True
+            return False
 
         # Get command type
         command_type = get_command_type(message)
@@ -620,6 +620,7 @@ def ot(client: Client, message: Message) -> bool:
 
         # Config OT
         last_editor = glovar.ots[gid]["aid"]
+        old_reply = glovar.ots[gid].get("old", "")
         glovar.ots[gid]["aid"] = aid
         glovar.ots[gid]["old"] = deepcopy(glovar.ots[gid].get("reply", ""))
         glovar.ots[gid]["reply"] = command_type
@@ -631,7 +632,7 @@ def ot(client: Client, message: Message) -> bool:
                 f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
                 f"{lang('last_editor')}{lang('colon')}{code(last_editor)}\n"
                 f"{lang('old_reply')}{lang('colon')}" + code("-" * 16) + "\n\n")
-        text += code_block(glovar.ots[gid]["old"])
+        text += code_block(old_reply)
         send_report_message(20, client, gid, text)
 
         # Send debug message
@@ -696,66 +697,59 @@ def restart(client: Client, message: Message) -> bool:
                    & from_user)
 def rm(client: Client, message: Message) -> bool:
     # RM config
-
-    if not message or not message.chat:
-        return True
-
-    # Basic data
-    gid = message.chat.id
-    mid = message.message_id
+    result = False
 
     glovar.locks["message"].acquire()
-    try:
-        # Check permission
-        if not is_class_c(None, None, message):
-            return True
 
+    try:
+        # Basic data
+        gid = message.chat.id
         aid = message.from_user.id
         r_message = message.reply_to_message
-        command_type, command_context = get_command_context(message)
+
+        # Check permission
+        if not is_class_c(None, None, message):
+            return False
+
+        # Get command type
+        command_type = get_command_type(message)
 
         # Send RM tip
-        text = glovar.configs[gid].get("rm_text")
-
         if r_message:
-            return tip_rm(client, gid, text, r_message.message_id)
+            return tip_rm(client, gid, r_message.message_id)
         elif not command_type:
-            return tip_rm(client, gid, text)
+            return tip_rm(client, gid)
 
-        # Show the config
-        if command_type in {"text", "button", "link"} and not command_context:
-            # Text prefix
-            text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
-                    f"{lang('action')}{lang('colon')}{code(lang('action_show'))}\n")
+        # Check the reply length
+        if len(command_type) > 1500:
+            return command_error(client, message, lang("action_rm"), lang("command_para"),
+                                 lang("error_exceed_reply"))
 
-            # Get the config
-            result = glovar.configs[gid].get(f"rm_{command_type}") or lang("reason_none")
-            text += (f"{lang('result')}{lang('colon')}" + "-" * 24 + "\n\n"
-                     f"{code_block(result)}\n")
+        # Check the reply config
+        _, markup = get_text_and_markup_tip(gid, command_type)
 
-            # Check the text
-            if len(text) > 4000:
-                text = code_block(result)
-
-            # Send the report message
-            return thread(send_report_message, (20, client, gid, text))
-
-        # Text prefix
-        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang('action_rm'))}\n")
-
-        # Check command format
-        if not command_type or command_type not in {"text", "button", "link"} or not command_context:
-            text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
-                     f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
-            thread(send_report_message, (15, client, gid, text))
-            return True
+        if markup is False:
+            return command_error(client, message, lang("action_rm"), lang("command_para"),
+                                 lang("error_markup_invalid"))
 
         # Config RM
-        glovar.configs[gid]["default"] = False
-        glovar.configs[gid][f"rm_{command_type}"] = command_context.strip()
-        save("configs")
-        text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
+        last_editor = glovar.rms[gid]["aid"]
+        old_reply = glovar.rms[gid].get("old", "")
+        glovar.rms[gid]["aid"] = aid
+        glovar.rms[gid]["old"] = deepcopy(glovar.rms[gid].get("reply", ""))
+        glovar.rms[gid]["reply"] = command_type
+        save("rms")
+
+        # Send the report message
+        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('action_rm'))}\n"
+                f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
+                f"{lang('last_editor')}{lang('colon')}{code(last_editor)}\n"
+                f"{lang('old_reply')}{lang('colon')}" + code("-" * 16) + "\n\n")
+        text += code_block(old_reply)
+        send_report_message(20, client, gid, text)
+        
+        # Send debug message
         send_debug(
             client=client,
             chat=message.chat,
@@ -765,17 +759,14 @@ def rm(client: Client, message: Message) -> bool:
             more=command_type
         )
 
-        # Send the report message
-        thread(send_report_message, (20, client, gid, text))
-
-        return True
+        result = True
     except Exception as e:
-        logger.warning(f"Rm begin error: {e}", exc_info=True)
+        logger.warning(f"Rm error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
-        delete_message(client, gid, mid)
+        delete_normal_command(client, message)
 
-    return False
+    return result
 
 
 @Client.on_message(filters.incoming & filters.group & filters.command(["show"], glovar.prefix)
