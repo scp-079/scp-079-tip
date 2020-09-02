@@ -287,6 +287,23 @@ def get_me(client: Client) -> Optional[User]:
     return result
 
 
+def get_start(client: Client, para: str) -> str:
+    # Get start link with parameter
+    result = ""
+
+    try:
+        me = get_me(client)
+
+        if not me or not me.username:
+            return ""
+
+        result = f"https://t.me/{me.username}?start={para}"
+    except Exception as e:
+        logger.warning(f"Get start error: {e}", exc_info=True)
+
+    return result
+
+
 @retry
 def get_user_full(client: Client, uid: int) -> Optional[UserFull]:
     # Get a full user

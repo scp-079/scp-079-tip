@@ -280,6 +280,26 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
     return result
 
 
+def kws_config_occupy(gid: int, uid: int) -> bool:
+    # Kws config occupy
+    result = False
+
+    try:
+        for group_id in list(glovar.keywords):
+            if glovar.keywords[group_id]["aid"] != uid:
+                continue
+
+            if group_id == gid:
+                continue
+
+            glovar.keywords[group_id]["lock"] = 0
+            glovar.keywords[group_id]["aid"] = 0
+    except Exception as e:
+        logger.warning(f"Kws config occupy error: {e}", exc_info=True)
+
+    return result
+
+
 def kws_remove(client: Client, message: Message, gid: int, key: str) -> bool:
     # Remove a custom keyword
     result = False

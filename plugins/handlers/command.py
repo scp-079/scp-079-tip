@@ -22,21 +22,23 @@ from copy import deepcopy
 from subprocess import run, PIPE
 
 from pyrogram import Client, filters
-from pyrogram.types import Message
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
 from ..functions.channel import get_debug_text, send_debug, share_data
 from ..functions.command import (command_error, delete_normal_command, delete_shared_command, get_command_context,
                                  get_command_type)
-from ..functions.config import conflict_config, get_config_text, update_config
+from ..functions.config import conflict_config, get_config_text, kws_config_occupy, update_config
 from ..functions.etc import (code, code_block, general_link, get_int, get_now, get_readable_time, lang,
                              mention_id, thread)
 from ..functions.file import save
 from ..functions.filters import authorized_group, from_user, is_class_c, is_from_user, test_group
 from ..functions.group import delete_message
 from ..functions.program import restart_program, update_program
-from ..functions.telegram import forward_messages, get_group_info, pin_chat_message, send_message, send_report_message
+from ..functions.telegram import (forward_messages, get_group_info, get_start, pin_chat_message, send_message,
+                                  send_report_message)
 from ..functions.tip import get_invite_link, tip_ot, tip_rm, tip_welcome
+from ..functions.user import add_start
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -148,6 +150,7 @@ def channel_config(client: Client, message: Message) -> bool:
             return command_error(client, message, lang("action_channel"), lang("command_usage"))
 
         # Change the button config
+        glovar.channels[gid]["aid"] = aid
         glovar.channels[gid][command_type] = command_context
         save("channels")
         get_invite_link(
@@ -389,7 +392,7 @@ def config_directly(client: Client, message: Message) -> bool:
             text = (f"{lang('admin_group')}{lang('colon')}{code(aid)}\n"
                     f"{lang('action')}{lang('colon')}{code(lang('config_show'))}\n"
                     f"{get_config_text(new_config)}\n")
-            return thread(send_report_message, (30, client, gid, text))
+            return send_report_message(30, client, gid, text)
 
         # Check the config lock
         if now - new_config["lock"] < 310:
@@ -430,21 +433,105 @@ def config_directly(client: Client, message: Message) -> bool:
     return result
 
 
+@Client.on_message(filters.incoming & filters.group & filters.command(["keyword", "keywords", "kws"], glovar.prefix)
+                   & authorized_group
+                   & from_user)
+def kws(client: Client, message: Message) -> bool:
+    # Request a custom keywords setting session
+    result = False
+
+    glovar.locks["config"].acquire()
+
+    try:
+        # Basic data
+        gid = message.chat.id
+        aid = message.from_user.id
+        mid = message.message_id
+        now = message.date or get_now()
+
+        # Check permission
+        if not is_class_c(None, None, message):
+            return False
+
+        # Check the group status
+        if now < glovar.keywords[gid]["lock"] + 600:
+            aid = glovar.keywords[gid]["aid"]
+            return command_error(client, message, lang("action_kws_start"), lang("error_kws_occupied"),
+                                 lang("detail_kws_occupied").format(aid))
+
+        # Save evidence
+        result = forward_messages(
+            client=client,
+            cid=glovar.compromise_channel_id,
+            fid=gid,
+            mids=mid
+        )
+
+        if not result:
+            return False
+
+        text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
+                f"{lang('user_id')}{lang('colon')}{code(aid)}\n"
+                f"{lang('level')}{lang('colon')}{code(lang('config_create'))}\n"
+                f"{lang('rule')}{lang('colon')}{code(lang('rule_custom'))}\n")
+        result = send_message(client, glovar.compromise_channel_id, text, result.message_id)
+
+        # Save the data
+        glovar.keywords[gid]["lock"] = now
+        glovar.keywords[gid]["aid"] = aid
+        kws_config_occupy(gid, aid)
+        save("keywords")
+
+        # Add start status
+        key = add_start(get_now() + 180, gid, aid, "kws")
+
+        # Send the report message
+        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('action_kws_start'))}\n"
+                f"{lang('description')}{lang('colon')}{code(lang('config_button'))}\n")
+        markup = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        text=lang("config_go"),
+                        url=get_start(client, key)
+                    )
+                ]
+            ]
+        )
+        send_report_message(180, client, gid, text, None, markup)
+
+        # Send debug message
+        text = get_debug_text(client, message.chat)
+        text += (f"{lang('admin_group')}{lang('colon')}{code(message.from_user.id)}\n"
+                 f"{lang('action')}{lang('colon')}{code(lang('config_create'))}\n"
+                 f"{lang('evidence')}{lang('colon')}{general_link(result.message_id, result.link)}\n")
+        thread(send_message, (client, glovar.debug_channel_id, text))
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Kws error: {e}", exc_info=True)
+    finally:
+        glovar.locks["config"].release()
+        delete_normal_command(client, message)
+
+    return result
+
+
 @Client.on_message(filters.incoming & filters.group & filters.command(["hold"], glovar.prefix)
                    & authorized_group
                    & from_user)
-def hold(client: Client, message: Message) -> bool:
-    # Hold a message
+def pin_hold(client: Client, message: Message) -> bool:
+    # Hold the pinned message
+    result = False
 
-    if not message or not message.chat:
-        return True
+    glovar.locks["config"].acquire()
 
-    # Basic data
-    gid = message.chat.id
-    mid = message.message_id
-
-    glovar.locks["message"].acquire()
     try:
+        # Basic data
+        gid = message.chat.id
+        mid = message.message_id
+
         # Check permission
         if not is_class_c(None, None, message):
             return True
@@ -487,12 +574,12 @@ def hold(client: Client, message: Message) -> bool:
 
         return True
     except Exception as e:
-        logger.warning(f"Hold error: {e}", exc_info=True)
+        logger.warning(f"Pin hold error: {e}", exc_info=True)
     finally:
-        glovar.locks["message"].release()
-        delete_message(client, gid, mid)
+        glovar.locks["config"].release()
+        delete_normal_command(client, message)
 
-    return False
+    return result
 
 
 # @Client.on_message(filters.incoming & filters.group & filters.command(["keyword"], glovar.prefix)
