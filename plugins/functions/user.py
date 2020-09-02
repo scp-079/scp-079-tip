@@ -18,10 +18,10 @@
 
 import logging
 from time import sleep
-from typing import Union
+from typing import Optional, Union
 
 from pyrogram import Client
-from pyrogram.types import ChatPermissions, Message
+from pyrogram.types import ChatPermissions, Message, User
 
 from .. import glovar
 from .channel import forward_evidence, send_debug
@@ -98,6 +98,18 @@ def get_action_text(actions: set) -> str:
         result = kws_action(list(actions)[0])
     except Exception as e:
         logger.warning(f"Get action text error: {e}", exc_info=True)
+
+    return result
+
+
+def get_user_from_message(message: Message) -> Optional[User]:
+    # Get user from message
+    result = None
+
+    try:
+        result = message.from_user if not message.new_chat_members else message.new_chat_members[0]
+    except Exception as e:
+        logger.warning(f"Get user from message error: {e}", exc_info=True)
 
     return result
 
