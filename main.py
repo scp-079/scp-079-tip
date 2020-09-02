@@ -26,8 +26,8 @@ from pyrogram import Client, idle
 
 from plugins import glovar
 from plugins.functions.etc import delay
-from plugins.functions.timers import backup_files, interval_min_01, interval_min_10, log_rotation
-from plugins.functions.timers import resend_link, reset_data, send_count, update_admins, update_status
+from plugins.functions.timers import (backup_files, interval_min_01, interval_min_10, log_rotation,
+                                      resend_link, reset_data, send_count, update_admins, update_status)
 from plugins.start import init, renew
 
 # Enable logging
