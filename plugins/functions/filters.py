@@ -74,19 +74,6 @@ def is_authorized_group(_, __, update: Union[CallbackQuery, Message]) -> bool:
     return result
 
 
-def is_channel_pinned(_, __, message: Message) -> bool:
-    # Check if the message is sent by the linked channel
-    try:
-        if (not message.service
-                and not message.from_user
-                and message.forward_from_chat):
-            return True
-    except Exception as e:
-        logger.warning(f"Is channel pinned error: {e}", exc_info=True)
-
-    return False
-
-
 def is_class_c(_, __, message: Message) -> bool:
     # Check if the message is sent from Class C personnel
     result = False
@@ -260,11 +247,6 @@ aio = filters.create(
 authorized_group = filters.create(
     func=is_authorized_group,
     name="Authorized Group"
-)
-
-channel_pinned = filters.create(
-    func=is_channel_pinned,
-    name="Channel Pinned"
 )
 
 class_c = filters.create(

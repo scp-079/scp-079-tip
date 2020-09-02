@@ -20,13 +20,14 @@ import logging
 from typing import List, Optional
 
 from pyrogram import Client
-from pyrogram.types import ChatMember, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import ChatMember, InlineKeyboardMarkup, InlineKeyboardButton, Message
 
 from .. import glovar
 from .decorators import threaded
-from .etc import code, lang, thread
+from .etc import code, lang, mention_id, mention_text, thread
 from .file import save
 from .ids import init_group_id
+from .markup import get_text_and_markup
 from .telegram import delete_messages, get_chat_member, leave_chat, send_message
 
 # Enable logging
@@ -157,6 +158,49 @@ def leave_reason(client: Client, gid: int, reason: str = "") -> bool:
         result = send_message(client, gid, text, None, markup)
     except Exception as e:
         logger.warning(f"Leave reason error: {e}", exc_info=True)
+
+    return result
+
+
+def leave_unauthorized(client: Client, message: Message, text: str) -> bool:
+    # Leave unauthorized group
+    result = False
+
+    try:
+        gid = message.chat.id
+        inviter = message.from_user
+
+        if gid in glovar.left_group_ids:
+            return leave_group(client, gid)
+
+        leave_group(client, gid, glovar.leave_reason)
+
+        text += (f"{lang('status')}{lang('colon')}{code(lang('status_left'))}\n"
+                 f"{lang('reason')}{lang('colon')}{code(lang('reason_unauthorized'))}\n")
+
+        if message.from_user.username:
+            text += f"{lang('inviter')}{lang('colon')}{mention_id(inviter.id)}\n"
+        else:
+            text += f"{lang('inviter')}{lang('colon')}{code(inviter.id)}\n"
+
+        return thread(send_message, (client, glovar.debug_channel_id, text))
+    except Exception as e:
+        logger.warning(f"Leave unauthorized error: {e}", exc_info=True)
+
+    return result
+
+
+@threaded()
+def join_hint(client: Client, gid: int) -> bool:
+    # Send join hint
+    result = False
+
+    try:
+        text, markup = get_text_and_markup(glovar.join_text)
+        text += "".join(mention_text("\U00002060", aid) for aid in glovar.admin_ids[gid])
+        send_message(client, gid, text, None, markup)
+    except Exception as e:
+        logger.warning(f"Join hint error: {e}", exc_info=True)
 
     return result
 
