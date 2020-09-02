@@ -131,10 +131,6 @@ description_rm: Please do not joke about the rm command
 description_welcome: Hello $mention_name
 pinned_message: Pinned Message
 tip: Tip
-tip_captcha: Detected that CAPTCHA is in the group, and you have enabled the welcome
-  after CAPTCHA mode, so the welcome will automatically adjust to alone mode. It is
-  recommended that you include a $mention_name field in your welcome text to reasonably
-  mention specific user
 
 # Symbol
 colon: ": "

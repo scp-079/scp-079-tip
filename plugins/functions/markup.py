@@ -22,7 +22,7 @@ from typing import Dict, List, Optional, Tuple, Union
 from pyrogram.types import CallbackGame, InlineKeyboardButton, InlineKeyboardMarkup
 
 from .. import glovar
-from .etc import button_data, get_length
+from .etc import button_data, general_link, get_length, get_channel_link
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -173,6 +173,9 @@ def get_text_and_markup_tip(gid: int, text: str) -> Tuple[str, Union[bool, Inlin
             if glovar.keywords[gid]["kws"].get(button_text, {}):
                 callback_data = button_data("send", "saved", button_url)
                 button_url = None
+            elif button_url == "$pinned_message" and glovar.pinned_ids.get(gid, 0):
+                callback_data = None
+                button_url = f"{get_channel_link(gid)}/{glovar.pinned_ids[gid]}"
             elif button_url.startswith("@") or " " in button_url or "." not in button_url:
                 return text, False
             else:

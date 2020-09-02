@@ -973,6 +973,10 @@ def start(client: Client, message: Message) -> bool:
             if action == "kws":
                 return start_kws(client, message, key)
 
+        # Check aio mode
+        if glovar.aio and glovar.sender != "TIP":
+            return False
+
         # Check started ids
         if cid in glovar.started_ids:
             return False
@@ -980,12 +984,12 @@ def start(client: Client, message: Message) -> bool:
         # Add to started ids
         glovar.started_ids.add(cid)
 
-        # Check start text
-        if not glovar.start_text:
-            return False
-
         # Generate the text and markup
         text, markup = get_text_and_markup(glovar.start_text)
+
+        # Check start text
+        if not text:
+            return False
 
         # Send the report message
         thread(send_message, (client, cid, text, mid, markup))

@@ -267,11 +267,10 @@ def tip_ot(client: Client, gid: int, mid: int = None) -> bool:
         if not result:
             return False
 
-        with glovar.locks["message"]:
-            mid, _ = glovar.message_ids[gid]["ot"]
-            mid and delete_message(client, gid, mid)
-            glovar.message_ids[gid]["ot"] = (result.message_id, now)
-            save("message_ids")
+        mid, _ = glovar.message_ids[gid]["ot"]
+        mid and delete_message(client, gid, mid)
+        glovar.message_ids[gid]["ot"] = (result.message_id, now)
+        save("message_ids")
         
         result = True
     except Exception as e:
@@ -307,11 +306,10 @@ def tip_rm(client: Client, gid: int, mid: int = None) -> bool:
         if not result:
             return False
 
-        with glovar.locks["message"]:
-            mid, _ = glovar.message_ids[gid]["rm"]
-            mid and delete_message(client, gid, mid)
-            glovar.message_ids[gid]["rm"] = (result.message_id, now)
-            save("message_ids")
+        mid, _ = glovar.message_ids[gid]["rm"]
+        mid and delete_message(client, gid, mid)
+        glovar.message_ids[gid]["rm"] = (result.message_id, now)
+        save("message_ids")
         
         result = True
     except Exception as e:
@@ -361,11 +359,10 @@ def tip_welcome(client: Client, user: User, gid: int = 0, mid: int = None, force
         if not result:
             return False
 
-        with glovar.locks["message"]:
-            mid, _ = glovar.message_ids[gid]["welcome"]
-            mid and delete_message(client, gid, mid)
-            glovar.message_ids[gid]["welcome"] = (result.message_id, now)
-            save("message_ids")
+        mid, _ = glovar.message_ids[gid]["welcome"]
+        mid and delete_message(client, gid, mid)
+        glovar.message_ids[gid]["welcome"] = (result.message_id, now)
+        save("message_ids")
 
         result = True
     except Exception as e:

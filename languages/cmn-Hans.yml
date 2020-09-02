@@ -130,8 +130,6 @@ description_rm: 请勿开 rm 命令类玩笑
 description_welcome: 你好，$mention_name
 pinned_message: 置顶消息
 tip: 提示
-tip_captcha: "检测到 CAPTCHA 在群组中，并且您开启了过审欢迎，故入群欢迎自动调整到非回复模式。\
-  建议您的欢迎消息中包含 $mention_name 字段，以合理提及具体用户"
 
 # Symbol
 colon: "："

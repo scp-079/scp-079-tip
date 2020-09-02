@@ -196,7 +196,14 @@ def join_hint(client: Client, gid: int) -> bool:
     result = False
 
     try:
+        if glovar.aio and glovar.sender != "TIP":
+            return False
+
         text, markup = get_text_and_markup(glovar.join_text)
+
+        if not text:
+            return False
+
         text += "".join(mention_text("\U00002060", aid) for aid in glovar.admin_ids[gid])
         send_message(client, gid, text, None, markup)
     except Exception as e:
