@@ -46,6 +46,7 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
         now = get_now()
 
         # Read the config
+        enabled = glovar.configs[gid].get("channel", False)
         cid = glovar.channels[gid].get("cid", 0)
         mid = glovar.channels[gid].get("mid", 0)
         time = glovar.channels[gid].get("time", 0)
@@ -77,6 +78,18 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
         # Update the link
         glovar.channels[gid]["link"] = link
         save("channels")
+
+        # Check the config
+        if not enabled and the_type != "open":
+            return False
+
+        # Change the config
+        if the_type == "close":
+            glovar.configs[gid]["channel"] = False
+            save("configs")
+        elif the_type == "open":
+            glovar.configs[gid]["channel"] = True
+            save("configs")
 
         # Generate markup
         markup = InlineKeyboardMarkup(
