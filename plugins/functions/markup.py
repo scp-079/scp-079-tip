@@ -21,7 +21,8 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from pyrogram.types import CallbackGame, InlineKeyboardButton, InlineKeyboardMarkup
 
-from .etc import get_length
+from .. import glovar
+from .etc import button_data, get_length
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -87,7 +88,7 @@ def get_inline(buttons: List[Dict[str, Union[str, bytes, CallbackGame, None]]]) 
     return result
 
 
-def get_text_and_markup(text: str) -> Tuple[str, Optional[InlineKeyboardMarkup]]:
+def get_text_and_markup(text: str) -> Tuple[str, Union[bool, InlineKeyboardMarkup, None]]:
     # Get inline markup from text
     result = (text, None)
 
@@ -114,13 +115,13 @@ def get_text_and_markup(text: str) -> Tuple[str, Optional[InlineKeyboardMarkup]]
             button = [b.strip() for b in button.split("||") if b.strip()]
 
             if len(button) != 2:
-                return text, None
+                return text, False
 
             button_text = button[0]
             button_url = button[1]
 
-            if button_url.startswith("@") or " " in button_url:
-                return text, None
+            if button_url.startswith("@") or " " in button_url or "." not in button_url:
+                return text, False
 
             buttons.append(
                 {
@@ -133,5 +134,61 @@ def get_text_and_markup(text: str) -> Tuple[str, Optional[InlineKeyboardMarkup]]
         result = (text, get_inline(buttons))
     except Exception as e:
         logger.warning(f"Get text and markup error: {e}", exc_info=True)
+
+    return result
+
+
+def get_text_and_markup_tip(gid: int, text: str) -> Tuple[str, Union[bool, InlineKeyboardMarkup, None]]:
+    # Get inline markup from text for TIP
+    result = (text, None)
+
+    try:
+        # Check the text
+        if not text or not text.strip():
+            return text, None
+
+        # Get text list
+        text = text.strip()
+        text_list = [t for t in text.split("\n++++++\n") if t]
+
+        # Check the text list
+        if not text_list or len(text_list) != 2:
+            return text, None
+
+        # Get buttons
+        text = text_list[0]
+        buttons_text = text_list[1]
+        button_list = [b.strip() for b in buttons_text.split("\n") if b.strip()]
+        buttons = []
+
+        for button in button_list:
+            button = [b.strip() for b in button.split("||") if b.strip()]
+
+            if len(button) != 2:
+                return text, False
+
+            button_text = button[0]
+            button_url = button[1]
+
+            if glovar.keywords[gid]["kws"].get(button_text, {}):
+                callback_data = button_data("send", "saved", button_url)
+                button_url = None
+            elif button_url.startswith("@") or " " in button_url or "." not in button_url:
+                return text, False
+            else:
+                callback_data = None
+
+            buttons.append(
+                {
+                    "text": button_text,
+                    "callback_data": callback_data,
+                    "url": button_url
+                }
+            )
+
+        # Get markup
+        result = (text, get_inline(buttons))
+    except Exception as e:
+        logger.warning(f"Get text and markup tip error: {e}", exc_info=True)
 
     return result

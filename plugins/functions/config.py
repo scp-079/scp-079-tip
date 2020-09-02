@@ -30,7 +30,7 @@ from .command import command_error
 from .decorators import threaded
 from .etc import code, code_block, general_link, get_int, get_now, lang, thread
 from .file import delete_file, file_txt, save
-from .markup import get_text_and_markup
+from .markup import get_text_and_markup_tip
 from .telegram import get_group_info, send_document, send_message, send_report_message
 
 # Enable logging
@@ -175,12 +175,15 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
 
         # Get reply
         reply = text_list[1]
-        _, markup = get_text_and_markup(reply)
+        _, markup = get_text_and_markup_tip(gid, reply)
         
         # Check the reply
         if len(reply) > 2000:
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_exceed_reply"), report=False, private=True)
+        elif markup is False:
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
+                                 lang("error_markup_invalid"), report=False, private=True)
         elif markup and sum(len(m) for m in markup.inline_keyboard) > 6:
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_exceed_button"), report=False, private=True)
@@ -264,7 +267,7 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
                 f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n" + code("-" * 24) + "\n"
                 f"{lang('kws_key')}{lang('colon')}{code(key)}\n" + code("-" * 24) + "\n"
                 f"{lang('keyword')}{lang('colon')}{code(lang('comma').join(words))}\n" + code("-" * 24) + "\n")
-        reply_text, markup = get_text_and_markup(reply)
+        reply_text, markup = get_text_and_markup_tip(gid, reply)
         text += reply_text
 
         # Send the report message

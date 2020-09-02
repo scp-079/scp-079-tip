@@ -27,7 +27,7 @@ from .etc import code, get_now, get_text_user, lang
 from .file import save
 from .filters import is_keyworded_user, is_should_terminate
 from .group import delete_message
-from .markup import get_text_and_markup
+from .markup import get_text_and_markup_tip
 from .telegram import edit_message_text, export_chat_invite_link, send_message
 from .user import terminate_user
 
@@ -164,7 +164,7 @@ def tip_keyword(client: Client, message: Message, data: dict) -> bool:
             return False
 
         # Get the markup
-        text, markup = get_text_and_markup(reply)
+        text, markup = get_text_and_markup_tip(gid, reply)
         text = get_text_user(text, user)
         text = text.replace("$destruct_time", str(destruct))
 
@@ -201,7 +201,7 @@ def tip_ot(client: Client, gid: int, mid: int = None) -> bool:
             return False
 
         # Get the markup
-        text, markup = get_text_and_markup(reply)
+        text, markup = get_text_and_markup_tip(gid, reply)
 
         # Send the tip
         result = send_message(client, gid, text, mid, markup)
@@ -237,7 +237,7 @@ def tip_rm(client: Client, gid: int, mid: int = None) -> bool:
             return False
 
         # Get the markup
-        text, markup = get_text_and_markup(reply)
+        text, markup = get_text_and_markup_tip(gid, reply)
 
         # Send the tip
         result = send_message(client, gid, text, mid, markup)
@@ -280,7 +280,7 @@ def tip_welcome(client: Client, user: User, gid: int = 0, mid: int = None, force
             glovar.welcomed_ids[gid].add(uid)
 
         # Get the markup
-        text, markup = get_text_and_markup(reply)
+        text, markup = get_text_and_markup_tip(gid, reply)
 
         # Get the alone mode
         if glovar.configs[gid].get("alone"):

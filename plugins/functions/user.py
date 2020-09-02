@@ -31,7 +31,7 @@ from .etc import get_int, get_now, get_text_user, lang, random_str
 from .file import save
 from .filters import is_class_d_user
 from .group import delete_message
-from .markup import get_text_and_markup
+from .markup import get_text_and_markup_tip
 from .telegram import kick_chat_member, restrict_chat_member, send_message, unban_chat_member
 
 # Enable logging
@@ -207,7 +207,7 @@ def terminate_user(client: Client, message: Message, data: dict) -> bool:
             return False
 
         # Get the markup
-        text, markup = get_text_and_markup(reply)
+        text, markup = get_text_and_markup_tip(gid, reply)
         text = get_text_user(text, user)
         text = text.replace("$destruct_time", str(destruct))
 
