@@ -295,7 +295,6 @@ except Exception as e:
 # Init
 
 all_commands: List[str] = [
-    "cancel",
     "channel",
     "config",
     "config_tip",

@@ -159,6 +159,14 @@ def channel_config(client: Client, message: Message) -> bool:
             gid=gid,
             manual=True
         )
+
+        # Send the report message
+        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('action_channel'))}\n"
+                f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n")
+        send_report_message(20, client, gid, text)
+
+        # Send debug
         send_debug(
             client=client,
             chat=message.chat,
@@ -167,12 +175,6 @@ def channel_config(client: Client, message: Message) -> bool:
             config_type="channel",
             more=command_type
         )
-
-        # Send the report message
-        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang('action_channel'))}\n"
-                f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n")
-        send_report_message(20, client, gid, text)
 
         result = True
     except Exception as e:
@@ -238,6 +240,12 @@ def channel_trigger(client: Client, message: Message) -> bool:
         if not result:
             return command_error(client, message, lang(f"action_{command}"), lang("command_usage"))
 
+        # Send the report message
+        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang(f'action_{command}'))}\n"
+                f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n")
+        send_report_message(20, client, gid, text)
+
         # Send debug message
         send_debug(
             client=client,
@@ -245,12 +253,6 @@ def channel_trigger(client: Client, message: Message) -> bool:
             action=lang(f"action_{command}"),
             aid=aid
         )
-
-        # Send the report message
-        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang(f'action_{command}'))}\n"
-                f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n")
-        send_report_message(20, client, gid, text)
 
         result = True
     except Exception as e:
@@ -433,6 +435,63 @@ def config_directly(client: Client, message: Message) -> bool:
     return result
 
 
+@Client.on_message(filters.incoming & filters.group & filters.command(["hold"], glovar.prefix)
+                   & authorized_group
+                   & from_user)
+def hold(client: Client, message: Message) -> bool:
+    # Hold the pinned message
+    result = False
+
+    glovar.locks["config"].acquire()
+
+    try:
+        # Basic data
+        gid = message.chat.id
+        aid = message.from_user.id
+        r_message = message.reply_to_message
+
+        # Check permission
+        if not is_class_c(None, None, message):
+            return False
+
+        # Check the message
+        if not r_message:
+            return command_error(client, message, lang("action_hold"), lang("command_usage"))
+
+        # Hold the message
+        glovar.pinned_ids[gid] = r_message.message_id
+        save("pinned_ids")
+        thread(pin_chat_message, (client, gid, r_message.message_id))
+
+        # Generate the text
+        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('action_hold'))}\n"
+                f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
+                f"{lang('pinned_message')}{lang('colon')}{code(r_message.message_id)}\n")
+
+        # Send the report message
+        send_report_message(20, client, gid, text)
+
+        # Send debug message
+        send_debug(
+            client=client,
+            chat=message.chat,
+            action=lang("config_change"),
+            aid=aid,
+            config_type=lang("action_hold"),
+            more=str(r_message.message_id)
+        )
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Hold error: {e}", exc_info=True)
+    finally:
+        glovar.locks["config"].release()
+        delete_normal_command(client, message)
+
+    return result
+
+
 @Client.on_message(filters.incoming & filters.group & filters.command(["keyword", "keywords", "kws"], glovar.prefix)
                    & authorized_group
                    & from_user)
@@ -511,70 +570,6 @@ def kws(client: Client, message: Message) -> bool:
         result = True
     except Exception as e:
         logger.warning(f"Kws error: {e}", exc_info=True)
-    finally:
-        glovar.locks["config"].release()
-        delete_normal_command(client, message)
-
-    return result
-
-
-@Client.on_message(filters.incoming & filters.group & filters.command(["hold"], glovar.prefix)
-                   & authorized_group
-                   & from_user)
-def pin_hold(client: Client, message: Message) -> bool:
-    # Hold the pinned message
-    result = False
-
-    glovar.locks["config"].acquire()
-
-    try:
-        # Basic data
-        gid = message.chat.id
-        mid = message.message_id
-
-        # Check permission
-        if not is_class_c(None, None, message):
-            return True
-
-        aid = message.from_user.id
-        r_message = message.reply_to_message
-
-        # Text prefix
-        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang('action_hold'))}\n")
-
-        # Check the message
-        if not r_message:
-            text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
-                     f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
-            thread(send_report_message, (15, client, gid, text))
-            return True
-
-        # Hold the message
-        glovar.configs[gid]["hold"] = r_message.message_id
-        save("configs")
-        thread(pin_chat_message, (client, gid, r_message.message_id))
-
-        # Generate the text
-        text += (f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
-                 f"{lang('pinned_message')}{lang('colon')}{code(r_message.message_id)}\n")
-
-        # Send the report message
-        thread(send_report_message, (20, client, gid, text))
-
-        # Send debug message
-        send_debug(
-            client=client,
-            chat=message.chat,
-            action=lang("config_change"),
-            aid=aid,
-            config_type=lang("action_hold"),
-            more=str(r_message.message_id)
-        )
-
-        return True
-    except Exception as e:
-        logger.warning(f"Pin hold error: {e}", exc_info=True)
     finally:
         glovar.locks["config"].release()
         delete_normal_command(client, message)
