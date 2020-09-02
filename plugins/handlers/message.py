@@ -23,21 +23,19 @@ from pyrogram.types import Message
 
 from .. import glovar
 from ..functions.channel import get_debug_text
-from ..functions.etc import (code, delay, general_link, get_filename, get_forward_name, get_full_name, get_now,
-                             get_text, lang, mention_id, t2t, thread)
+from ..functions.etc import code, delay, general_link, get_now, lang, mention_id, thread
 from ..functions.file import save
-from ..functions.filters import aio, authorized_group, class_d, declared_message, exchange_channel
-from ..functions.filters import from_user, hide_channel, is_ban_text, is_bio_text, is_class_d_user, is_declared_message
-from ..functions.filters import is_high_score_user, is_keyword_text, is_nm_text, is_regex_text, is_rm_text
-from ..functions.filters import is_watch_user, is_wb_text, new_group, test_group
+from ..functions.filters import (aio, authorized_group, declared_message, exchange_channel, from_user, hide_channel,
+                                 is_declared_message, is_high_score_user, is_keyword_message, is_nospam_message,
+                                 is_nospam_join, is_rm_text, is_user_class_d, is_watch_user, new_group, test_group)
 from ..functions.group import leave_group, leave_unauthorized, join_hint, save_admins
 from ..functions.ids import init_group_id, init_user_id
-from ..functions.receive import receive_add_bad, receive_captcha_flood, receive_config_commit, receive_clear_data
-from ..functions.receive import receive_config_reply, receive_config_show, receive_declared_message
-from ..functions.receive import receive_help_welcome, receive_leave_approve, receive_regex, receive_refresh
-from ..functions.receive import receive_remove_bad, receive_remove_score, receive_remove_watch, receive_rollback
-from ..functions.receive import receive_text_data, receive_user_score, receive_watch_user
-from ..functions.telegram import get_admins, get_user_full, pin_chat_message, send_message
+from ..functions.receive import (receive_add_bad, receive_captcha_flood, receive_config_commit, receive_clear_data,
+                                 receive_config_reply, receive_config_show, receive_declared_message,
+                                 receive_help_welcome, receive_leave_approve, receive_regex, receive_refresh,
+                                 receive_remove_bad, receive_remove_score, receive_remove_watch, receive_rollback,
+                                 receive_text_data, receive_user_score, receive_watch_user)
+from ..functions.telegram import get_admins, pin_chat_message, send_message
 from ..functions.timers import backup_files, send_count
 from ..functions.tip import tip_keyword, tip_rm, tip_welcome
 
@@ -47,104 +45,91 @@ logger = logging.getLogger(__name__)
 
 @Client.on_message(filters.incoming & filters.group & ~filters.linked_channel & ~filters.service
                    & ~test_group & authorized_group
-                   & from_user & ~class_d
+                   & from_user
                    & ~declared_message)
 def check(client: Client, message: Message) -> bool:
     # Check the messages sent from groups
+    result = False
+
     glovar.locks["message"].acquire()
+
     try:
         # Basic data
         gid = message.chat.id
         mid = message.message_id
-        now = message.date or get_now()
 
         # Check the config
         if ((not glovar.configs[gid].get("keyword") and not glovar.configs[gid].get("rm"))
-                or (not glovar.configs[gid].get("keyword_text") and not glovar.configs[gid].get("rm_text"))):
-            return True
+                or (not glovar.keywords[gid].get("kws") and not glovar.rms[gid].get("reply"))):
+            return False
 
-        # Check the forward from name
-        forward_name = get_forward_name(message, True, True)
+        # Check class D status
+        if is_user_class_d(gid, message.from_user):
+            return False
 
-        if forward_name and is_nm_text(client, forward_name):
-            return True
-
-        # Check the user's name
-        name = get_full_name(message.from_user, True, True)
-
-        if name and is_nm_text(client, name):
-            return True
-
-        # Check the text
-        message_text = get_text(message, True, True)
-
-        if is_ban_text(client, message_text, False):
-            return True
-
-        if is_regex_text(client, "del", message_text):
-            return True
-
-        # File name
-        filename = get_filename(message, True, True)
-
-        if is_ban_text(client, filename, False):
-            return True
-
-        if is_regex_text(client, "fil", filename):
-            return True
-
-        if is_regex_text(client, "del", filename):
-            return True
-
-        # User status
-        if is_watch_user(message.from_user, "ban", now):
-            return True
-
-        if is_watch_user(message.from_user, "delete", now):
-            return True
-
-        if is_high_score_user(message.from_user):
-            return True
+        # Check NOSPAM status
+        if is_nospam_message(client, message):
+            return False
 
         # Check declare status
         if is_declared_message(None, None, message):
             return True
 
         # Check keyword
-        rid, detection = is_keyword_text(message)
+        detection = is_keyword_message(message)
 
         if detection:
-            return tip_keyword(client, message, detection, rid)
+            return tip_keyword(client, message, detection)
 
         # Check rm
         detection = is_rm_text(client, message)
 
         if detection:
-            return tip_rm(client, gid, detection, mid)
+            return tip_rm(client, gid, mid)
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Check error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
 
-    return False
+    return result
 
 
 @Client.on_message(filters.incoming & filters.group & filters.new_chat_members
                    & ~test_group & ~new_group & authorized_group
-                   & from_user & ~class_d
+                   & from_user
                    & ~declared_message)
 def check_join(client: Client, message: Message) -> bool:
     # Check new joined user
+    result = False
+
     glovar.locks["message"].acquire()
+
     try:
         # Basic data
         gid = message.chat.id
+        user = message.new_chat_members[0]
+        mid = message.message_id
+        now = message.date or get_now()
 
         # Check config
         if not glovar.configs[gid].get("welcome"):
             return False
+
+        # Check class D status
+        if is_user_class_d(gid, user):
+            return False
+
+        # Check NOSPAM status
+        if is_nospam_join(client, gid, user):
+            return False
+
+        # Check declare status
+        if is_declared_message(None, None, message):
+            return False
+
+        # Check keyword name
 
         # Word with CAPTCHA
         if glovar.configs[gid].get("captcha") and glovar.captcha_id in glovar.admin_ids[gid]:
@@ -154,49 +139,30 @@ def check_join(client: Client, message: Message) -> bool:
         if gid in glovar.flooded_ids:
             return False
 
-        for new in message.new_chat_members:
-            # Basic data
-            uid = new.id
+        # User status
+        if is_watch_user(user, "ban", now):
+            return False
 
-            # Check if the user is Class D personnel
-            if is_class_d_user(new):
-                return True
+        if is_watch_user(user, "delete", now):
+            return False
 
-            # Check name
-            name = get_full_name(new, True, True)
+        if is_high_score_user(user):
+            return False
 
-            if name and (is_nm_text(client, name) or is_wb_text(client, name, False)):
-                return True
-
-            # Check bio
-            user = get_user_full(client, uid)
-
-            if not user or not user.about:
-                bio = ""
-            else:
-                bio = t2t(user.about, True, True)
-
-            if bio and (is_bio_text(client, bio) or is_wb_text(client, bio, False)):
-                return True
-
-            # Check declare status
-            if is_declared_message(None, None, message):
-                return True
-
-            # Init the user's status
-            if not init_user_id(uid):
-                return True
+        # Init the user's status
+        if not init_user_id(user.id):
+            return False
 
         # Welcome
-        tip_welcome(client, message)
+        tip_welcome(client, user, gid, mid)
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Check join error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
 
-    return False
+    return result
 
 
 @Client.on_message((filters.incoming | aio) & filters.channel

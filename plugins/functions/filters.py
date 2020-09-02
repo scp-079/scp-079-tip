@@ -28,9 +28,10 @@ from pyrogram.types import CallbackQuery, Message, User
 from .. import glovar
 from .channel import share_regex_remove
 from .decorators import timeout
-from .etc import get_forward_name, get_full_name, get_now, get_text
+from .etc import get_filename, get_forward_name, get_full_name, get_now, get_text, t2t
 from .file import save
 from .ids import init_group_id
+from .telegram import get_user_full
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -791,6 +792,112 @@ def is_nm_text(client: Client, text: str) -> bool:
             return True
     except Exception as e:
         logger.warning(f"Is nm text error: {e}", exc_info=True)
+
+    return result
+
+
+def is_nospam_message(client: Client, message: Message) -> bool:
+    # Check if the message will be processed by NOSPAM
+    result = False
+
+    try:
+        # Basic data
+        gid = message.chat.id
+
+        # Check nospam status
+        if glovar.nospam_id not in glovar.admin_ids[gid]:
+            return False
+
+        # Check the forward from name
+        forward_name = get_forward_name(message, True, True, True)
+
+        if forward_name and is_nm_text(client, forward_name):
+            return True
+
+        # Check the user's name
+        name = get_full_name(message.from_user, True, True, True)
+
+        if name and is_nm_text(client, name):
+            return True
+
+        # Check the text
+        message_text = get_text(message, True, True)
+
+        if is_ban_text(client, message_text, False):
+            return True
+
+        if is_regex_text(client, "del", message_text):
+            return True
+
+        # File name
+        filename = get_filename(message, True, True)
+
+        if is_ban_text(client, filename, False):
+            return True
+
+        if is_regex_text(client, "fil", filename):
+            return True
+
+        if is_regex_text(client, "del", filename):
+            return True
+    except Exception as e:
+        logger.warning(f"Is nospam message error: {e}", exc_info=True)
+
+    return result
+
+
+def is_nospam_join(client: Client, gid: int, user: User) -> bool:
+    # Check if the joined message will be processed by NOSPAM
+    result = False
+
+    try:
+        # Basic data
+        uid = user.id
+
+        # Check nospam status
+        if glovar.nospam_id not in glovar.admin_ids[gid]:
+            return False
+
+        # Check nospam ignore status
+        if gid in glovar.ignore_ids["nospam"]:
+            return False
+
+        # Check name
+        name = get_full_name(user, True, True, True)
+
+        if name and (is_nm_text(client, name) or is_wb_text(client, name, False)):
+            return True
+
+        # Check bio
+        user = get_user_full(client, uid)
+
+        if not user or not user.about:
+            bio = ""
+        else:
+            bio = t2t(user.about, True, True, True)
+
+        if bio and (is_bio_text(client, bio) or is_wb_text(client, bio, False)):
+            return True
+    except Exception as e:
+        logger.warning(f"Is nospam join error: {e}", exc_info=True)
+
+    return result
+
+
+def is_user_class_d(gid: int, user: User) -> bool:
+    # Check if the class d user will be processed by USER
+    result = False
+
+    try:
+        # Check nospam ignore status
+        if gid in glovar.ignore_ids["user"]:
+            return False
+
+        # Check class D status
+        if is_class_d_user(user):
+            return True
+    except Exception as e:
+        logger.warning(f"Is user class d error: {e}", exc_info=True)
 
     return result
 
