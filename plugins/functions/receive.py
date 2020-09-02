@@ -343,6 +343,21 @@ def receive_file_data(client: Client, message: Message, decrypt: bool = True) ->
     return result
 
 
+def receive_group_id(data: dict) -> bool:
+    # Receive group id
+    result = False
+
+    try:
+        group = data["group"]
+        gid = data["group_id"]
+        glovar.group_ids[group] = gid
+        save("group_ids")
+    except Exception as e:
+        logger.warning(f"Receive group id error: {e}", exc_info=True)
+
+    return result
+
+
 def receive_ignore_ids(client: Client, message: Message, sender: str) -> bool:
     # Receive ignore ids
     result = False
@@ -562,6 +577,25 @@ def receive_remove_watch(data: int) -> bool:
     return result
 
 
+def receive_remove_white(data: int) -> bool:
+    # Receive removed withe users
+    result = False
+
+    try:
+        # Basic data
+        uid = data
+
+        # White ids
+        glovar.white_ids.discard(uid)
+        save("white_ids")
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Receive remove white error: {e}", exc_info=True)
+
+    return result
+
+
 def receive_rollback(client: Client, message: Message, data: dict) -> bool:
     # Receive rollback data
     result = False
@@ -663,5 +697,25 @@ def receive_watch_user(data: dict) -> bool:
         result = True
     except Exception as e:
         logger.warning(f"Receive watch user error: {e}", exc_info=True)
+
+    return result
+
+
+def receive_white_users(client: Client, message: Message) -> bool:
+    # Receive white users
+    result = False
+
+    try:
+        the_data = receive_file_data(client, message)
+
+        if not the_data:
+            return False
+
+        glovar.white_ids = the_data
+        save("white_ids")
+
+        result = False
+    except Exception as e:
+        logger.warning(f"Receive white users error: {e}", exc_info=True)
 
     return result

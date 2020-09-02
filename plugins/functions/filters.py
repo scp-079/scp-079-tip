@@ -594,10 +594,7 @@ def is_keyword_message(message: Message) -> dict:
                 continue
             elif target == "admin" and not class_c_message:
                 continue
-            elif (target in {"admin", "all"}
-                    and any(a in {"delete", "kick"} or a.startswith("ban") or a.startswith("restrict")
-                            for a in actions)
-                    and class_c_message):
+            elif is_terminate_actions(actions) and is_should_pass(message):
                 continue
 
             # Get result
@@ -893,19 +890,56 @@ def is_rm_text(client: Client, message: Message) -> bool:
     return result
 
 
+def is_should_pass(message: Message) -> bool:
+    # Check if should pass the keyword detection
+    result = False
+
+    try:
+        # Basic data
+        gid = message.chat.id
+        uid = message.from_user.id
+
+        # Check admins
+        if is_class_c(None, None, message):
+            return True
+
+        # Check white users
+        if glovar.configs[gid].get("white", False) and uid in glovar.white_ids:
+            return True
+    except Exception as e:
+        logger.warning(f"Is should pass error: {e}", exc_info=True)
+
+    return result
+
+
 def is_should_terminate(message: Message, actions: set) -> bool:
     # Check if should terminate the user
     result = False
 
     try:
-        if (not is_class_c(None, None, message)
-                and any(a in {"delete", "kick"}
-                        or a.startswith("ban")
-                        or a.startswith("restrict")
-                        for a in actions)):
-            return True
+        # Check terminate actions
+        if not is_terminate_actions(actions):
+            return False
+
+        # Check if should pass
+        if is_should_pass(message):
+            return False
+
+        result = True
     except Exception as e:
         logger.warning(f"Is should terminate error: {e}", exc_info=True)
+
+    return result
+
+
+def is_terminate_actions(actions: set) -> bool:
+    # Check if actions have terminate action
+    result = False
+
+    try:
+        result = any(a in {"delete", "kick"} or a.startswith("ban") or a.startswith("restrict") for a in actions)
+    except Exception as e:
+        logger.warning(f"Is terminate actions error: {e}", exc_info=True)
 
     return result
 
