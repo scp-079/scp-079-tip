@@ -38,6 +38,7 @@ CUSTOM_LANG_PATH = "data/config/custom.yml"
 LOG_PATH = "data/log"
 PICKLE_BACKUP_PATH = "data/pickle/backup"
 PICKLE_PATH = "data/pickle"
+JOIN_PATH = "data/config/join.txt"
 SESSION_DIR_PATH = "data/session"
 SESSION_PATH = "data/session/bot.session"
 START_PATH = "data/config/start.txt"
@@ -80,6 +81,7 @@ user_id: int = 0
 warn_id: int = 0
 
 # [channels]
+compromise_channel_id: int = 0
 critical_channel_id: int = 0
 debug_channel_id: int = 0
 exchange_channel_id: int = 0
@@ -93,6 +95,7 @@ default_group_link: str = "https://t.me/SCP_079_DEBUG"
 leave_button: str = "申请使用"
 leave_link: str = "https://scp-079.org/ApplyForUse/"
 leave_reason: str = "需要授权方可使用"
+manual_link: str = "https://manuals.scp-079.org/bots/tip/"
 project_link: str = "https://scp-079.org/tip/"
 project_name: str = "SCP-079-TIP"
 
@@ -149,6 +152,7 @@ try:
     warn_id = int(config.get("bots", "warn_id", fallback=warn_id))
 
     # [channels]
+    compromise_channel_id = int(config.get("channels", "compromise_channel_id", fallback=compromise_channel_id))
     critical_channel_id = int(config.get("channels", "critical_channel_id", fallback=critical_channel_id))
     debug_channel_id = int(config.get("channels", "debug_channel_id", fallback=debug_channel_id))
     exchange_channel_id = int(config.get("channels", "exchange_channel_id", fallback=exchange_channel_id))
@@ -162,6 +166,7 @@ try:
     leave_button = config.get("custom", "leave_button", fallback=leave_button)
     leave_link = config.get("custom", "leave_link", fallback=leave_link)
     leave_reason = config.get("custom", "leave_reason", fallback=leave_reason)
+    manual_link = config.get("custom", "manual_link", fallback=manual_link)
     project_link = config.get("custom", "project_link", fallback=project_link)
     project_name = config.get("custom", "project_name", fallback=project_name)
 
@@ -226,6 +231,7 @@ check_all(
             "warn_id": warn_id
         },
         "channels": {
+            "compromise_channel_id": compromise_channel_id,
             "critical_channel_id": critical_channel_id,
             "debug_channel_id": debug_channel_id,
             "exchange_channel_id": exchange_channel_id,
@@ -239,6 +245,7 @@ check_all(
             "leave_button": leave_button,
             "leave_link": leave_link,
             "leave_reason": leave_reason,
+            "manual_link": manual_link,
             "project_link": project_link,
             "project_name": project_name
         },
@@ -406,6 +413,7 @@ keyworded_ids: Dict[int, Dict[int, Set[str]]] = {}
 locks: Dict[str, Lock] = {
     "admin": Lock(),
     "channel": Lock(),
+    "config": Lock(),
     "message": Lock(),
     "receive": Lock(),
     "regex": Lock()
@@ -454,7 +462,7 @@ started_ids: Set[int] = set()
 
 updating: bool = False
 
-version: str = "0.2.0"
+version: str = "0.2.1"
 
 welcomed_ids: Dict[int, Set[int]] = {}
 # welcomed_ids = {
@@ -462,6 +470,12 @@ welcomed_ids: Dict[int, Set[int]] = {}
 # }
 
 # Load data from TXT file
+
+if exists(JOIN_PATH):
+    with open(JOIN_PATH, "r", encoding="utf-8") as f:
+        join_text = f.read()
+else:
+    join_text = ""
 
 if exists(START_PATH):
     with open(START_PATH, "r", encoding="utf-8") as f:

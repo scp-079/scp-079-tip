@@ -26,13 +26,15 @@ from pyrogram.types import Message
 
 from .. import glovar
 from ..functions.channel import get_debug_text, send_debug, share_data
-from ..functions.etc import code, code_block, delay, general_link, get_command_context, get_command_type, get_int
+from ..functions.command import get_command_context, get_command_type
+from ..functions.config import get_config_text
+from ..functions.etc import code, code_block, delay, general_link, get_int
 from ..functions.etc import get_now, get_readable_time, lang, mention_id, thread
 from ..functions.file import save
 from ..functions.filters import authorized_group, from_user, is_class_c, test_group
-from ..functions.group import delete_message, get_config_text
+from ..functions.group import delete_message
 from ..functions.telegram import get_group_info, pin_chat_message, send_message, send_report_message
-from ..functions.tip import get_invite_link, get_keywords, tip_ot, tip_rm, tip_welcome
+from ..functions.tip import get_invite_link, tip_ot, tip_rm, tip_welcome
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -472,115 +474,115 @@ def hold(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(filters.incoming & filters.group & filters.command(["keyword"], glovar.prefix)
-                   & ~test_group & authorized_group
-                   & from_user)
-def keyword(client: Client, message: Message) -> bool:
-    # Keyword config
-
-    if not message or not message.chat:
-        return True
-
-    # Basic data
-    gid = message.chat.id
-    mid = message.message_id
-
-    glovar.locks["message"].acquire()
-    try:
-        # Check permission
-        if not is_class_c(None, None, message):
-            return True
-
-        aid = message.from_user.id
-        command_type, command_context = get_command_context(message)
-
-        # Text prefix
-        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang('action_keyword'))}\n")
-
-        # Show the config
-        if not command_type or (command_type and command_type in {"text", "button", "link"} and not command_context):
-            # Check command
-            if not command_type:
-                command_type = "text"
-
-            # Text prefix
-            text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
-                    f"{lang('action')}{lang('colon')}{code(lang('action_show'))}\n")
-
-            # Get the config
-            result = glovar.configs[gid].get(f"keyword_{command_type}") or lang("reason_none")
-            text += (f"{lang('result')}{lang('colon')}" + "-" * 24 + "\n\n"
-                     f"{code_block(result)}\n")
-
-            # Check the text
-            if len(text) > 4000:
-                text = code_block(result)
-
-            # Send the report message
-            return thread(send_report_message, (20, client, gid, text))
-
-        # Check command format
-        if not command_type or command_type not in {"text", "button", "link"} or not command_context:
-            text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
-                     f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
-            thread(send_report_message, (15, client, gid, text))
-            return True
-
-        # Config keyword
-        if command_type == "text":
-            result = get_keywords(command_context)
-
-            # Check the result
-            if not result:
-                text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
-                         f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
-                thread(send_report_message, (15, client, gid, text))
-                return True
-            else:
-                glovar.configs[gid]["default"] = False
-                glovar.configs[gid]["keyword_text"] = command_context.strip()
-                save("configs")
-                text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
-
-            # Send the report message
-            thread(send_report_message, (20, client, gid, text))
-
-            # Send debug message
-            send_debug(
-                client=client,
-                chat=message.chat,
-                action=lang("config_change"),
-                aid=aid,
-                config_type="keyword",
-                more="text"
-            )
-        else:
-            # Config keyword message button
-            glovar.configs[gid]["default"] = False
-            glovar.configs[gid][f"keyword_{command_type}"] = command_context.strip()
-            save("configs")
-            text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
-            send_debug(
-                client=client,
-                chat=message.chat,
-                action=lang("config_change"),
-                aid=aid,
-                config_type="keyword",
-                more=command_type
-            )
-
-            # Send the report message
-            thread(send_report_message, (20, client, gid, text))
-
-        return True
-    except Exception as e:
-        logger.warning(f"Keyword error: {e}", exc_info=True)
-    finally:
-        glovar.locks["message"].release()
-        delete_message(client, gid, mid)
-
-    return False
+# @Client.on_message(filters.incoming & filters.group & filters.command(["keyword"], glovar.prefix)
+#                    & ~test_group & authorized_group
+#                    & from_user)
+# def keyword(client: Client, message: Message) -> bool:
+#     # Keyword config
+#
+#     if not message or not message.chat:
+#         return True
+#
+#     # Basic data
+#     gid = message.chat.id
+#     mid = message.message_id
+#
+#     glovar.locks["message"].acquire()
+#     try:
+#         # Check permission
+#         if not is_class_c(None, None, message):
+#             return True
+#
+#         aid = message.from_user.id
+#         command_type, command_context = get_command_context(message)
+#
+#         # Text prefix
+#         text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+#                 f"{lang('action')}{lang('colon')}{code(lang('action_keyword'))}\n")
+#
+#         # Show the config
+#         if not command_type or (command_type and command_type in {"text", "button", "link"} and not command_context):
+#             # Check command
+#             if not command_type:
+#                 command_type = "text"
+#
+#             # Text prefix
+#             text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+#                     f"{lang('action')}{lang('colon')}{code(lang('action_show'))}\n")
+#
+#             # Get the config
+#             result = glovar.configs[gid].get(f"keyword_{command_type}") or lang("reason_none")
+#             text += (f"{lang('result')}{lang('colon')}" + "-" * 24 + "\n\n"
+#                      f"{code_block(result)}\n")
+#
+#             # Check the text
+#             if len(text) > 4000:
+#                 text = code_block(result)
+#
+#             # Send the report message
+#             return thread(send_report_message, (20, client, gid, text))
+#
+#         # Check command format
+#         if not command_type or command_type not in {"text", "button", "link"} or not command_context:
+#             text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
+#                      f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
+#             thread(send_report_message, (15, client, gid, text))
+#             return True
+#
+#         # Config keyword
+#         if command_type == "text":
+#             result = get_keywords(command_context)
+#
+#             # Check the result
+#             if not result:
+#                 text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
+#                          f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
+#                 thread(send_report_message, (15, client, gid, text))
+#                 return True
+#             else:
+#                 glovar.configs[gid]["default"] = False
+#                 glovar.configs[gid]["keyword_text"] = command_context.strip()
+#                 save("configs")
+#                 text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
+#
+#             # Send the report message
+#             thread(send_report_message, (20, client, gid, text))
+#
+#             # Send debug message
+#             send_debug(
+#                 client=client,
+#                 chat=message.chat,
+#                 action=lang("config_change"),
+#                 aid=aid,
+#                 config_type="keyword",
+#                 more="text"
+#             )
+#         else:
+#             # Config keyword message button
+#             glovar.configs[gid]["default"] = False
+#             glovar.configs[gid][f"keyword_{command_type}"] = command_context.strip()
+#             save("configs")
+#             text += f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
+#             send_debug(
+#                 client=client,
+#                 chat=message.chat,
+#                 action=lang("config_change"),
+#                 aid=aid,
+#                 config_type="keyword",
+#                 more=command_type
+#             )
+#
+#             # Send the report message
+#             thread(send_report_message, (20, client, gid, text))
+#
+#         return True
+#     except Exception as e:
+#         logger.warning(f"Keyword error: {e}", exc_info=True)
+#     finally:
+#         glovar.locks["message"].release()
+#         delete_message(client, gid, mid)
+#
+#     return False
 
 
 @Client.on_message(filters.incoming & filters.group & filters.command(["open"], glovar.prefix)
@@ -1054,6 +1056,13 @@ def version(client: Client, message: Message) -> bool:
         if command_type and command_type.upper() != glovar.sender:
             return False
 
+        # Check update status
+        if glovar.updating:
+            text = (f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
+                    f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
+                    f"{lang('status')}{lang('colon')}{code(lang('program_updating'))}\n")
+            return thread(send_message, (client, cid, text, mid))
+
         # Version info
         git_change = bool(run("git diff-index HEAD --", stdout=PIPE, shell=True).stdout.decode().strip())
         git_date = run("git log -1 --format='%at'", stdout=PIPE, shell=True).stdout.decode()
@@ -1066,13 +1075,13 @@ def version(client: Client, message: Message) -> bool:
         text = (f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
                 f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
                 f"{lang('version')}{lang('colon')}{code(glovar.version)}\n"
-                f"{lang('本地修改')}{lang('colon')}{code(git_change)}\n"
-                f"{lang('哈希值')}{lang('colon')}{general_link(git_hash, get_hash_link)}\n"
-                f"{lang('提交时间')}{lang('colon')}{code(git_date)}\n"
-                f"{lang('命令发送时间')}{lang('colon')}{code(command_date)}\n")
+                f"{lang('git_change')}{lang('colon')}{code(git_change)}\n"
+                f"{lang('git_hash')}{lang('colon')}{general_link(git_hash, get_hash_link)}\n"
+                f"{lang('git_date')}{lang('colon')}{code(git_date)}\n"
+                f"{lang('command_date')}{lang('colon')}{code(command_date)}\n")
 
         # Send the report message
-        result = send_message(client, cid, text, mid)
+        result = bool(send_message(client, cid, text, mid))
     except Exception as e:
         logger.warning(f"Version error: {e}", exc_info=True)
 
