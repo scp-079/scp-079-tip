@@ -26,12 +26,12 @@ from pyrogram.types import Message
 
 from .. import glovar
 from ..functions.channel import get_debug_text, send_debug, share_data
-from ..functions.command import get_command_context, get_command_type
-from ..functions.config import get_config_text
-from ..functions.etc import code, code_block, delay, general_link, get_int
-from ..functions.etc import get_now, get_readable_time, lang, mention_id, thread
+from ..functions.command import command_error, delete_normal_command, get_command_context, get_command_type
+from ..functions.config import get_config_text, update_config
+from ..functions.etc import (code, code_block, delay, general_link, get_int, get_now, get_readable_time, lang,
+                             mention_id, thread)
 from ..functions.file import save
-from ..functions.filters import authorized_group, from_user, is_class_c, test_group
+from ..functions.filters import authorized_group, from_user, is_class_c, is_from_user, test_group
 from ..functions.group import delete_message
 from ..functions.telegram import get_group_info, pin_chat_message, send_message, send_report_message
 from ..functions.tip import get_invite_link, tip_ot, tip_rm, tip_welcome
@@ -40,77 +40,103 @@ from ..functions.tip import get_invite_link, tip_ot, tip_rm, tip_welcome
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(filters.incoming & filters.group & filters.command(["channel"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.reply & filters.command(["channel"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
-def channel(client: Client, message: Message) -> bool:
-    # Channel config
+def channel_bind(client: Client, message: Message) -> bool:
+    # Bind a channel
+    result = False
 
-    if not message or not message.chat:
-        return True
+    glovar.locks["config"].acquire()
 
-    # Basic data
-    gid = message.chat.id
-    mid = message.message_id
-
-    glovar.locks["message"].acquire()
     try:
+        # Basic data
+        gid = message.chat.id
+
         # Check permission
         if not is_class_c(None, None, message):
-            return True
+            return False
 
+        # Basic data
         aid = message.from_user.id
         r_message = message.reply_to_message
 
-        # Bind a channel
-        if r_message:
-            # Text prefix
-            text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
-                    f"{lang('action')}{lang('colon')}{code(lang('action_bind'))}\n")
+        if not r_message or not is_from_user(None, None, r_message):
+            return False
 
-            # Check the message
-            if not r_message.forward_from_chat:
-                text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
-                         f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
-                thread(send_report_message, (15, client, gid, text))
-                return True
+        # Check the message
+        if not r_message.forward_from_chat:
+            return command_error(client, message, lang("action_bind"), lang("command_usage"),
+                                 lang("error_channel_bind_reply"))
 
-            # Try to send a message to the channel
-            cid = r_message.forward_from_chat.id
-            glovar.configs[gid]["default"] = False
-            glovar.configs[gid]["channel"] = cid
-            save("configs")
-            result = get_invite_link(
-                client=client,
-                the_type="send",
-                gid=gid,
-                manual=True
-            )
+        # Try to send a message to the channel
+        cid = r_message.forward_from_chat.id
 
-            # Check the result
-            if not result:
-                text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
-                         f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
-                thread(send_report_message, (15, client, gid, text))
-                return True
-            else:
-                text += (f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
-                         f"{lang('channel')}{lang('colon')}{code(cid)}\n")
+        glovar.channels[gid]["aid"] = aid
+        glovar.channels[gid]["cid"] = cid
+        save("channels")
 
-            # Send the report message
-            thread(send_report_message, (20, client, gid, text))
+        glovar.configs[gid]["default"] = False
+        glovar.configs[gid]["channel"] = True
+        save("configs")
 
-            # Send debug message
-            send_debug(
-                client=client,
-                chat=message.chat,
-                action=lang("config_change"),
-                aid=aid,
-                config_type=lang("action_bind"),
-                more=str(cid)
-            )
+        result = get_invite_link(
+            client=client,
+            the_type="send",
+            gid=gid,
+            manual=True
+        )
 
-            return True
+        # Check the result
+        if not result:
+            return command_error(client, message, lang("action_bind"), lang("command_usage"),
+                                 lang("error_channel_bind_send"))
+
+        # Text prefix
+        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('action_bind'))}\n"
+                f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
+                f"{lang('channel')}{lang('colon')}{code(cid)}\n")
+
+        # Send the report message
+        send_report_message(20, client, gid, text)
+
+        # Send debug message
+        send_debug(
+            client=client,
+            chat=message.chat,
+            action=lang("config_change"),
+            aid=aid,
+            config_type=lang("action_bind"),
+            more=str(cid)
+        )
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Channel bind error: {e}", exc_info=True)
+    finally:
+        glovar.locks["config"].release()
+        delete_normal_command(client, message)
+
+    return result
+
+
+@Client.on_message(filters.incoming & filters.group & filters.reply & filters.command(["channel"], glovar.prefix)
+                   & ~test_group & authorized_group
+                   & from_user)
+def channel_config(client: Client, message: Message) -> bool:
+    # Config the channel text or button
+    result = False
+
+    glovar.locks["config"].acquire()
+
+    try:
+        # Basic data
+        gid = message.chat.id
+
+        # Check permission
+        if not is_class_c(None, None, message):
+            return False
 
         # Change channel config
         command_type, command_context = get_command_context(message)
@@ -150,14 +176,14 @@ def channel(client: Client, message: Message) -> bool:
         # Send the report message
         thread(send_report_message, (20, client, gid, text))
 
-        return True
+        result = True
     except Exception as e:
-        logger.warning(f"Channel error: {e}", exc_info=True)
+        logger.warning(f"Channel config error: {e}", exc_info=True)
     finally:
-        glovar.locks["message"].release()
-        delete_message(client, gid, mid)
+        glovar.locks["config"].release()
+        delete_normal_command(client, message)
 
-    return False
+    return result
 
 
 @Client.on_message(filters.incoming & filters.group & filters.command(["close"], glovar.prefix)

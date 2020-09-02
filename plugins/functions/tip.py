@@ -47,9 +47,10 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
 
         # Read the config
         cid = glovar.channels[gid].get("cid", 0)
+        mid = glovar.channels[gid].get("mid", 0)
+        time = glovar.channels[gid].get("time", 0)
         text = glovar.channels[gid].get("text")
         button = glovar.channels[gid].get("button")
-        mid, time = glovar.message_ids[gid].get("channel", (0, 0))
 
         # Check the config
         if not cid:
@@ -65,9 +66,9 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
         # Check the link
         if link is False:
             glovar.channels[gid]["cid"] = 0
+            glovar.channels[gid]["mid"] = 0
+            glovar.channels[gid]["time"] = 0
             save("channels")
-            glovar.message_ids[gid]["channel"] = (0, 0)
-            save("message_ids")
             delete_message(client, cid, mid)
             return False
         elif not link:
@@ -102,8 +103,9 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
             result = edit_message_text(client, cid, mid, text, markup)
 
             if result:
-                glovar.message_ids[gid]["channel"] = (mid, now)
-                save("message_ids")
+                glovar.channels[gid]["mid"] = mid
+                glovar.channels[gid]["time"] = now
+                save("channels")
                 return True
             elif result is False:
                 return False
@@ -114,8 +116,9 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
         if not result:
             return False
 
-        glovar.message_ids[gid]["channel"] = (result.message_id, now)
-        save("message_ids")
+        glovar.channels[gid]["mid"] = result.message_id
+        glovar.channels[gid]["time"] = now
+        save("channels")
         mid and delete_message(client, cid, mid)
 
         result = True

@@ -485,7 +485,7 @@ def update_config(client: Client, message: Message, config: dict, more: str = ""
         if more:
             text += f"{lang('more')}{lang('colon')}{code(more)}\n"
 
-        thread(send_report_message, (15, client, gid, text))
+        send_report_message(15, client, gid, text)
 
         # Send the debug message
         send_debug(

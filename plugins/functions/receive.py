@@ -235,7 +235,7 @@ def receive_config_reply(client: Client, data: dict) -> bool:
                 ]
             ]
         )
-        thread(send_report_message, (60, client, gid, text, None, markup))
+        send_report_message(60, client, gid, text, None, markup)
 
         result = True
     except Exception as e:
