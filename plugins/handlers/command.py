@@ -28,12 +28,14 @@ from .. import glovar
 from ..functions.channel import get_debug_text, send_debug, share_data
 from ..functions.command import (command_error, delete_normal_command, delete_shared_command, get_command_context,
                                  get_command_type)
-from ..functions.config import conflict_config, get_config_text, kws_config_occupy, update_config
+from ..functions.config import (conflict_config, get_config_text, kws_add, kws_config_occupy, kws_config_gid,
+                                kws_remove, kws_show, start_kws, update_config)
 from ..functions.etc import (code, code_block, general_link, get_int, get_now, get_readable_time, lang,
-                             mention_id, thread)
+                             mention_id, random_str, thread)
 from ..functions.file import save
-from ..functions.filters import authorized_group, from_user, is_class_c, is_from_user, test_group
-from ..functions.markup import get_text_and_markup_tip
+from ..functions.filters import (authorized_group, class_e, from_user, is_class_c, is_class_e_user, is_from_user,
+                                 test_group)
+from ..functions.markup import get_text_and_markup, get_text_and_markup_tip
 from ..functions.program import restart_program, update_program
 from ..functions.telegram import (forward_messages, get_group_info, get_start, pin_chat_message, send_message,
                                   send_report_message)
@@ -42,6 +44,49 @@ from ..functions.user import add_start, get_user_from_message
 
 # Enable logging
 logger = logging.getLogger(__name__)
+
+
+@Client.on_message(filters.incoming & filters.private & filters.command(["add"], glovar.prefix)
+                   & from_user & class_e)
+def add(client: Client, message: Message) -> bool:
+    # Add a custom keyword
+    result = False
+
+    glovar.locks["config"].acquire()
+
+    try:
+        # Basic data
+        uid = message.from_user.id
+        now = message.date or get_now()
+
+        # Get group id
+        gid = kws_config_gid(uid, now)
+
+        # Check the group id
+        if not gid:
+            return False
+
+        # Get custom text
+        text = get_command_type(message)
+
+        # Check the command format
+        if not text:
+            return command_error(client, message, lang("action_kws_add"), lang("command_usage"),
+                                 private=True, report=False)
+
+        # Get key
+        key = random_str(8)
+
+        while glovar.keywords[gid]["kws"].get(key):
+            key = random_str(8)
+
+        result = kws_add(client, message, gid, key, text)
+    except Exception as e:
+        logger.warning(f"Add error: {e}", exc_info=True)
+    finally:
+        glovar.locks["config"].release()
+
+    return result
 
 
 @Client.on_message(filters.incoming & filters.group & filters.reply & filters.command(["channel"], glovar.prefix)
@@ -545,6 +590,48 @@ def config_tip(client: Client, message: Message) -> bool:
     return result
 
 
+@Client.on_message(filters.incoming & filters.private & filters.command(["edit"], glovar.prefix)
+                   & from_user & class_e)
+def edit(client: Client, message: Message) -> bool:
+    # Edit a custom keyword
+    result = False
+
+    glovar.locks["config"].acquire()
+
+    try:
+        # Basic data
+        uid = message.from_user.id
+        now = message.date or get_now()
+
+        # Get group id
+        gid = kws_config_gid(uid, now)
+
+        # Check the group id
+        if not gid:
+            return False
+
+        # Get key and custom text
+        key, text = get_command_context(message)
+
+        # Check the command format
+        if not key or not text:
+            return command_error(client, message, lang("action_kws_edit"), lang("command_usage"),
+                                 private=True, report=False)
+
+        # Check the key
+        if not glovar.keywords[gid]["kws"].get(key):
+            return command_error(client, message, lang("action_kws_edit"), lang("command_para"),
+                                 detail=lang("error_kws_none"), private=True, report=False)
+
+        result = kws_add(client, message, gid, key, text, "edit")
+    except Exception as e:
+        logger.warning(f"Edit error: {e}", exc_info=True)
+    finally:
+        glovar.locks["config"].release()
+
+    return result
+
+
 @Client.on_message(filters.incoming & filters.group & filters.command(["hold"], glovar.prefix)
                    & authorized_group
                    & from_user)
@@ -687,6 +774,48 @@ def kws(client: Client, message: Message) -> bool:
     return result
 
 
+@Client.on_message(filters.incoming & filters.private & filters.command(["remove", "rm"], glovar.prefix)
+                   & from_user & class_e)
+def remove(client: Client, message: Message) -> bool:
+    # Remove a custom keyword
+    result = False
+
+    glovar.locks["config"].acquire()
+
+    try:
+        # Basic data
+        uid = message.from_user.id
+        now = message.date or get_now()
+
+        # Get group id
+        gid = kws_config_gid(uid, now)
+
+        # Check the group id
+        if not gid:
+            return False
+
+        # Get key
+        key = get_command_type(message)
+
+        # Check the command format
+        if not key:
+            return command_error(client, message, lang("action_kws_remove"), lang("command_usage"),
+                                 private=True, report=False)
+
+        # Check the key
+        if not glovar.keywords[gid]["kws"].get(key):
+            return command_error(client, message, lang("action_kws_remove"), lang("command_para"),
+                                 detail=lang("error_kws_none"), private=True, report=False)
+
+        result = kws_remove(client, message, gid, key)
+    except Exception as e:
+        logger.warning(f"Remove error: {e}", exc_info=True)
+    finally:
+        glovar.locks["config"].release()
+
+    return result
+
+
 @Client.on_message(filters.incoming & filters.group & filters.command(["restart"], glovar.prefix)
                    & test_group
                    & from_user)
@@ -727,7 +856,7 @@ def restart(client: Client, message: Message) -> bool:
 @Client.on_message(filters.incoming & filters.group & filters.command(["show"], glovar.prefix)
                    & authorized_group
                    & from_user)
-def show(client: Client, message: Message) -> bool:
+def show_config(client: Client, message: Message) -> bool:
     # Show the config text
     result = False
 
@@ -771,10 +900,101 @@ def show(client: Client, message: Message) -> bool:
 
         result = True
     except Exception as e:
-        logger.warning(f"Show error: {e}", exc_info=True)
+        logger.warning(f"Show config error: {e}", exc_info=True)
     finally:
         glovar.locks["config"].release()
         delete_normal_command(client, message)
+
+    return result
+
+
+@Client.on_message(filters.incoming & filters.private & filters.command(["show"], glovar.prefix)
+                   & from_user & class_e)
+def show_group(client: Client, message: Message) -> bool:
+    # Show custom keywords
+    result = False
+
+    glovar.locks["config"].acquire()
+
+    try:
+        # Basic data
+        uid = message.from_user.id
+        now = message.date or get_now()
+
+        # Get group id
+        gid = kws_config_gid(uid, now)
+
+        # Check the group id
+        if not gid:
+            return False
+
+        # Get key
+        file = get_command_type(message)
+
+        result = kws_show(client, message, gid, file == "file")
+    except Exception as e:
+        logger.warning(f"Show group error: {e}", exc_info=True)
+    finally:
+        glovar.locks["config"].release()
+
+    return result
+
+
+@Client.on_message(filters.incoming & filters.private & filters.command(["start", "help"], glovar.prefix)
+                   & from_user)
+def start(client: Client, message: Message) -> bool:
+    # Process /start command in private chat
+    result = False
+
+    glovar.locks["config"].acquire()
+
+    try:
+        # Basic data
+        cid = message.chat.id
+        mid = message.message_id
+        now = message.date or get_now()
+
+        # Get start key
+        key = get_command_type(message)
+
+        # Start session
+        if is_class_e_user(message.from_user) and key and glovar.starts.get(key):
+            # Get until time
+            until = glovar.starts[key]["until"]
+
+            # Check the until time
+            if now >= until:
+                return False
+
+            # Get action
+            action = glovar.starts[key]["action"]
+
+            # Proceed
+            if action == "kws":
+                return start_kws(client, message, key)
+
+        # Check started ids
+        if cid in glovar.started_ids:
+            return False
+
+        # Add to started ids
+        glovar.started_ids.add(cid)
+
+        # Check start text
+        if not glovar.start_text:
+            return False
+
+        # Generate the text and markup
+        text, markup = get_text_and_markup(glovar.start_text)
+
+        # Send the report message
+        thread(send_message, (client, cid, text, mid, markup))
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Start error: {e}", exc_info=True)
+    finally:
+        glovar.locks["config"].release()
 
     return result
 

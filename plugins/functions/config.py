@@ -78,46 +78,6 @@ def get_config_text(config: dict) -> str:
     return result
 
 
-def kws_get(text: str) -> List[str]:
-    # Get keyword settings
-    result = []
-
-    try:
-        # Check the text
-        if not text.strip():
-            return []
-
-        # Get text list
-        text_list = [t.strip() for t in text.split("\n+++\n") if t.strip()]
-
-        # Check the text list
-        if not text_list or len(text_list) < 2:
-            return []
-
-        # Check modes
-        if len(text_list) < 3:
-            text_list.append("include")
-
-        # Check actions
-        if len(text_list) < 4:
-            text_list.append("reply")
-
-        # Check target
-        if len(text_list) < 5:
-            text_list.append("all")
-
-        # Check destruct
-        if len(text_list) < 6:
-            text_list.append(str(glovar.time_keyword))
-
-        # Get result
-        result = text_list
-    except Exception as e:
-        logger.warning(f"Kws get error: {e}", exc_info=True)
-
-    return result
-
-
 def kws_action(text: str) -> str:
     # Get kws action string
     result = ""
@@ -296,6 +256,65 @@ def kws_config_occupy(gid: int, uid: int) -> bool:
             glovar.keywords[group_id]["aid"] = 0
     except Exception as e:
         logger.warning(f"Kws config occupy error: {e}", exc_info=True)
+
+    return result
+
+
+def kws_config_gid(uid: int, now: int) -> int:
+    # Kws config get gid
+    result = 0
+
+    try:
+        for group_id in list(glovar.keywords):
+            if now >= glovar.keywords[group_id]["lock"] + 600:
+                continue
+
+            if glovar.keywords[group_id]["aid"] != uid:
+                continue
+
+            return group_id
+    except Exception as e:
+        logger.warning(f"Kws config gid error: {e}", exc_info=True)
+
+    return result
+
+
+def kws_get(text: str) -> List[str]:
+    # Get keyword settings
+    result = []
+
+    try:
+        # Check the text
+        if not text.strip():
+            return []
+
+        # Get text list
+        text_list = [t.strip() for t in text.split("\n+++\n") if t.strip()]
+
+        # Check the text list
+        if not text_list or len(text_list) < 2:
+            return []
+
+        # Check modes
+        if len(text_list) < 3:
+            text_list.append("include")
+
+        # Check actions
+        if len(text_list) < 4:
+            text_list.append("reply")
+
+        # Check target
+        if len(text_list) < 5:
+            text_list.append("all")
+
+        # Check destruct
+        if len(text_list) < 6:
+            text_list.append(str(glovar.time_keyword))
+
+        # Get result
+        result = text_list
+    except Exception as e:
+        logger.warning(f"Kws get error: {e}", exc_info=True)
 
     return result
 
