@@ -28,7 +28,7 @@ from .. import glovar
 from .channel import send_debug
 from .command import command_error
 from .decorators import threaded
-from .etc import code, code_block, general_link, get_int, get_now, lang, thread
+from .etc import code, code_block, general_link, get_int, get_now, get_text_user, lang, thread
 from .file import delete_file, file_txt, save
 from .markup import get_text_and_markup_tip
 from .telegram import get_group_info, send_document, send_message, send_report_message
@@ -228,6 +228,7 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
                 f"{lang('kws_key')}{lang('colon')}{code(key)}\n" + code("-" * 24) + "\n"
                 f"{lang('keyword')}{lang('colon')}{code(lang('comma').join(words))}\n" + code("-" * 24) + "\n")
         reply_text, markup = get_text_and_markup_tip(gid, reply)
+        reply_text = get_text_user(reply_text, message.from_user)
         text += reply_text
 
         # Send the report message
@@ -372,7 +373,7 @@ def kws_show(client: Client, message: Message, gid: int, file: bool = False) -> 
                                  report=False, private=True)
 
         # Send as file
-        if file or len(keywords) > 3:
+        if file or len(keywords) > 5:
             return kws_show_file(client, message, gid, keywords)
 
         # Generate the text

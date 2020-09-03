@@ -22,7 +22,7 @@ from typing import Dict, List, Optional, Tuple, Union
 from pyrogram.types import CallbackGame, InlineKeyboardButton, InlineKeyboardMarkup
 
 from .. import glovar
-from .etc import button_data, general_link, get_length, get_channel_link
+from .etc import button_data, get_length, get_channel_link
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ def get_inline(buttons: List[Dict[str, Union[str, bytes, CallbackGame, None]]]) 
 
         for button in buttons:
             text = button.get("text")
-            data = button.get("data")
+            callback_data = button.get("callback_data")
             url = button.get("url")
             switch_inline_query = button.get("switch_inline_query")
             switch_inline_query_current_chat = button.get("switch_inline_query_current_chat")
@@ -73,7 +73,7 @@ def get_inline(buttons: List[Dict[str, Union[str, bytes, CallbackGame, None]]]) 
             markup_list[-1].append(
                 InlineKeyboardButton(
                     text=text,
-                    callback_data=data,
+                    callback_data=callback_data,
                     url=url,
                     switch_inline_query=switch_inline_query,
                     switch_inline_query_current_chat=switch_inline_query_current_chat,
@@ -170,7 +170,7 @@ def get_text_and_markup_tip(gid: int, text: str) -> Tuple[str, Union[bool, Inlin
             button_text = button[0]
             button_url = button[1]
 
-            if glovar.keywords[gid]["kws"].get(button_text, {}):
+            if glovar.keywords[gid]["kws"].get(button_url, {}):
                 callback_data = button_data("send", "saved", button_url)
                 button_url = None
             elif button_url == "$pinned_message" and glovar.pinned_ids.get(gid, 0):

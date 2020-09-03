@@ -755,7 +755,7 @@ def kws(client: Client, message: Message) -> bool:
                 ]
             ]
         )
-        send_report_message(180, client, gid, text, None, markup)
+        send_report_message(60, client, gid, text, None, markup)
 
         # Send debug message
         text = get_debug_text(client, message.chat)
