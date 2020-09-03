@@ -24,7 +24,6 @@ from typing import Match, Optional, Union
 
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, Message, User
-from wrapt_timeout_decorator import timeout
 
 from .. import glovar
 from .etc import get_filename, get_forward_name, get_full_name, get_now, get_text, t2t
@@ -954,7 +953,6 @@ def is_regex_text(word_type: str, text: str, ocr: bool = False, again: bool = Fa
     return result
 
 
-@timeout(5)
 def is_regex_string(word: str, text: str) -> Optional[Match]:
     # Check if the text hit the regex rules
     result = None
