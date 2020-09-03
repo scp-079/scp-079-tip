@@ -200,7 +200,7 @@ def terminate_user(client: Client, message: Message, data: dict) -> bool:
         # Send the debug message
         send_debug(
             client=client,
-            chat=message.chat,
+            gids=[gid],
             action=action,
             uid=uid,
             em=result

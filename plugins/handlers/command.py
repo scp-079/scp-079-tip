@@ -152,7 +152,7 @@ def channel_bind(client: Client, message: Message) -> bool:
         # Send debug message
         send_debug(
             client=client,
-            chat=message.chat,
+            gids=[gid],
             action=lang("config_change"),
             aid=aid,
             config_type=lang("action_bind"),
@@ -214,7 +214,7 @@ def channel_config(client: Client, message: Message) -> bool:
         # Send debug
         send_debug(
             client=client,
-            chat=message.chat,
+            gids=[gid],
             action=lang("config_change"),
             aid=aid,
             config_type="channel",
@@ -294,7 +294,7 @@ def channel_trigger(client: Client, message: Message) -> bool:
         # Send debug message
         send_debug(
             client=client,
-            chat=message.chat,
+            gids=[gid],
             action=lang(f"action_{command}"),
             aid=aid
         )
@@ -573,7 +573,7 @@ def config_tip(client: Client, message: Message) -> bool:
         # Send debug message
         send_debug(
             client=client,
-            chat=message.chat,
+            gids=[gid],
             action=lang("config_change"),
             aid=aid,
             config_type=command,
@@ -679,7 +679,7 @@ def hold(client: Client, message: Message) -> bool:
         # Send debug message
         send_debug(
             client=client,
-            chat=message.chat,
+            gids=[gid],
             action=lang("config_change"),
             aid=aid,
             config_type=lang("action_hold"),

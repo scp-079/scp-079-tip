@@ -204,7 +204,7 @@ def get_debug_text(client: Client, context: Union[int, Chat, List[int]]) -> str:
 
 
 @threaded()
-def send_debug(client: Client, chat: Chat, action: str,
+def send_debug(client: Client, gids: List[int], action: str,
                uid: int = 0, aid: int = 0,
                em: Message = 0,
                config_type: str = "", more: str = "") -> bool:
@@ -212,10 +212,10 @@ def send_debug(client: Client, chat: Chat, action: str,
     result = False
 
     try:
-        if not chat:
+        if not gids:
             return False
 
-        text = get_debug_text(client, chat)
+        text = get_debug_text(client, gids)
 
         if uid:
             text += f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
