@@ -178,11 +178,8 @@ def tip_keyword(client: Client, message: Message, data: dict) -> bool:
         destruct = data["destruct"]
         now = get_now()
 
-        gid == -1001407565345 and print(4)
-
         # Check terminate mode
         if is_should_terminate(message, actions):
-            gid == -1001407565345 and print(5)
             return terminate_user(client, message, data)
 
         # Get the user and message id

@@ -121,30 +121,20 @@ def check_join(client: Client, message: Message) -> bool:
         mid = message.message_id
         now = message.date or get_now()
 
-        gid == -1001407565345 and print(message)
-
         # Check class D status
         if is_user_class_d(gid, user):
             return False
-
-        gid == -1001407565345 and print(1)
 
         # Check NOSPAM status
         if is_nospam_join(client, gid, user):
             return False
 
-        gid == -1001407565345 and print(2)
-
         # Check declare status
         if is_declared_message(None, None, message):
             return False
 
-        gid == -1001407565345 and print(3)
-
         # Check keyword name
         detection = is_keyword_message(message)
-
-        gid == -1001407565345 and print(detection)
 
         if detection:
             return tip_keyword(client, message, detection)

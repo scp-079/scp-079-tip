@@ -148,7 +148,7 @@ def forward_evidence(client: Client, message: Message, user: User, level: str, r
                 or message.voice
                 or message.game
                 or message.service):
-            result = send_message(client, glovar.logging_channel_id, text)
+            result = send_message(client, glovar.tip_channel_id, text)
             return result
 
         # Forward the evidence
