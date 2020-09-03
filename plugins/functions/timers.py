@@ -23,7 +23,7 @@ from time import sleep
 from pyrogram import Client
 
 from .. import glovar
-from .channel import share_data, share_regex_count
+from .channel import share_data, share_regex_count, share_regex_remove
 from .decorators import threaded
 from .etc import code, general_link, get_now, get_readable_time, lang, thread
 from .file import move_file, save
@@ -129,13 +129,16 @@ def interval_min_01(client: Client) -> bool:
     return result
 
 
-def interval_min_10() -> bool:
+def interval_min_10(client: Client) -> bool:
     # Execute every 10 minutes
     result = False
 
     glovar.locks["message"].acquire()
     
     try:
+        # Share removed words
+        share_regex_remove(client)
+
         # Clear keyworded users
         for gid in list(glovar.keyworded_ids):
             glovar.keyworded_ids[gid] = {}

@@ -156,7 +156,7 @@ def forward_evidence(client: Client, message: Message, user: User, level: str, r
             client=client,
             cid=glovar.tip_channel_id,
             fid=message.chat.id,
-            mids=[message.message_id]
+            mids=message.message_id
         )
 
         # Attach information
@@ -355,23 +355,54 @@ def share_regex_count(client: Client, word_type: str) -> bool:
     return result
 
 
-def share_regex_remove(client: Client, word_type: str, word: str) -> bool:
+def save_regex_remove(word_type: str, word: str) -> bool:
+    # Use this function to save removed regex
+    result = False
+
+    glovar.locks["regex"].acquire()
+
+    try:
+        if glovar.timeout_words.get(word_type) is None:
+            glovar.timeout_words[word_type] = set()
+
+        glovar.timeout_words[word_type].add(word)
+        save("timeout_words")
+
+        eval(f"glovar.{word_type}_words").pop(word, 0)
+        save(f"{word_type}_words")
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Save regex remove error: {e}", exc_info=True)
+    finally:
+        glovar.locks["regex"].release()
+
+    return result
+
+
+def share_regex_remove(client: Client) -> bool:
     # Use this function to share regex remove request to REGEX
     result = False
 
+    glovar.locks["regex"].acquire()
+
     try:
-        eval(f"glovar.{word_type}_words").pop(word, 0)
-        save(f"{word_type}_words")
-        file = data_to_file(word)
+        if not glovar.timeout_words:
+            return False
+
+        file = data_to_file(glovar.timeout_words)
+        glovar.timeout_words = {}
+        save("timeout_words")
         result = share_data(
             client=client,
             receivers=["REGEX"],
             action="regex",
-            action_type="remove",
-            data=f"{word_type}_words",
+            action_type="timeout",
             file=file
         )
     except Exception as e:
         logger.warning(f"Share regex remove error: {e}", exc_info=True)
+    finally:
+        glovar.locks["regex"].release()
 
     return result

@@ -68,7 +68,7 @@ def check(client: Client, message: Message) -> bool:
             return False
 
         # Check NOSPAM status
-        if is_nospam_message(client, message):
+        if is_nospam_message(message):
             return False
 
         # Check declare status
@@ -86,7 +86,7 @@ def check(client: Client, message: Message) -> bool:
             return tip_keyword(client, message, detection)
 
         # Check rm
-        detection = is_rm_text(client, message)
+        detection = is_rm_text(message)
 
         if detection:
             glovar.rms[gid]["count"] += 1

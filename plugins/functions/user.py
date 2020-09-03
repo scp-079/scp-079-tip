@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from copy import deepcopy
 from time import sleep
 from typing import Optional, Union
 
@@ -29,7 +30,7 @@ from .config import kws_action
 from .decorators import threaded
 from .etc import get_int, get_now, get_text_user, lang, random_str
 from .file import save
-from .filters import is_class_d_user
+from .filters import is_class_d_user, is_keyworded_user
 from .group import delete_message
 from .markup import get_text_and_markup_tip
 from .telegram import kick_chat_member, restrict_chat_member, send_message, unban_chat_member
@@ -86,6 +87,8 @@ def get_action_text(actions: set) -> str:
     result = ""
 
     try:
+        actions = deepcopy(actions)
+
         if "delete" in actions:
             result = kws_action("delete")
 
@@ -158,10 +161,11 @@ def terminate_user(client: Client, message: Message, data: dict) -> bool:
     try:
         # Basic data
         gid = message.chat.id
+        mid = message.message_id
         user = get_user_from_message(message)
         uid = user.id
         key = data["key"]
-        mid = data["mid"]
+        # mid = data["mid"]
         word = data["word"]
         reply = data["reply"]
         actions = data["actions"]
@@ -173,6 +177,10 @@ def terminate_user(client: Client, message: Message, data: dict) -> bool:
         # Check ignore status
         if is_class_d_user(uid) and gid not in glovar.ignore_ids["user"]:
             return False
+
+        # Check keyworded status
+        if is_keyworded_user(gid, key, uid):
+            return delete_message(client, gid, mid)
 
         # Terminate
         action = get_action_text(actions)
@@ -202,7 +210,6 @@ def terminate_user(client: Client, message: Message, data: dict) -> bool:
         # Delete the message
         if "delete" in actions:
             delete_message(client, gid, mid)
-            actions.discard("delete")
 
         # Kick, ban, restrict the user
         if "kick" in actions:
@@ -246,7 +253,9 @@ def time_user(client: Client, gid: int, uid: int, now: int, actions: set) -> boo
     result = False
 
     try:
+        actions = deepcopy(actions)
         actions.discard("reply")
+        actions.discard("delete")
         action = list(actions)[0]
         time = get_int(action.split("-")[1])
 

@@ -673,6 +673,11 @@ starts: Dict[str, Dict[str, Union[bool, int, str]]] = {}
 #     }
 # }
 
+timeout_words: Dict[str, Set[str]] = {}
+# timeout_words = {
+#     "ban": {"regex"}
+# }
+
 token: str = ""
 # token = "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
 
@@ -700,7 +705,8 @@ for word_type in regex:
 file_list: List[str] = ["admin_ids", "bad_ids", "flooded_ids", "group_ids", "ignore_ids", "lack_group_ids",
                         "left_group_ids", "message_ids", "pinned_ids", "trust_ids", "user_ids", "watch_ids",
                         "white_ids",
-                        "channels", "configs", "current", "keywords", "ots", "rms", "starts", "token", "welcomes"]
+                        "channels", "configs", "current", "keywords", "ots", "rms", "starts", "timeout_words",
+                        "token", "welcomes"]
 file_list += [f"{f}_words" for f in regex]
 
 for file in file_list:

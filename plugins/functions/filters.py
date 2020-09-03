@@ -26,7 +26,7 @@ from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, Message, User
 
 from .. import glovar
-from .channel import share_regex_remove
+from .channel import save_regex_remove
 from .decorators import timeout
 from .etc import get_filename, get_forward_name, get_full_name, get_now, get_text, t2t
 from .file import save
@@ -319,7 +319,7 @@ def get_words(words: set, exact: bool) -> dict:
     return result
 
 
-def is_ad_text(client: Client, text: str, ocr: bool, matched: str = "") -> str:
+def is_ad_text(text: str, ocr: bool, matched: str = "") -> str:
     # Check if the text is ad text
     result = ""
 
@@ -331,7 +331,7 @@ def is_ad_text(client: Client, text: str, ocr: bool, matched: str = "") -> str:
             if c == matched:
                 continue
 
-            if not is_regex_text(client, f"ad{c}", text, ocr):
+            if not is_regex_text(f"ad{c}", text, ocr):
                 continue
 
             result = c
@@ -342,17 +342,17 @@ def is_ad_text(client: Client, text: str, ocr: bool, matched: str = "") -> str:
     return result
 
 
-def is_ban_text(client: Client, text: str, ocr: bool, message: Message = None) -> bool:
+def is_ban_text(text: str, ocr: bool, message: Message = None) -> bool:
     # Check if the text is ban text
     result = False
 
     try:
-        if is_regex_text(client, "ban", text, ocr):
+        if is_regex_text("ban", text, ocr):
             return True
 
         # ad + con
-        ad = is_regex_text(client, "ad", text, ocr)
-        con = is_con_text(client, text, ocr)
+        ad = is_regex_text("ad", text, ocr)
+        con = is_con_text(text, ocr)
 
         if ad and con:
             return True
@@ -364,7 +364,7 @@ def is_ban_text(client: Client, text: str, ocr: bool, message: Message = None) -
             return True
 
         # ad_ + con
-        ad = is_ad_text(client, text, ocr)
+        ad = is_ad_text(text, ocr)
 
         if ad and con:
             return True
@@ -377,7 +377,7 @@ def is_ban_text(client: Client, text: str, ocr: bool, message: Message = None) -
         if not ad:
             return False
 
-        ad = is_ad_text(client, text, ocr, ad)
+        ad = is_ad_text(text, ocr, ad)
         result = bool(ad)
     except Exception as e:
         logger.warning(f"Is ban text error: {e}", exc_info=True)
@@ -385,13 +385,13 @@ def is_ban_text(client: Client, text: str, ocr: bool, message: Message = None) -
     return result
 
 
-def is_bio_text(client: Client, text: str) -> bool:
+def is_bio_text(text: str) -> bool:
     # Check if the text is bio text
     result = False
 
     try:
-        if (is_regex_text(client, "bio", text)
-                or is_ban_text(client, text, False)):
+        if (is_regex_text("bio", text)
+                or is_ban_text(text, False)):
             return True
     except Exception as e:
         logger.warning(f"Is bio text error: {e}", exc_info=True)
@@ -438,14 +438,14 @@ def is_class_e_user(user: Union[int, User]) -> bool:
     return result
 
 
-def is_con_text(client: Client, text: str, ocr: bool) -> bool:
+def is_con_text(text: str, ocr: bool) -> bool:
     # Check if the text is con text
     result = False
 
     try:
-        if (is_regex_text(client, "con", text, ocr)
-                or is_regex_text(client, "iml", text, ocr)
-                or is_regex_text(client, "pho", text, ocr)):
+        if (is_regex_text("con", text, ocr)
+                or is_regex_text("iml", text, ocr)
+                or is_regex_text("pho", text, ocr)):
             return True
     except Exception as e:
         logger.warning(f"Is con text error: {e}", exc_info=True)
@@ -673,24 +673,25 @@ def is_keyword_name(message: Message, key: str) -> dict:
     return result
 
 
-def is_keyword_string(word: str, text: str, exact: bool, case: bool) -> bool:
+def is_keyword_string(word: str, text: str, exact: bool, case: bool) -> str:
     # Check if the keyword match the string
-    result = False
+    result = ""
 
     try:
         if not text or not text.strip():
-            return False
+            return ""
 
         text = text.strip()
+        origin = word
 
         if not case:
             word = word.lower()
             text = text.lower()
 
         if exact and word == text:
-            return True
+            return origin
         elif not exact and word in text:
-            return True
+            return origin
     except Exception as e:
         logger.warning(f"Is keyword string error: {e}", exc_info=True)
 
@@ -784,14 +785,14 @@ def is_keyworded_user(gid: int, key: str, uid: int) -> bool:
     return result
 
 
-def is_nm_text(client: Client, text: str) -> bool:
+def is_nm_text(text: str) -> bool:
     # Check if the text is nm text
     result = False
 
     try:
-        if (is_regex_text(client, "nm", text)
-                or is_regex_text(client, "bio", text)
-                or is_ban_text(client, text, False)):
+        if (is_regex_text("nm", text)
+                or is_regex_text("bio", text)
+                or is_ban_text(text, False)):
             return True
     except Exception as e:
         logger.warning(f"Is nm text error: {e}", exc_info=True)
@@ -799,7 +800,7 @@ def is_nm_text(client: Client, text: str) -> bool:
     return result
 
 
-def is_nospam_message(client: Client, message: Message) -> bool:
+def is_nospam_message(message: Message) -> bool:
     # Check if the message will be processed by NOSPAM
     result = False
 
@@ -814,34 +815,34 @@ def is_nospam_message(client: Client, message: Message) -> bool:
         # Check the forward from name
         forward_name = get_forward_name(message, True, True, True)
 
-        if forward_name and is_nm_text(client, forward_name):
+        if forward_name and is_nm_text(forward_name):
             return True
 
         # Check the user's name
         name = get_full_name(message.from_user, True, True, True)
 
-        if name and is_nm_text(client, name):
+        if name and is_nm_text(name):
             return True
 
         # Check the text
         message_text = get_text(message, True, True)
 
-        if is_ban_text(client, message_text, False):
+        if is_ban_text(message_text, False):
             return True
 
-        if is_regex_text(client, "del", message_text):
+        if is_regex_text("del", message_text):
             return True
 
         # File name
         filename = get_filename(message, True, True)
 
-        if is_ban_text(client, filename, False):
+        if is_ban_text(filename, False):
             return True
 
-        if is_regex_text(client, "fil", filename):
+        if is_regex_text("fil", filename):
             return True
 
-        if is_regex_text(client, "del", filename):
+        if is_regex_text("del", filename):
             return True
     except Exception as e:
         logger.warning(f"Is nospam message error: {e}", exc_info=True)
@@ -868,7 +869,7 @@ def is_nospam_join(client: Client, gid: int, user: User) -> bool:
         # Check name
         name = get_full_name(user, True, True, True)
 
-        if name and (is_nm_text(client, name) or is_wb_text(client, name, False)):
+        if name and (is_nm_text(name) or is_wb_text(name, False)):
             return True
 
         # Check bio
@@ -879,7 +880,7 @@ def is_nospam_join(client: Client, gid: int, user: User) -> bool:
         else:
             bio = t2t(user.about, True, True, True)
 
-        if bio and (is_bio_text(client, bio) or is_wb_text(client, bio, False)):
+        if bio and (is_bio_text(bio) or is_wb_text(bio, False)):
             return True
     except Exception as e:
         logger.warning(f"Is nospam join error: {e}", exc_info=True)
@@ -906,7 +907,7 @@ def is_user_class_d(gid: int, user: User) -> bool:
 
 
 @timeout(seconds=30)
-def is_regex_text(client: Client, word_type: str, text: str, ocr: bool = False, again: bool = False) -> Optional[Match]:
+def is_regex_text(word_type: str, text: str, ocr: bool = False, again: bool = False) -> Optional[Match]:
     # Check if the text hit the regex rules
     result = None
     word = ""
@@ -926,6 +927,9 @@ def is_regex_text(client: Client, word_type: str, text: str, ocr: bool = False, 
             words = list(eval(f"glovar.{word_type}_words"))
 
         for word in words:
+            if word in glovar.timeout_words.get(word_type, set()):
+                continue
+
             if ocr and "(?# nocr)" in word:
                 continue
 
@@ -943,16 +947,16 @@ def is_regex_text(client: Client, word_type: str, text: str, ocr: bool = False, 
             return result
 
         # Try again
-        return is_regex_text(client, word_type, text, ocr, True)
+        return is_regex_text(word_type, text, ocr, True)
     except TimeoutError:
-        share_regex_remove(client, word_type, word)
+        save_regex_remove(word_type, word)
     except Exception as e:
         logger.warning(f"Is regex text error: {e}", exc_info=True)
 
     return result
 
 
-def is_rm_text(client: Client, message: Message) -> bool:
+def is_rm_text(message: Message) -> bool:
     # Check if the text is rm text
     result = False
 
@@ -972,7 +976,7 @@ def is_rm_text(client: Client, message: Message) -> bool:
         message_text = get_text(message)
 
         # Check the message_text
-        if not is_regex_text(client, "rm", message_text):
+        if not is_regex_text("rm", message_text):
             return False
 
         result = True
@@ -1058,20 +1062,20 @@ def is_watch_user(user: Union[int, User], the_type: str, now: int = 0) -> bool:
     return result
 
 
-def is_wb_text(client: Client, text: str, ocr: bool) -> bool:
+def is_wb_text(text: str, ocr: bool) -> bool:
     # Check if the text is wb text
     result = False
 
     try:
-        if (is_regex_text(client, "wb", text, ocr)
-                or is_regex_text(client, "ad", text, ocr)
-                or is_regex_text(client, "iml", text, ocr)
-                or is_regex_text(client, "pho", text, ocr)
-                or is_regex_text(client, "sho", text, ocr)
-                or is_regex_text(client, "spc", text, ocr)):
+        if (is_regex_text("wb", text, ocr)
+                or is_regex_text("ad", text, ocr)
+                or is_regex_text("iml", text, ocr)
+                or is_regex_text("pho", text, ocr)
+                or is_regex_text("sho", text, ocr)
+                or is_regex_text("spc", text, ocr)):
             return True
 
-        result = any(c not in {"i"} and is_regex_text(client, f"ad{c}", text, ocr)
+        result = any(c not in {"i"} and is_regex_text(f"ad{c}", text, ocr)
                      for c in ascii_lowercase)
     except Exception as e:
         logger.warning(f"Is wb text error: {e}", exc_info=True)
