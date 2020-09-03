@@ -173,9 +173,9 @@ def get_text_and_markup_tip(gid: int, text: str) -> Tuple[str, Union[bool, Inlin
             if glovar.keywords[gid]["kws"].get(button_url, {}):
                 callback_data = button_data("send", "saved", button_url)
                 button_url = None
-            elif button_url == "$pinned_message" and glovar.pinned_ids.get(gid, 0):
+            elif button_url == "$pinned_message":
                 callback_data = None
-                button_url = f"{get_channel_link(gid)}/{glovar.pinned_ids[gid]}"
+                button_url = f"{get_channel_link(gid)}/{glovar.pinned_ids.get(gid, 0) or 1}"
             elif button_url.startswith("@") or " " in button_url or "." not in button_url:
                 return text, False
             else:
