@@ -167,8 +167,7 @@ def tip_keyword(client: Client, message: Message, data: dict) -> bool:
             user = message.reply_to_message.from_user
             delete_message(client, gid, message.message_id)
         elif mid and not message.reply_to_message:
-            user = message.from_user
-            delete_message(client, gid, message.message_id)
+            return False
         elif not is_keyworded_user(gid, key, uid):
             user = message.from_user
             mid = message.message_id
