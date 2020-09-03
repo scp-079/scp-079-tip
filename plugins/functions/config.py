@@ -87,9 +87,9 @@ def kws_action(text: str) -> str:
             return lang(f"kws_actions_{text}")
 
         if text.startswith("ban-") or text.startswith("restrict-"):
+            action = text.split("-")[0]
             time = text.split("-")[1]
-            return lang(f"kws_actions_{text}_time").format(time)
-
+            return lang(f"kws_actions_{action}_time").format(time)
     except Exception as e:
         logger.warning(f"Kws action error: {e}", exc_info=True)
 
