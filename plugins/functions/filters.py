@@ -958,7 +958,14 @@ def is_regex_string(word: str, text: str) -> Optional[Match]:
     result = None
 
     try:
+        begin = get_now()
         result = re.search(word, text, re.I | re.S | re.M)
+        end = get_now()
+
+        if end - begin < 5:
+            return result
+
+        raise TimeoutError
     except Exception as e:
         logger.warning(f"Is regex string error: {e}", exc_info=True)
 
