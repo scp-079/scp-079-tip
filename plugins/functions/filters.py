@@ -867,7 +867,7 @@ def is_nospam_join(client: Client, gid: int, user: User) -> bool:
         # Check name
         name = get_full_name(user, True, True, True)
 
-        if name and (is_nm_text(name) or is_wb_text(name, False)):
+        if name and is_nm_text(name):
             return True
 
         # Check bio
@@ -878,7 +878,7 @@ def is_nospam_join(client: Client, gid: int, user: User) -> bool:
         else:
             bio = t2t(user.about, True, True, True)
 
-        if bio and (is_bio_text(bio) or is_wb_text(bio, False)):
+        if bio and is_bio_text(bio):
             return True
     except Exception as e:
         logger.warning(f"Is nospam join error: {e}", exc_info=True)
