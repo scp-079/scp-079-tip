@@ -346,7 +346,7 @@ default_config: Dict[str, Union[bool, int]] = {
     "rm": True,
     "welcome": True,
     "keyword": True,
-    "white": True,
+    "white": False,
     "cancel": False,
     "hold": False,
     "channel": False,
