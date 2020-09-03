@@ -903,10 +903,10 @@ def show_config(client: Client, message: Message) -> bool:
                 f"{lang('type')}{lang('colon')}{code(command_type)}\n")
 
         if count is not None:
-            text += f"{lang('count')}{lang('colon')}{code(str(count) + lang('times'))}\n"
+            text += f"{lang('statics_count')}{lang('colon')}{code(str(count) + lang('times'))}\n"
 
         if today is not None:
-            text += f"{lang('today')}{lang('colon')}{code(str(today) + lang('times'))}\n"
+            text += f"{lang('statics_today')}{lang('colon')}{code(str(today) + lang('times'))}\n"
 
         text += (f"{lang('result')}{lang('colon')}" + code("-" * 16) + "\n\n"
                  f"{code_block(result)}\n")
