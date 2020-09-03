@@ -138,6 +138,10 @@ def check_join(client: Client, message: Message) -> bool:
             return False
 
         # Check keyword name
+        detection = is_keyword_message(message)
+
+        if detection:
+            return tip_keyword(client, message, detection)
 
         # Word with CAPTCHA
         if glovar.configs[gid].get("captcha") and glovar.captcha_id in glovar.admin_ids[gid]:
