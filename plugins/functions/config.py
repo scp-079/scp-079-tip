@@ -221,12 +221,21 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
 
         # Generate the text and the markup
         group_name, group_link = get_group_info(client, gid)
+        keyword = f"{lang('comma')}".join(words)
+        modes = f"{lang('comma')}".join(lang(f"kws_modes_{m}") for m in modes)
+        actions = f"{lang('comma')}".join(kws_action(a) for a in actions)
+        target = lang(f"kws_target_{target}")
+        destruct = f"{destruct} {lang('seconds')}"
         text = (f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
                 f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
                 f"{lang('action')}{lang('colon')}{code(lang(f'action_kws_{the_type}'))}\n"
                 f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n" + code("-" * 24) + "\n"
                 f"{lang('kws_key')}{lang('colon')}{code(key)}\n" + code("-" * 24) + "\n"
-                f"{lang('keyword')}{lang('colon')}{code(lang('comma').join(words))}\n" + code("-" * 24) + "\n")
+                f"{lang('keyword')}{lang('colon')}{code(keyword)}\n"
+                f"{lang('kws_modes')}{lang('colon')}{code(modes)}\n"
+                f"{lang('kws_actions')}{lang('colon')}{code(actions)}\n"
+                f"{lang('kws_target')}{lang('colon')}{code(target)}\n"
+                f"{lang('kws_destruct')}{lang('colon')}{code(destruct)}\n" + code("-" * 24) + "\n")
         reply_text, markup = get_text_and_markup_tip(gid, reply)
         reply_text = get_text_user(reply_text, message.from_user)
         text += reply_text
