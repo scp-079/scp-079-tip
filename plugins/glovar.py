@@ -342,15 +342,15 @@ default_config: Dict[str, Union[bool, int]] = {
     "captcha": True,
     "alone": False,
     "clean": True,
-    "resend": False,
-    "channel": False,
-    "cancel": False,
-    "hold": False,
-    "keyword": True,
-    "white": True,
     "ot": True,
     "rm": True,
-    "welcome": True
+    "welcome": True,
+    "keyword": True,
+    "white": True,
+    "cancel": False,
+    "hold": False,
+    "channel": False,
+    "resend": False
 }
 
 default_keyword_data: Dict[str, Union[int, Dict[str, Dict[str, Union[int, str, Set[str]]]]]] = {
@@ -603,15 +603,15 @@ configs: Dict[int, Dict[str, Union[bool, int, str]]] = {}
 #         "captcha": True,
 #         "alone": False,
 #         "clean": True,
-#         "resend": False,
-#         "channel": False,
+#         "ot": True,
+#         "rm": True,
+#         "welcome": True,
+#         "keyword": True,
+#         "white": True,
 #         "cancel": False,
 #         "hold": False,
-#         "keyword": True,
-#         "white": False,
-#         "ot": False,
-#         "rm": False,
-#         "welcome": False
+#         "channel": False,
+#         "resend": False
 #     }
 # }
 

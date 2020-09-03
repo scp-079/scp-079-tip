@@ -68,8 +68,8 @@ def get_config_text(config: dict) -> str:
         result += f"{lang('config')}{lang('colon')}{code(default_text)}\n"
 
         # Others
-        for the_type in ["captcha", "alone", "clean", "resend", "channel", "cancel", "hold",
-                         "keyword", "white", "ot", "rm", "welcome"]:
+        for the_type in ["captcha", "alone", "clean", "ot", "rm", "welcome", "keyword", "white",
+                         "cancel", "hold", "channel", "resend"]:
             the_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get(the_type))
             result += f"{lang(the_type)}{lang('colon')}{code(the_text)}\n"
     except Exception as e:
