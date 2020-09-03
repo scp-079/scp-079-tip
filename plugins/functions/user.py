@@ -165,7 +165,6 @@ def terminate_user(client: Client, message: Message, data: dict) -> bool:
         user = get_user_from_message(message)
         uid = user.id
         key = data["key"]
-        # mid = data["mid"]
         word = data["word"]
         reply = data["reply"]
         actions = data["actions"]
