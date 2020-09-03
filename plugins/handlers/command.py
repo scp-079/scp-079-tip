@@ -879,23 +879,28 @@ def show_config(client: Client, message: Message) -> bool:
             return False
 
         # Get command type
-        command_type = get_command_type(message)
+        command_type, command_context = get_command_context(message)
 
         # Check the command type
         if not command_type or command_type not in {"ot", "rm", "welcome"}:
             return command_error(client, message, lang("action_show"), lang("command_usage"))
 
+        if command_context == "old":
+            the_key = "old"
+        else:
+            the_key = "reply"
+
         # Get the config
         if command_type == "ot":
-            result = glovar.ots[gid].get("reply", "")
+            result = glovar.ots[gid].get(the_key, "")
             count = None
             today = None
         elif command_type == "rm":
-            result = glovar.rms[gid].get("reply", "")
+            result = glovar.rms[gid].get(the_key, "")
             count = glovar.rms[gid].get("count", 0)
             today = glovar.rms[gid].get("today", 0)
         elif command_type == "welcome":
-            result = glovar.welcomes[gid].get("reply", "")
+            result = glovar.welcomes[gid].get(the_key, "")
             count = glovar.welcomes[gid].get("count", 0)
             today = glovar.welcomes[gid].get("today", 0)
         else:
