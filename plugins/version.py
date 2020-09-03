@@ -239,9 +239,15 @@ def version_0_2_0() -> bool:
             configs[gid].pop("channel_text", None)
             configs[gid].pop("channel_button", None)
             configs[gid].pop("channel_link", None)
+            message_ids[gid]["keywords"] = {}
+            message_ids[gid].pop("channel", None)
+            message_ids[gid].pop("hold", None)
 
         with open("data/pickle/channels", "wb") as f:
             pickle.dump(channels, f)
+
+        with open("data/pickle/message_ids", "wb") as f:
+            pickle.dump(message_ids, f)
 
         with open("data/pickle/configs", "wb") as f:
             pickle.dump(configs, f)
@@ -252,10 +258,10 @@ def version_0_2_0() -> bool:
         for gid in list(configs):
             pinned_ids[gid] = 0
 
-            if configs[gid].get("hold") and isinstance(int, configs[gid]["hold"]):
+            if configs[gid].get("hold") and isinstance(configs[gid]["hold"], int):
                 pinned_ids[gid] = configs[gid]["hold"]
                 configs[gid]["hold"] = True
-            elif not isinstance(bool, configs[gid]["hold"]):
+            else:
                 configs[gid]["hold"] = False
 
         with open("data/pickle/pinned_ids", "wb") as f:
@@ -268,7 +274,11 @@ def version_0_2_0() -> bool:
         keywords = {}
 
         for gid in list(configs):
-            keywords[gid] = {}
+            keywords[gid] = {
+                "aid": 0,
+                "lock": 0,
+                "kws": {}
+            }
             old_keywords = get_keywords(configs[gid].get("keyword_text", ""))
 
             if not old_keywords:
@@ -277,20 +287,22 @@ def version_0_2_0() -> bool:
             for old_keyword in old_keywords:
                 key = random_str(8)
 
-                while keywords[gid].get(key):
+                while keywords[gid]["kws"].get(key):
                     key = random_str(8)
 
-                keywords[gid][key] = {
+                keywords[gid]["kws"][key] = {
+                    "time": 0,
+                    "aid": 0,
                     "words": {o.strip() for o in old_keyword.split("||") if o.strip()},
                     "reply": get_reply("keyword", configs[gid], old_keywords[old_keyword]),
                     "modes": {"include"},
                     "actions": {"reply"},
                     "target": "all",
-                    "time": 300,
-                    "raw": f"{old_keyword}\n+++\n{keywords[gid][key]['reply']}",
+                    "destruct": 300,
                     "count": 0,
                     "today": 0
                 }
+                keywords[gid]["kws"][key]["raw"] = f"{old_keyword}\n+++\n{keywords[gid]['kws'][key]['reply']}"
 
             configs[gid].pop("keyword_text", None)
             configs[gid].pop("keyword_button", None)
@@ -309,9 +321,7 @@ def version_0_2_0() -> bool:
             ots[gid] = {
                 "aid": 0,
                 "reply": get_reply("ot", configs[gid], configs[gid].get("ot_text", "")),
-                "old": "",
-                "count": 0,
-                "today": 0
+                "old": ""
             }
             configs[gid].pop("ot_text", None)
             configs[gid].pop("ot_button", None)
