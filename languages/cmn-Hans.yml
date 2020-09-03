@@ -190,7 +190,9 @@ pinned_message: 置顶消息
 rule_keyword: 群组自定义关键词
 statics_count: 已触发次数
 statics_today: 本日触发次数
-tip: 提示
+type_ot: 离题提醒
+type_rm: RM 笑话提醒
+type_welcome: 入群欢迎消息
 
 # Symbol
 colon: "："

@@ -900,7 +900,7 @@ def show_config(client: Client, message: Message) -> bool:
         # Send the report message
         text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
                 f"{lang('action')}{lang('colon')}{code(lang('action_show'))}\n"
-                f"{lang('type')}{lang('colon')}{code(command_type)}\n")
+                f"{lang('type')}{lang('colon')}{code(lang(f'type_{command_type}'))}\n")
 
         if count is not None:
             text += f"{lang('statics_count')}{lang('colon')}{code(str(count) + ' ' + lang('times'))}\n"
