@@ -31,10 +31,11 @@ from ..functions.filters import (aio, authorized_group, declared_message, exchan
 from ..functions.group import leave_group, leave_unauthorized, join_hint, save_admins
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import (receive_add_bad, receive_captcha_flood, receive_config_commit, receive_clear_data,
-                                 receive_config_reply, receive_config_show, receive_declared_message,
-                                 receive_help_welcome, receive_leave_approve, receive_regex, receive_refresh,
-                                 receive_remove_bad, receive_remove_score, receive_remove_watch, receive_rollback,
-                                 receive_text_data, receive_user_score, receive_watch_user)
+                                 receive_config_reply, receive_config_show, receive_declared_message, receive_group_id,
+                                 receive_help_welcome, receive_ignore_ids, receive_leave_approve, receive_regex,
+                                 receive_refresh, receive_remove_bad, receive_remove_score, receive_remove_watch,
+                                 receive_remove_white, receive_white_users, receive_rollback, receive_text_data,
+                                 receive_user_score, receive_watch_user)
 from ..functions.telegram import get_admins, pin_chat_message, send_message, unpin_chat_message
 from ..functions.timers import backup_files, send_count
 from ..functions.tip import tip_keyword, tip_rm, tip_welcome
@@ -387,7 +388,17 @@ def process_data(client: Client, message: Message) -> bool:
         # so it is intentionally written like this
         if glovar.sender in receivers:
 
-            if sender == "CAPTCHA":
+            if sender == "AVATAR":
+
+                if action == "add":
+                    if action_type == "white":
+                        receive_white_users(client, message)
+
+                elif action == "remove":
+                    if action_type == "white":
+                        receive_remove_white(data)
+
+            elif sender == "CAPTCHA":
 
                 if action == "captcha":
                     if action_type == "flood":
@@ -396,6 +407,10 @@ def process_data(client: Client, message: Message) -> bool:
                 elif action == "help":
                     if action_type == "welcome":
                         receive_help_welcome(client, data)
+
+                elif action == "share":
+                    if action_type == "group":
+                        receive_group_id(data)
 
                 elif action == "update":
                     if action_type == "declare":
@@ -484,6 +499,10 @@ def process_data(client: Client, message: Message) -> bool:
                     elif action_type == "watch":
                         receive_remove_watch(data)
 
+                elif action == "share":
+                    if action_type == "group":
+                        receive_group_id(data)
+
                 elif action == "update":
                     if action_type == "refresh":
                         receive_refresh(client, data)
@@ -527,6 +546,8 @@ def process_data(client: Client, message: Message) -> bool:
                 elif action == "update":
                     if action_type == "declare":
                         receive_declared_message(data)
+                    elif action_type == "ignore":
+                        receive_ignore_ids(client, message, sender)
                     elif action_type == "score":
                         receive_user_score(sender, data)
 
@@ -536,8 +557,26 @@ def process_data(client: Client, message: Message) -> bool:
                     if action_type == "update":
                         receive_regex(client, message, data)
                     elif action_type == "count":
-                        if data == "ask":
-                            send_count(client)
+                        data == "ask" and send_count(client)
+
+                elif action == "share":
+                    if action_type == "group":
+                        receive_group_id(data)
+
+            elif sender == "TICKET":
+
+                if action == "share":
+                    if action_type == "group":
+                        receive_group_id(data)
+
+            elif sender == "USER":
+                if action == "add":
+                    if action_type == "bad":
+                        receive_add_bad(data)
+
+                elif action == "update":
+                    if action_type == "ignore":
+                        receive_ignore_ids(client, message, sender)
 
             elif sender == "WARN":
 
