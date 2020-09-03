@@ -169,7 +169,7 @@ def channel_bind(client: Client, message: Message) -> bool:
     return result
 
 
-@Client.on_message(filters.incoming & filters.group & filters.reply & filters.command(["channel"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & ~filters.reply & filters.command(["channel"], glovar.prefix)
                    & authorized_group
                    & from_user)
 def channel_config(client: Client, message: Message) -> bool:

@@ -205,7 +205,7 @@ def get_debug_text(client: Client, context: Union[int, Chat, List[int]]) -> str:
 
 @threaded()
 def send_debug(client: Client, chat: Chat, action: str,
-               uid: int, aid: int = 0,
+               uid: int = 0, aid: int = 0,
                em: Message = 0,
                config_type: str = "", more: str = "") -> bool:
     # Send the debug message
