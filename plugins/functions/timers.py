@@ -23,10 +23,10 @@ from time import sleep
 from pyrogram import Client
 
 from .. import glovar
-from .channel import share_data, share_regex_count, share_regex_remove
+from .channel import share_data, share_regex_count
 from .decorators import threaded
 from .etc import code, general_link, get_now, get_readable_time, lang, thread
-from .file import move_file, save
+from .file import data_to_file, move_file, save
 from .group import delete_message, leave_group, save_admins
 from .telegram import get_admins, get_group_info, send_message
 from .tip import get_invite_link
@@ -129,16 +129,13 @@ def interval_min_01(client: Client) -> bool:
     return result
 
 
-def interval_min_10(client: Client) -> bool:
+def interval_min_10() -> bool:
     # Execute every 10 minutes
     result = False
 
     glovar.locks["message"].acquire()
     
     try:
-        # Share removed words
-        share_regex_remove(client)
-
         # Clear keyworded users
         for gid in list(glovar.keyworded_ids):
             glovar.keyworded_ids[gid] = {}
@@ -272,6 +269,24 @@ def reset_data(client: Client) -> bool:
     return result
 
 
+def save_regex_timeout(word: str) -> bool:
+    # Use this function to save removed regex
+    result = False
+
+    glovar.locks["regex"].acquire()
+
+    try:
+        glovar.timeout_words.add(word)
+        save("timeout_words")
+        result = True
+    except Exception as e:
+        logger.warning(f"Save regex timeout error: {e}", exc_info=True)
+    finally:
+        glovar.locks["regex"].release()
+
+    return result
+
+
 def send_count(client: Client) -> bool:
     # Send regex count to REGEX
     result = False
@@ -291,6 +306,33 @@ def send_count(client: Client) -> bool:
         result = True
     except Exception as e:
         logger.warning(f"Send count error: {e}", exc_info=True)
+    finally:
+        glovar.locks["regex"].release()
+
+    return result
+
+
+def share_regex_timeout(client: Client) -> bool:
+    # Use this function to share regex remove request to REGEX
+    result = False
+
+    glovar.locks["regex"].acquire()
+
+    try:
+        if not glovar.timeout_words:
+            return False
+
+        file = data_to_file(glovar.timeout_words)
+        save("timeout_words")
+        result = share_data(
+            client=client,
+            receivers=["REGEX"],
+            action="regex",
+            action_type="timeout",
+            file=file
+        )
+    except Exception as e:
+        logger.warning(f"Share regex timeout error: {e}", exc_info=True)
     finally:
         glovar.locks["regex"].release()
 

@@ -27,11 +27,11 @@ from pyrogram.types import CallbackQuery, Message, User
 from wrapt_timeout_decorator import timeout
 
 from .. import glovar
-from .channel import save_regex_remove
 from .etc import get_filename, get_forward_name, get_full_name, get_now, get_text, t2t
 from .file import save
 from .ids import init_group_id
 from .telegram import get_user_full
+from .timers import save_regex_timeout
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -906,11 +906,9 @@ def is_user_class_d(gid: int, user: User) -> bool:
     return result
 
 
-@timeout(30)
 def is_regex_text(word_type: str, text: str, ocr: bool = False, again: bool = False) -> Optional[Match]:
     # Check if the text hit the regex rules
     result = None
-    word = ""
 
     try:
         if text:
@@ -927,13 +925,16 @@ def is_regex_text(word_type: str, text: str, ocr: bool = False, again: bool = Fa
             words = list(eval(f"glovar.{word_type}_words"))
 
         for word in words:
-            if word in glovar.timeout_words.get(word_type, set()):
+            if word in glovar.timeout_words:
                 continue
 
             if ocr and "(?# nocr)" in word:
                 continue
 
-            result = re.search(word, text, re.I | re.S | re.M)
+            try:
+                result = is_regex_string(word, text)
+            except TimeoutError:
+                save_regex_timeout(word)
 
             # Count and return
             if not result:
@@ -948,10 +949,21 @@ def is_regex_text(word_type: str, text: str, ocr: bool = False, again: bool = Fa
 
         # Try again
         return is_regex_text(word_type, text, ocr, True)
-    except TimeoutError:
-        save_regex_remove(word_type, word)
     except Exception as e:
         logger.warning(f"Is regex text error: {e}", exc_info=True)
+
+    return result
+
+
+@timeout(5)
+def is_regex_string(word: str, text: str) -> Optional[Match]:
+    # Check if the text hit the regex rules
+    result = None
+
+    try:
+        result = re.search(word, text, re.I | re.S | re.M)
+    except Exception as e:
+        logger.warning(f"Is regex string error: {e}", exc_info=True)
 
     return result
 

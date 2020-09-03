@@ -673,10 +673,8 @@ starts: Dict[str, Dict[str, Union[bool, int, str]]] = {}
 #     }
 # }
 
-timeout_words: Dict[str, Set[str]] = {}
-# timeout_words = {
-#     "ban": {"regex"}
-# }
+timeout_words: Set[str] = set()
+# timeout_words = {"timeout_regex"}
 
 token: str = ""
 # token = "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
