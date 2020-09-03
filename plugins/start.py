@@ -35,9 +35,8 @@ def init() -> bool:
             return True
 
         # First start
-        if not glovar.current:
-            glovar.current = glovar.version
-            save("current")
+        glovar.current = glovar.version
+        save("current")
 
         result = True
     except Exception as e:
