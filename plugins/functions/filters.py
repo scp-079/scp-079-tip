@@ -301,7 +301,7 @@ def get_words(words: set, exact: bool) -> dict:
 
     try:
         for word in words:
-            if word.startswith("{{") and word.sendswith("}}"):
+            if word.startswith("{{") and word.endswith("}}"):
                 word = word[2:-2]
 
                 if not word:
