@@ -158,7 +158,7 @@ def terminate_user(client: Client, message: Message, data: dict) -> bool:
     try:
         # Basic data
         gid = message.chat.id
-        user = message.from_user if message.new_chat_members else message.new_chat_members[0]
+        user = get_user_from_message(message)
         uid = user.id
         key = data["key"]
         mid = data["mid"]
