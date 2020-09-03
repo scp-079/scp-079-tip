@@ -143,6 +143,26 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
     return result
 
 
+def get_replaced(text: str, gid: int, user: User, destruct: int) -> str:
+    # Get replace keyword text
+    result = ""
+
+    try:
+        result = get_text_user(text, user)
+        result = result.replace("$destruct_time", str(destruct))
+        result += mention_text("\U00002060", user.id)
+
+        if "$mention_admins" not in result:
+            return result
+
+        admin_text = "".join(mention_text("\U00002060", aid) for aid in glovar.admin_ids[gid])
+        result = result.replace("$mention_admins", admin_text)
+    except Exception as e:
+        logger.warning(f"Get replaced error: {e}", exc_info=True)
+
+    return result
+
+
 def tip_keyword(client: Client, message: Message, data: dict) -> bool:
     # Send keyword tip
     result = False
@@ -180,9 +200,7 @@ def tip_keyword(client: Client, message: Message, data: dict) -> bool:
 
         # Get the markup
         text, markup = get_text_and_markup_tip(gid, reply)
-        text = get_text_user(text, user)
-        text = text.replace("$destruct_time", str(destruct))
-        text += mention_text("\U00002060", user.id)
+        text = get_replaced(text, gid, user, destruct)
 
         # Send the tip
         result = send_message(client, gid, text, mid, markup)

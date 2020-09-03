@@ -118,6 +118,10 @@ def get_text_and_markup(text: str) -> Tuple[str, Union[bool, InlineKeyboardMarku
                 return text, False
 
             button_text = button[0]
+
+            if len(button_text.encode()) > 64:
+                return text, False
+
             button_url = button[1]
 
             if button_url.startswith("@") or " " in button_url or "." not in button_url:
