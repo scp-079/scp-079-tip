@@ -564,3 +564,22 @@ def unban_chat_member(client: Client, cid: int, uid: Union[int, str]) -> Optiona
         logger.warning(f"Unban chat member {uid} in {cid} error: {e}", exc_info=True)
 
     return result
+
+
+@retry
+def unpin_chat_message(client: Client, cid: int) -> Optional[bool]:
+    # Unpin a message in a group, channel or your own chat
+    result = None
+
+    try:
+        result = client.unpin_chat_message(
+            chat_id=cid
+        )
+    except FloodWait as e:
+        raise e
+    except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, ChatNotModified, PeerIdInvalid):
+        return False
+    except Exception as e:
+        logger.warning(f"Unpin chat message error: {e}", exc_info=True)
+
+    return result

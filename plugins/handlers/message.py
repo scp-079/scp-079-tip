@@ -35,7 +35,7 @@ from ..functions.receive import (receive_add_bad, receive_captcha_flood, receive
                                  receive_help_welcome, receive_leave_approve, receive_regex, receive_refresh,
                                  receive_remove_bad, receive_remove_score, receive_remove_watch, receive_rollback,
                                  receive_text_data, receive_user_score, receive_watch_user)
-from ..functions.telegram import get_admins, pin_chat_message, send_message
+from ..functions.telegram import get_admins, pin_chat_message, send_message, unpin_chat_message
 from ..functions.timers import backup_files, send_count
 from ..functions.tip import tip_keyword, tip_rm, tip_welcome
 
@@ -276,8 +276,8 @@ def init_group(client: Client, message: Message) -> bool:
 @Client.on_message(filters.incoming & filters.group & filters.linked_channel
                    & authorized_group
                    & ~declared_message)
-def pin(client: Client, message: Message) -> bool:
-    # Pin the held message
+def pin_process(client: Client, message: Message) -> bool:
+    # Process pinned message
     result = False
 
     glovar.locks["message"].acquire()
@@ -290,11 +290,16 @@ def pin(client: Client, message: Message) -> bool:
         if gid in glovar.flooded_ids:
             return False
 
-        # Read config
-        mid = glovar.configs[gid].get("hold")
+        # Cancel the pinned message
+        if glovar.configs[gid].get("cancel", False):
+            return delay(3, unpin_chat_message, [client, gid])
+
+        # Hold the pinned message
+        hold = glovar.configs[gid].get("hold", False)
+        mid = glovar.pinned_ids.get(gid, 0)
 
         # Check config
-        if not mid:
+        if not hold or not mid:
             return False
 
         # Pin the message
@@ -302,7 +307,43 @@ def pin(client: Client, message: Message) -> bool:
 
         result = True
     except Exception as e:
-        logger.warning(f"Pin error: {e}", exc_info=True)
+        logger.warning(f"Pin process error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
+
+    return result
+
+
+@Client.on_message(filters.incoming & filters.group & ~filters.linked_channel
+                   & authorized_group
+                   & from_user
+                   & ~declared_message)
+def pin_record(_: Client, message: Message) -> bool:
+    # Record pinned message
+    result = False
+
+    glovar.locks["message"].acquire()
+
+    try:
+        # Basic data
+        gid = message.chat.id
+        mid = message.message_id
+
+        # Check flood status
+        if gid in glovar.flooded_ids:
+            return False
+
+        # Check config
+        if glovar.configs[gid].get("cancel", False) or glovar.configs[gid].get("hold", False):
+            return False
+
+        # Save message id
+        glovar.pinned_ids[gid] = mid
+        save("pinned_ids")
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Pin record error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
 
