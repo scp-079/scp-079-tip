@@ -64,17 +64,17 @@ def check(client: Client, message: Message) -> bool:
                 or (not glovar.keywords[gid].get("kws") and not glovar.rms[gid].get("reply"))):
             return False
 
-        # # Check class D status
-        # if is_user_class_d(gid, message.from_user):
-        #     return False
-        #
-        # # Check NOSPAM status
-        # if is_nospam_message(message):
-        #     return False
-        #
-        # # Check declare status
-        # if is_declared_message(None, None, message):
-        #     return True
+        # Check class D status
+        if is_user_class_d(gid, message.from_user):
+            return False
+
+        # Check NOSPAM status
+        if is_nospam_message(message):
+            return False
+
+        # Check declare status
+        if is_declared_message(None, None, message):
+            return True
 
         # Check keyword
         detection = is_keyword_message(message)
