@@ -30,11 +30,9 @@ def init() -> bool:
     result = False
 
     try:
-        # Check version
         if glovar.current == glovar.version:
             return True
 
-        # First start
         glovar.current = glovar.version
         save("current")
 
