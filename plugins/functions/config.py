@@ -213,7 +213,7 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
             glovar.keywords[gid]["kws"][key]["modes"] = modes
             glovar.keywords[gid]["kws"][key]["actions"] = actions
             glovar.keywords[gid]["kws"][key]["target"] = target
-            glovar.keywords[gid]["kws"][key]["destruct"] = destruct
+            glovar.keywords[gid]["kws"][key]["destruct"] = get_int(destruct)
             glovar.keywords[gid]["kws"][key]["raw"] = text
         
         # Save the data
