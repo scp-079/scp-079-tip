@@ -57,7 +57,7 @@ def is_authorized_group(_, __, update: Union[CallbackQuery, Message]) -> bool:
         else:
             message = update
 
-        if not message.chat:
+        if not message.chat or message.chat.type != "supergroup":
             return False
 
         cid = message.chat.id
@@ -225,7 +225,7 @@ def is_test_group(_, __, update: Union[CallbackQuery, Message]) -> bool:
         else:
             message = update
 
-        if not message.chat:
+        if not message.chat or message.chat.type != "supergroup":
             return False
 
         cid = message.chat.id
