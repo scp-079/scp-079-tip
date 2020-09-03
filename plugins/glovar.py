@@ -86,7 +86,6 @@ critical_channel_id: int = 0
 debug_channel_id: int = 0
 exchange_channel_id: int = 0
 hide_channel_id: int = 0
-logging_channel_id: int = 0
 test_group_id: int = 0
 tip_channel_id: int = 0
 
@@ -157,7 +156,6 @@ try:
     debug_channel_id = int(config.get("channels", "debug_channel_id", fallback=debug_channel_id))
     exchange_channel_id = int(config.get("channels", "exchange_channel_id", fallback=exchange_channel_id))
     hide_channel_id = int(config.get("channels", "hide_channel_id", fallback=hide_channel_id))
-    logging_channel_id = int(config.get("channels", "logging_channel_id", fallback=logging_channel_id))
     test_group_id = int(config.get("channels", "test_group_id", fallback=test_group_id))
     tip_channel_id = int(config.get("channels", "tip_channel_id", fallback=tip_channel_id))
 
@@ -236,7 +234,6 @@ check_all(
             "debug_channel_id": debug_channel_id,
             "exchange_channel_id": exchange_channel_id,
             "hide_channel_id": hide_channel_id,
-            "logging_channel_id": logging_channel_id,
             "test_group_id": test_group_id,
             "tip_channel_id": tip_channel_id
         },
