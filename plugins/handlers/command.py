@@ -46,7 +46,7 @@ from ..functions.user import add_start, get_user_from_message
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(filters.incoming & filters.private & filters.command(["add"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.private & ~filters.edited & filters.command(["add"], glovar.prefix)
                    & from_user & class_e)
 def add(client: Client, message: Message) -> bool:
     # Add a custom keyword
