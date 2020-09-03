@@ -269,24 +269,6 @@ def reset_data(client: Client) -> bool:
     return result
 
 
-def save_regex_timeout(word: str) -> bool:
-    # Use this function to save removed regex
-    result = False
-
-    glovar.locks["regex"].acquire()
-
-    try:
-        glovar.timeout_words.add(word)
-        save("timeout_words")
-        result = True
-    except Exception as e:
-        logger.warning(f"Save regex timeout error: {e}", exc_info=True)
-    finally:
-        glovar.locks["regex"].release()
-
-    return result
-
-
 def send_count(client: Client) -> bool:
     # Send regex count to REGEX
     result = False

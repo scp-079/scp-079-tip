@@ -28,10 +28,9 @@ from wrapt_timeout_decorator import timeout
 
 from .. import glovar
 from .etc import get_filename, get_forward_name, get_full_name, get_now, get_text, t2t
-from .file import save
+from .file import save, save_regex_timeout
 from .ids import init_group_id
 from .telegram import get_user_full
-from .timers import save_regex_timeout
 
 # Enable logging
 logger = logging.getLogger(__name__)

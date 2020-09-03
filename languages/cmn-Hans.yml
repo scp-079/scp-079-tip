@@ -168,7 +168,6 @@ kws_actions_ban: 封禁用户
 kws_actions_ban_time: 封禁用户 {} 秒
 kws_actions_restrict: 禁言用户
 kws_actions_restrict_time: 禁言用户 {} 秒
-kws_count: 已触发次数
 kws_destruct: 自毁时间
 kws_key: 关键词编号
 kws_modes: 关键词触发模式
@@ -183,13 +182,14 @@ kws_target: 关键词触发对象
 kws_target_admin: 管理员
 kws_target_all: 全部成员
 kws_target_member: 群成员
-kws_today: 本日触发次数
 kws_total: 关键词总数
 last_editor: 上一个编辑者
 modified_by: 最后编辑者
 old_reply: 旧设置存档
 pinned_message: 置顶消息
 rule_keyword: 群组自定义关键词
+statics_count: 已触发次数
+statics_today: 本日触发次数
 tip: 提示
 
 # Symbol

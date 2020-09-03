@@ -401,8 +401,8 @@ def kws_show(client: Client, message: Message, gid: int, file: bool = False) -> 
                      f"{lang('kws_actions')}{lang('colon')}{code(actions)}\n"
                      f"{lang('kws_target')}{lang('colon')}{code(target)}\n"
                      f"{lang('kws_destruct')}{lang('colon')}{code(destruct)}\n"
-                     f"{lang('kws_count')}{lang('colon')}{code(count)}\n"
-                     f"{lang('kws_today')}{lang('colon')}{code(today)}\n"
+                     f"{lang('statics_count')}{lang('colon')}{code(count)}\n"
+                     f"{lang('statics_today')}{lang('colon')}{code(today)}\n"
                      f"{lang('kws_raw')}{lang('colon')}{code('-' * 16)}\n\n"
                      f"{code_block(raw)}\n\n")
 
@@ -455,8 +455,8 @@ def kws_show_file(client: Client, message: Message, gid: int,
                      f"{lang('kws_actions')}{lang('colon')}{actions}\n"
                      f"{lang('kws_target')}{lang('colon')}{target}\n"
                      f"{lang('kws_destruct')}{lang('colon')}{destruct}\n"
-                     f"{lang('kws_count')}{lang('colon')}{count}\n"
-                     f"{lang('kws_today')}{lang('colon')}{today}\n"
+                     f"{lang('statics_count')}{lang('colon')}{count}\n"
+                     f"{lang('statics_today')}{lang('colon')}{today}\n"
                      f"{lang('kws_raw')}{lang('colon')}{'-' * 16}\n\n"
                      f"{raw}\n\n")
 
