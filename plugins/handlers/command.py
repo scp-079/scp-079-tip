@@ -646,10 +646,15 @@ def hold(client: Client, message: Message) -> bool:
         gid = message.chat.id
         aid = message.from_user.id
         r_message = message.reply_to_message
+        now = message.date or get_now()
 
         # Check permission
         if not is_class_c(None, None, message):
             return False
+
+        # Check the config lock
+        if now - glovar.configs[gid]["lock"] < 310:
+            return command_error(client, message, lang("config_change"), lang("config_locked"))
 
         # Check the message
         if not r_message:
@@ -658,6 +663,8 @@ def hold(client: Client, message: Message) -> bool:
         # Hold the message
         glovar.pinned_ids[gid] = r_message.message_id
         save("pinned_ids")
+        glovar.configs[gid]["hold"] = True
+        save("configs")
         thread(pin_chat_message, (client, gid, r_message.message_id))
 
         # Generate the text
