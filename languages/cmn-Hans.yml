@@ -194,6 +194,7 @@ tip: 提示
 
 # Symbol
 colon: "："
+comma: "，"
 
 # Terminate
 auto_ban: 自动封禁
@@ -214,6 +215,10 @@ wait_user: 待验证用户
 watch_ban: 追踪封禁
 watch_delete: 追踪删除
 watch_user: 敏感追踪
+
+# Unit
+seconds: 秒
+times: 次
 
 # Version
 git_change: 本地修改

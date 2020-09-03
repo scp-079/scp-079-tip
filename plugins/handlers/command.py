@@ -881,10 +881,16 @@ def show_config(client: Client, message: Message) -> bool:
         # Get the config
         if command_type == "ot":
             result = glovar.ots[gid].get("reply", "")
+            count = None
+            today = None
         elif command_type == "rm":
             result = glovar.rms[gid].get("reply", "")
+            count = glovar.rms[gid].get("count", 0)
+            today = glovar.rms[gid].get("today", 0)
         elif command_type == "welcome":
             result = glovar.welcomes[gid].get("reply", "")
+            count = glovar.welcomes[gid].get("count", 0)
+            today = glovar.welcomes[gid].get("today", 0)
         else:
             return False
 
@@ -894,8 +900,16 @@ def show_config(client: Client, message: Message) -> bool:
         # Send the report message
         text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
                 f"{lang('action')}{lang('colon')}{code(lang('action_show'))}\n"
-                f"{lang('result')}{lang('colon')}" + code("-" * 16) + "\n\n"
-                f"{code_block(result)}\n")
+                f"{lang('type')}{lang('colon')}{code(command_type)}\n")
+
+        if count is not None:
+            text += f"{lang('count')}{lang('colon')}{code(str(count) + lang('times'))}\n"
+
+        if today is not None:
+            text += f"{lang('today')}{lang('colon')}{code(str(today) + lang('times'))}\n"
+
+        text += (f"{lang('result')}{lang('colon')}" + code("-" * 16) + "\n\n"
+                 f"{code_block(result)}\n")
         send_report_message(20, client, gid, text)
 
         result = True
@@ -910,7 +924,7 @@ def show_config(client: Client, message: Message) -> bool:
 
 @Client.on_message(filters.incoming & filters.private & filters.command(["show"], glovar.prefix)
                    & from_user & class_e)
-def show_group(client: Client, message: Message) -> bool:
+def show_keywords(client: Client, message: Message) -> bool:
     # Show custom keywords
     result = False
 
@@ -933,7 +947,7 @@ def show_group(client: Client, message: Message) -> bool:
 
         result = kws_show(client, message, gid, file == "file")
     except Exception as e:
-        logger.warning(f"Show group error: {e}", exc_info=True)
+        logger.warning(f"Show keywords error: {e}", exc_info=True)
     finally:
         glovar.locks["config"].release()
 

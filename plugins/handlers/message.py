@@ -79,12 +79,19 @@ def check(client: Client, message: Message) -> bool:
         detection = is_keyword_message(message)
 
         if detection:
+            key = detection["key"]
+            glovar.keywords[gid]["kws"][key]["count"] += 1
+            glovar.keywords[gid]["kws"][key]["today"] += 1
+            save("keywords")
             return tip_keyword(client, message, detection)
 
         # Check rm
         detection = is_rm_text(client, message)
 
         if detection:
+            glovar.rms[gid]["count"] += 1
+            glovar.rms[gid]["today"] += 1
+            save("rms")
             return tip_rm(client, gid, mid)
 
         result = True
@@ -154,6 +161,9 @@ def check_join(client: Client, message: Message) -> bool:
             return False
 
         # Welcome
+        glovar.welcomes[gid]["count"] += 1
+        glovar.welcomes[gid]["today"] += 1
+        save("welcomes")
         tip_welcome(client, user, gid, mid)
 
         result = True

@@ -83,7 +83,7 @@ def interval_min_01(client: Client) -> bool:
             # Destruct keywords messages
             for key in list(glovar.message_ids[gid]["keywords"]):
                 mid, time = glovar.message_ids[gid]["keywords"][key]
-                keyword = glovar.keywords[gid].get(key, {})
+                keyword = glovar.keywords[gid]["kws"].get(key, {})
 
                 if not keyword:
                     glovar.message_ids[gid]["keywords"].pop(key, (0, 0))
@@ -189,6 +189,41 @@ def resend_link(client: Client) -> bool:
         result = True
     except Exception as e:
         logger.warning(f"Resend link error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
+
+    return result
+
+
+def reset_count() -> bool:
+    # Reset count data
+    result = False
+
+    glovar.locks["message"].acquire()
+
+    try:
+        # Keywords
+        for gid in list(glovar.keywords):
+            for key in list(glovar.keywords[gid]["kws"]):
+                glovar.keywords[gid]["kws"][key]["today"] = 0
+
+        save("keywords")
+
+        # RM
+        for gid in list(glovar.rms):
+            glovar.rms[gid]["today"] = 0
+
+        save("rms")
+
+        # Welcome
+        for gid in list(glovar.welcomes):
+            glovar.welcomes[gid]["today"] = 0
+
+        save("welcomes")
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Reset count error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
 
