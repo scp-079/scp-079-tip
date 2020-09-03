@@ -10,8 +10,10 @@ action: 執行操作
 clear: 清空數據
 description: 說明
 disabled: 禁用
+detail: 详情
 enabled: 啟用
 name: 名稱
+read_manual: 阅读使用手册
 reason: 原因
 reset: 重設數據
 result: 結果
@@ -44,15 +46,18 @@ default: 默認
 captcha: 過審歡迎
 alone: 非回復歡迎
 clean: 無痕模式
-resend: 每日重發入群連結
-channel: 入群頻道
-hold: 保持置頂
-keyword: 關鍵字提示
 ot: OT 警告
 rm: RM 警告
 welcome: 歡迎訊息
+keyword: 關鍵字提示
+white: 放行白名单
+cancel: 取消置顶
+hold: 保持置頂
+channel: 入群頻道
+resend: 每日重發入群連結
 
 # Debug
+evidence: 证据留存
 triggered_by: 觸發消息
 
 # Emergency
@@ -63,10 +68,31 @@ issue: 發現狀況
 protocol_1: 啟動 1 號協議
 transfer_channel: 頻道轉移
 
+# Error
+detail_kws_occupied: 会话被 {} 占用中
+error_channel_bind_reply: 绑定频道应回复转发自该频道的消息
+error_channel_bind_send: 机器人在绑定频道中发送消息失败
+error_exceed_button: 按钮个数超过 6 个
+error_exceed_kws: 关键词个数超过 100 条
+error_excced_raw: 设置的总体内容过长
+error_exceed_reply: 设置的回复内容过长
+error_kws_actions_invalid: 关键词触发行为设置有误
+error_kws_actions_conflict: 移除、禁言、封禁行为不可同时存在
+error_kws_destruct_invalid: 关键词回复自毁时间设置有误
+error_kws_modes_invalid: 关键词触发模式设置有误
+error_kws_modes_lack: 未指定关键词匹配模式
+error_kws_modes_conflict: 包含互斥的关键词匹配模式
+error_kws_none: 不存在该关键词
+error_kws_occupied: 已存在设置会话
+error_kws_target_invalid: 关键词触发对象设置有误
+error_markup_invalid: 按钮设置有误
+error_none: 无数据
+
 # Group
 group_id: 群組 ID
 group_name: 群組名稱
 inviter: 邀請人
+leave_group: 退出群组
 leave_approve: 已批准退出群組
 leave_auto: 自動退出並清空數據
 reason_admin: 獲取管理員列表失敗
@@ -115,7 +141,12 @@ action_bind: 綁定頻道
 action_channel: 調整邀請提示
 action_close: 關閉入群通道
 action_hold: 設置保持置頂
-action_keyword: 調整關鍵字
+action_kws: 调整关键词设置
+action_kws_add: 添加关键词
+action_kws_edit: 编辑关键词
+action_kws_remove: 移除关键词
+action_kws_show: 显示关键词设置
+action_kws_start: 发起自定义关键词设置会话
 action_open: 開啟入群通道
 action_ot: 調整 OT 提示
 action_resend: 重新髮送入群連結
@@ -123,18 +154,49 @@ action_rm: 調整 RM 警告
 action_show: 查看設置內容
 action_welcome: 調整歡迎消息
 button_channel: 點擊加入
-description_channel: 請點擊下方按鈕加入討論群組
-description_close: 根據群組的設置，暫時不會提供群組連結，請稍後再試
-description_ot: 離題內容請適度
-description_rm: 請勿開 rm 命令類玩笑
-description_welcome: 你好，$mention_name
+description_channel: 請點擊下方按鈕加入討論群組。
+description_close: 根據群組的設置，暫時不會提供群組連結，請稍後再試。
+description_kws: 请开始使用命令来设置所指定群组的自定义关键词，自于群组中发起设置会话时计算，您共有 600 秒的时间来调整，逾时无效
+description_ot: 離題內容請適度。
+description_rm: 請勿開 rm 命令類玩笑！
+description_welcome: 你好，$mention_name，欢迎加入本群组！
+kws_actions: 关键词触发行为
+kws_actions_reply: 回复
+kws_actions_delete: 删除
+kws_actions_kick: 移除用户
+kws_actions_ban: 封禁用户
+kws_actions_ban_time: 封禁用户 {} 秒
+kws_actions_restrict: 禁言用户
+kws_actions_restrict_time: 禁言用户 {} 秒
+kws_destruct: 自毁时间
+kws_key: 关键词编号
+kws_modes: 关键词触发模式
+kws_modes_case: 大小写敏感
+kws_modes_exact: 全匹配
+kws_modes_forward: 仅匹配被转发的消息
+kws_modes_include: 包含匹配
+kws_modes_name: 仅匹配名称
+kws_modes_pure: 去除名称中的干扰
+kws_raw: 设置存档
+kws_target: 关键词触发对象
+kws_target_admin: 管理员
+kws_target_all: 全部成员
+kws_target_member: 群成员
+kws_total: 关键词总数
+last_editor: 上一个编辑者
+modified_by: 最后编辑者
+old_reply: 旧设置存档
 pinned_message: 置頂消息
-tip: 提示
-tip_captcha: "檢測到 CAPTCHA 在群組中，並且您開啟了過審歡迎，故入群歡迎自動調整到非回復模式。\
-  建議您的歡迎消息中包含 $mention_name 欄位，以合理提及具體用戶"
+rule_keyword: 群组自定义关键词
+statics_count: 已触发次数
+statics_today: 本日触发次数
+type_ot: 离题提醒
+type_rm: RM 笑话提醒
+type_welcome: 入群欢迎消息
 
 # Symbol
 colon: "："
+comma: "，"
 
 # Terminate
 auto_ban: 自動封禁
@@ -151,10 +213,13 @@ rule_custom: 群組自訂
 rule_global: 全局規則
 score_ban: 評分封禁
 score_user: 用戶評分
-wait_user: 待驗證用戶
 watch_ban: 追蹤封禁
 watch_delete: 追蹤刪除
 watch_user: 敏感追蹤
+
+# Unit
+seconds: 秒
+times: 次
 
 # Version
 git_change: 本地修改

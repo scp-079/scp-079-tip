@@ -213,7 +213,6 @@ rule_custom: 群组自定义
 rule_global: 全局规则
 score_ban: 评分封禁
 score_user: 用户评分
-wait_user: 待验证用户
 watch_ban: 追踪封禁
 watch_delete: 追踪删除
 watch_user: 敏感追踪

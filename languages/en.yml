@@ -10,8 +10,10 @@ action: Action
 clear: Clear Data
 description: Description
 disabled: Disabled
+detail: 详情
 enabled: Enabled
 name: Name
+read_manual: 阅读使用手册
 reason: Reason
 reset: Reset Data
 result: Result
@@ -44,15 +46,18 @@ default: Default
 captcha: Welcome After CAPTCHA
 alone: Alone Mode
 clean: Clean Mode
-resend: Resend Invite Link Everyday
-channel: Entry Channel
-hold: Hold the Pinned Message
-keyword: Custom Keywords
 ot: OT Warning by Members
 rm: RM Jokes Warning
 welcome: Welcome Message
+keyword: Custom Keywords
+white: 放行白名单
+cancel: 取消置顶
+hold: Hold the Pinned Message
+channel: Entry Channel
+resend: Resend Invite Link Everyday
 
 # Debug
+evidence: 证据留存
 triggered_by: Triggered By
 
 # Emergency
@@ -63,10 +68,31 @@ issue: Issue
 protocol_1: Initiate Protocol 1
 transfer_channel: Transfer Channel
 
+# Error
+detail_kws_occupied: 会话被 {} 占用中
+error_channel_bind_reply: 绑定频道应回复转发自该频道的消息
+error_channel_bind_send: 机器人在绑定频道中发送消息失败
+error_exceed_button: 按钮个数超过 6 个
+error_exceed_kws: 关键词个数超过 100 条
+error_excced_raw: 设置的总体内容过长
+error_exceed_reply: 设置的回复内容过长
+error_kws_actions_invalid: 关键词触发行为设置有误
+error_kws_actions_conflict: 移除、禁言、封禁行为不可同时存在
+error_kws_destruct_invalid: 关键词回复自毁时间设置有误
+error_kws_modes_invalid: 关键词触发模式设置有误
+error_kws_modes_lack: 未指定关键词匹配模式
+error_kws_modes_conflict: 包含互斥的关键词匹配模式
+error_kws_none: 不存在该关键词
+error_kws_occupied: 已存在设置会话
+error_kws_target_invalid: 关键词触发对象设置有误
+error_markup_invalid: 按钮设置有误
+error_none: 无数据
+
 # Group
 group_id: Group ID
 group_name: Group Name
 inviter: Inviter
+leave_group: 退出群组
 leave_approve: Approve to Leave the Group
 leave_auto: Leave automatically
 reason_admin: Failed to Fetch Admin List
@@ -115,7 +141,12 @@ action_bind: Bind Channel
 action_channel: Adjust Invite Text
 action_close: Close Group Channel
 action_hold: Hold the Pinned Message
-action_keyword: Adjust Keywords
+action_kws: 调整关键词设置
+action_kws_add: 添加关键词
+action_kws_edit: 编辑关键词
+action_kws_remove: 移除关键词
+action_kws_show: 显示关键词设置
+action_kws_start: 发起自定义关键词设置会话
 action_open: Open Group Channel
 action_ot: Adjust OT Tip
 action_resend: Resend Group Link Message
@@ -123,17 +154,49 @@ action_rm: Adjust RM Tip
 action_show: Show the Config Text
 action_welcome: Adjust Welcome Tip
 button_channel: Click to Join
-description_channel: Please click the button below to join the chat group
-description_close: According to the group's settings, the group link will not be provided
-  at this time. Please try again later
+description_channel: Please click the button below to join the chat group.
+description_close: According to the group's settings, the group link will not be provided at this time. Please try again later
+description_kws: 请开始使用命令来设置所指定群组的自定义关键词，自于群组中发起设置会话时计算，您共有 600 秒的时间来调整，逾时无效
 description_ot: OT Warning
 description_rm: Please do not joke about the rm command
 description_welcome: Hello $mention_name
+kws_actions: 关键词触发行为
+kws_actions_reply: 回复
+kws_actions_delete: 删除
+kws_actions_kick: 移除用户
+kws_actions_ban: 封禁用户
+kws_actions_ban_time: 封禁用户 {} 秒
+kws_actions_restrict: 禁言用户
+kws_actions_restrict_time: 禁言用户 {} 秒
+kws_destruct: 自毁时间
+kws_key: 关键词编号
+kws_modes: 关键词触发模式
+kws_modes_case: 大小写敏感
+kws_modes_exact: 全匹配
+kws_modes_forward: 仅匹配被转发的消息
+kws_modes_include: 包含匹配
+kws_modes_name: 仅匹配名称
+kws_modes_pure: 去除名称中的干扰
+kws_raw: 设置存档
+kws_target: 关键词触发对象
+kws_target_admin: 管理员
+kws_target_all: 全部成员
+kws_target_member: 群成员
+kws_total: 关键词总数
+last_editor: 上一个编辑者
+modified_by: 最后编辑者
+old_reply: 旧设置存档
 pinned_message: Pinned Message
-tip: Tip
+rule_keyword: 群组自定义关键词
+statics_count: 已触发次数
+statics_today: 本日触发次数
+type_ot: 离题提醒
+type_rm: RM 笑话提醒
+type_welcome: 入群欢迎消息
 
 # Symbol
 colon: ": "
+comma: ", "
 
 # Terminate
 auto_ban: Auto Ban
@@ -153,6 +216,10 @@ score_user: High Score
 watch_ban: Watch Ban
 watch_delete: Watch Delete
 watch_user: Watched User
+
+# Unit
+seconds: 秒
+times: 次
 
 # Version
 git_change: 本地修改
