@@ -146,7 +146,7 @@ action_kws_add: 添加关键词
 action_kws_edit: 编辑关键词
 action_kws_remove: 移除关键词
 action_kws_show: 显示关键词设置
-actoin_kws_start: 发起自定义关键词设置会话
+action_kws_start: 发起自定义关键词设置会话
 action_open: 开启入群通道
 action_ot: 调整 OT 提示
 action_resend: 重新发送入群链接
@@ -158,7 +158,7 @@ description_channel: 请点击下方按钮加入讨论群组。
 description_close: 根据群组的设置，暂时不会提供群组链接，请稍后再试。
 description_kws: 请开始使用命令来设置所指定群组的自定义关键词，自于群组中发起设置会话时计算，您共有 600 秒的时间来调整，逾时无效
 description_ot: 离题内容请适度！
-description_rm: 请勿开 rm 命令类玩笑，谢谢配合！
+description_rm: 请您勿开 rm 命令类玩笑，谢谢配合！
 description_welcome: 你好，$mention_name，欢迎加入本群组！
 kws_actions: 关键词触发行为
 kws_actions_reply: 回复

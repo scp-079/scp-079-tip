@@ -581,7 +581,9 @@ def is_keyword_message(message: Message) -> dict:
                 continue
 
             # Get result
-            if "name" in modes:
+            if ("name" in modes or "forward" in modes) and class_c_message:
+                continue
+            elif "name" in modes:
                 result = is_keyword_name(message, key)
             elif "forward" in modes:
                 result = is_keyword_text(message, key, True)
@@ -703,6 +705,7 @@ def is_keyword_text(message: Message, key: str, forward: bool = False) -> dict:
         # Basic data
         gid = message.chat.id
         mid = None
+        class_c_message = is_class_c(None, None, message)
         match = ""
 
         # Check the message
@@ -718,7 +721,7 @@ def is_keyword_text(message: Message, key: str, forward: bool = False) -> dict:
 
         # Get modes
         modes = keyword["modes"]
-        exact = "exact" in modes or is_class_c(None, None, message)
+        exact = "exact" in modes or class_c_message
         case = "case" in modes
 
         # Get text
@@ -735,7 +738,7 @@ def is_keyword_text(message: Message, key: str, forward: bool = False) -> dict:
         for word in words:
             match = is_keyword_string(word, message_text, words[word], case)
 
-            if match and not forward and message_text.lower() == word.lower() and is_class_c(None, None, message):
+            if match and not forward and message_text.lower() == word.lower() and class_c_message:
                 mid = (message.reply_to_message and message.reply_to_message.message_id) or message.message_id
                 break
             elif match:

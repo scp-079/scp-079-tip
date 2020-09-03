@@ -152,7 +152,7 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
         modes = {m.strip() for m in text_list[2].split() if m.strip()}
 
         # Check the modes
-        if not modes or all(m in {"include", "exact", "case", "name", "forward", "pure"} for m in modes):
+        if not modes or not all(m in {"include", "exact", "case", "name", "forward", "pure"} for m in modes):
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_modes_invalid"), report=False, private=True)
         elif not any(m in {"include", "exact"} for m in modes):
@@ -165,10 +165,10 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
         # Get the actions
         actions = {a.strip() for a in text_list[3].split() if a.strip()}
 
-        if not actions or all(a in {"reply", "delete", "kick", "ban", "restrict"}
-                              or search(r"^ban-\d{3,8}$", a)
-                              or search(r"^restrict-\d{3,8}$", a)
-                              for a in actions):
+        if not actions or not all(a in {"reply", "delete", "kick", "ban", "restrict"}
+                                  or search(r"^ban-\d{3,8}$", a)
+                                  or search(r"^restrict-\d{3,8}$", a)
+                                  for a in actions):
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_actions_invalid"), report=False, private=True)
         elif len([a for a in actions if a == "kick" or a.startswith("ban") or a.startswith("restrict")]) > 1:
@@ -187,7 +187,7 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
         destruct = text_list[5]
 
         # Check the destruct
-        if not search(r"^\n{3,5}$", destruct):
+        if not search(r"^\d{3,5}$", destruct):
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_destruct_invalid"), report=False, private=True)
         
@@ -402,7 +402,7 @@ def kws_show(client: Client, message: Message, gid: int, file: bool = False) -> 
                      f"{lang('kws_destruct')}{lang('colon')}{code(destruct)}\n"
                      f"{lang('kws_count')}{lang('colon')}{code(count)}\n"
                      f"{lang('kws_today')}{lang('colon')}{code(today)}\n"
-                     f"{lang('kws_raw')}{lang('colon')}{code('-' * 16)}\n"
+                     f"{lang('kws_raw')}{lang('colon')}{code('-' * 16)}\n\n"
                      f"{code_block(raw)}\n\n")
 
         # Send as file
@@ -456,7 +456,7 @@ def kws_show_file(client: Client, message: Message, gid: int,
                      f"{lang('kws_destruct')}{lang('colon')}{destruct}\n"
                      f"{lang('kws_count')}{lang('colon')}{count}\n"
                      f"{lang('kws_today')}{lang('colon')}{today}\n"
-                     f"{lang('kws_raw')}{lang('colon')}{'-' * 16}\n"
+                     f"{lang('kws_raw')}{lang('colon')}{'-' * 16}\n\n"
                      f"{raw}\n\n")
 
         # Save to a file

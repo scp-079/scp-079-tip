@@ -23,7 +23,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, 
 
 from .. import glovar
 from .decorators import threaded
-from .etc import code, get_now, get_text_user, lang
+from .etc import code, get_now, get_text_user, lang, mention_text
 from .file import save
 from .filters import is_keyworded_user, is_should_terminate
 from .group import delete_message
@@ -163,8 +163,11 @@ def tip_keyword(client: Client, message: Message, data: dict) -> bool:
             return terminate_user(client, message, data)
 
         # Get the user and message id
-        if mid:
+        if mid and message.reply_to_message:
             user = message.reply_to_message.from_user
+            delete_message(client, gid, message.message_id)
+        elif mid and not message.reply_to_message:
+            user = message.from_user
             delete_message(client, gid, message.message_id)
         elif not is_keyworded_user(gid, key, uid):
             user = message.from_user
@@ -180,6 +183,7 @@ def tip_keyword(client: Client, message: Message, data: dict) -> bool:
         text, markup = get_text_and_markup_tip(gid, reply)
         text = get_text_user(text, user)
         text = text.replace("$destruct_time", str(destruct))
+        text += mention_text("\U00002060", user.id)
 
         # Send the tip
         result = send_message(client, gid, text, mid, markup)
