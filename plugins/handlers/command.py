@@ -577,23 +577,23 @@ def config_tip(client: Client, message: Message) -> bool:
         # Config the tip
         if command == "ot":
             last_editor = glovar.ots[gid]["aid"]
-            old_reply = glovar.ots[gid].get("old", "")
+            old_reply = glovar.ots[gid].get("reply", "")
             glovar.ots[gid]["aid"] = aid
-            glovar.ots[gid]["old"] = deepcopy(glovar.ots[gid].get("reply", ""))
+            glovar.ots[gid]["old"] = old_reply
             glovar.ots[gid]["reply"] = command_type
             save("ots")
         elif command == "rm":
             last_editor = glovar.rms[gid]["aid"]
-            old_reply = glovar.rms[gid].get("old", "")
+            old_reply = glovar.rms[gid].get("reply", "")
             glovar.rms[gid]["aid"] = aid
-            glovar.rms[gid]["old"] = deepcopy(glovar.rms[gid].get("reply", ""))
+            glovar.rms[gid]["old"] = old_reply
             glovar.rms[gid]["reply"] = command_type
             save("rms")
         elif command == "welcome":
             last_editor = glovar.welcomes[gid]["aid"]
-            old_reply = glovar.welcomes[gid].get("old", "")
+            old_reply = glovar.welcomes[gid].get("reply", "")
             glovar.welcomes[gid]["aid"] = aid
-            glovar.welcomes[gid]["old"] = deepcopy(glovar.welcomes[gid].get("reply", ""))
+            glovar.welcomes[gid]["old"] = old_reply
             glovar.welcomes[gid]["reply"] = command_type
             save("welcomes")
         else:
