@@ -121,6 +121,9 @@ def receive_help_welcome(client: Client, data: dict) -> bool:
             if not member.user or member.status not in {"member", "restricted"}:
                 continue
 
+            glovar.welcomes[group_id]["count"] += 1
+            glovar.welcomes[group_id]["today"] += 1
+            save("welcomes")
             tip_welcome(client, member.user, group_id, message_id)
 
         result = True
