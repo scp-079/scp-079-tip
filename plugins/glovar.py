@@ -460,7 +460,7 @@ started_ids: Set[int] = set()
 
 updating: bool = False
 
-version: str = "0.2.3"
+version: str = "0.2.4"
 
 welcomed_ids: Dict[int, Set[int]] = {}
 # welcomed_ids = {
