@@ -23,7 +23,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, 
 
 from .. import glovar
 from .decorators import threaded
-from .etc import code, get_now, get_text_user, lang, mention_text
+from .etc import code, get_now, get_replaced, get_text_user, lang
 from .file import save
 from .filters import is_keyworded_user, is_should_terminate
 from .group import delete_message
@@ -139,26 +139,6 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
         logger.warning(f"New invite link error: {e}", exc_info=True)
     finally:
         glovar.locks["channel"].release()
-
-    return result
-
-
-def get_replaced(text: str, gid: int, user: User, destruct: int) -> str:
-    # Get replace keyword text
-    result = ""
-
-    try:
-        result = get_text_user(text, user)
-        result = result.replace("$destruct_time", str(destruct))
-        result += mention_text("\U00002060", user.id)
-
-        if "$mention_admins" not in result:
-            return result
-
-        admin_text = "".join(mention_text("\U00002060", aid) for aid in glovar.admin_ids[gid])
-        result = result.replace("$mention_admins", admin_text)
-    except Exception as e:
-        logger.warning(f"Get replaced error: {e}", exc_info=True)
 
     return result
 

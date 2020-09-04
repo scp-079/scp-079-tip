@@ -28,13 +28,12 @@ from .. import glovar
 from .channel import forward_evidence, send_debug
 from .config import kws_action
 from .decorators import threaded
-from .etc import get_int, get_now, lang, random_str
+from .etc import get_int, get_now, get_replaced, lang, random_str
 from .file import save
 from .filters import is_class_d_user, is_keyworded_user
 from .group import delete_message
 from .markup import get_text_and_markup_tip
 from .telegram import kick_chat_member, restrict_chat_member, send_message, unban_chat_member
-from .tip import get_replaced
 
 # Enable logging
 logger = logging.getLogger(__name__)
