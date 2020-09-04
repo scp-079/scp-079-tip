@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from json import dump
 from os import remove
 from os.path import exists
 from pickle import dump
@@ -85,6 +86,23 @@ def delete_file(path: str) -> bool:
         result = remove(path) or True
     except Exception as e:
         logger.warning(f"Delete file error: {e}", exc_info=True)
+
+    return result
+
+
+def file_json(data: dict) -> str:
+    # Generate a JSON file
+    result = ""
+
+    try:
+        file = get_new_path(".json")
+
+        with open(file, "w") as f:
+            dump(data, f, indent=4)
+
+        result = file
+    except Exception as e:
+        logger.warning(f"File json error: {e}", exc_info=True)
 
     return result
 

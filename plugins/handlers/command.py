@@ -28,8 +28,8 @@ from .. import glovar
 from ..functions.channel import get_debug_text, send_debug, share_data
 from ..functions.command import (command_error, delete_normal_command, delete_shared_command, get_command_context,
                                  get_command_type)
-from ..functions.config import (conflict_config, get_config_text, kws_add, kws_config_occupy, kws_config_gid,
-                                kws_remove, kws_show, start_kws, update_config)
+from ..functions.config import (conflict_config, get_config_text, kws_add, kws_clear, kws_config_occupy,
+                                kws_config_gid, kws_remove, kws_show, start_kws, update_config)
 from ..functions.etc import (code, code_block, general_link, get_int, get_now, get_readable_time, lang,
                              mention_id, random_str, thread)
 from ..functions.file import save
@@ -305,6 +305,44 @@ def channel_trigger(client: Client, message: Message) -> bool:
     finally:
         glovar.locks["config"].release()
         delete_normal_command(client, message)
+
+    return result
+
+
+@Client.on_message(filters.incoming & filters.private & filters.command(["clear"], glovar.prefix)
+                   & from_user & class_e)
+def clear(client: Client, message: Message) -> bool:
+    # Add a custom keyword
+    result = False
+
+    glovar.locks["config"].acquire()
+
+    try:
+        # Basic data
+        uid = message.from_user.id
+        now = message.date or get_now()
+
+        # Get group id
+        gid = kws_config_gid(uid, now)
+
+        # Check the group id
+        if not gid:
+            return False
+
+        # Get custom text
+        text = get_command_type(message)
+
+        # Check the command format
+        if not text or text.lower() != "yes":
+            return command_error(client, message, lang("action_kws_clear"), lang("command_usage"),
+                                 lang("error_need_confirm"), private=True, report=False)
+
+        # Get key
+        result = kws_clear(client, message, gid)
+    except Exception as e:
+        logger.warning(f"Clear error: {e}", exc_info=True)
+    finally:
+        glovar.locks["config"].release()
 
     return result
 

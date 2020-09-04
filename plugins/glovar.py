@@ -293,6 +293,7 @@ except Exception as e:
 
 all_commands: List[str] = [
     "channel",
+    "clear",
     "config",
     "config_tip",
     "hold",

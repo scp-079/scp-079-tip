@@ -29,7 +29,7 @@ from .channel import send_debug
 from .command import command_error
 from .decorators import threaded
 from .etc import code, code_block, general_link, get_int, get_now, get_text_user, lang, thread
-from .file import delete_file, file_txt, save
+from .file import delete_file, file_json, file_txt, save
 from .markup import get_text_and_markup_tip
 from .telegram import get_group_info, send_document, send_message, send_report_message
 
@@ -246,6 +246,39 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
         result = True
     except Exception as e:
         logger.warning(f"Kws add error: {e}", exc_info=True)
+
+    return result
+
+
+def kws_clear(client: Client, message: Message, gid: int) -> bool:
+    # Remove all custom keywords
+    result = False
+
+    try:
+        # Basic data
+        cid = message.chat.id
+        mid = message.message_id
+
+        # Generate the text
+        group_name, group_link = get_group_info(client, gid)
+        caption = (f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
+                   f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
+                   f"{lang('action')}{lang('colon')}{code(lang('action_kws_clear'))}\n\n")
+
+        # Clear kws
+        file = file_json(glovar.keywords[gid].get("kws", {}))
+        glovar.keywords[gid]["kws"] = {}
+        save("keywords")
+
+        # Send the report message
+        send_document(client, cid, file, None, caption, mid)
+
+        # Delete the file
+        thread(delete_file, (file,))
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Kws clear error: {e}", exc_info=True)
 
     return result
 

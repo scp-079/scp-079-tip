@@ -86,6 +86,7 @@ error_kws_none: 不存在该关键词
 error_kws_occupied: 已存在设置会话
 error_kws_target_invalid: 关键词触发对象设置有误
 error_markup_invalid: 按钮设置有误
+error_need_confirm: 需要附加 yes 参数以确认
 error_none: 无数据
 
 # Group
@@ -143,6 +144,7 @@ action_close: 關閉入群通道
 action_hold: 設置保持置頂
 action_kws: 调整关键词设置
 action_kws_add: 添加关键词
+action_kws_clear: 清空所有关键词
 action_kws_edit: 编辑关键词
 action_kws_remove: 移除关键词
 action_kws_show: 显示关键词设置
@@ -156,7 +158,7 @@ action_welcome: 調整歡迎消息
 button_channel: 點擊加入
 description_channel: 請點擊下方按鈕加入討論群組。
 description_close: 根據群組的設置，暫時不會提供群組連結，請稍後再試。
-description_kws: 请开始使用命令来设置所指定群组的自定义关键词，自于群组中发起设置会话时计算，您共有 600 秒的时间来调整，逾时无效
+description_kws: 请开始使用命令来设置所指定群组的自定义关键词，自于群组中发起设置会话时计算，您共有 600 秒的时间来调整，逾时无效。
 description_ot: 離題內容請適度。
 description_rm: 請勿開 rm 命令類玩笑！
 description_welcome: 你好，$mention_name，欢迎加入本群组！
