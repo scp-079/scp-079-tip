@@ -603,8 +603,10 @@ def config_tip(client: Client, message: Message) -> bool:
         text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
                 f"{lang('action')}{lang('colon')}{code(lang(f'action_{command}'))}\n"
                 f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
-                f"{lang('last_editor')}{lang('colon')}{code(last_editor)}\n"
-                f"{lang('old_reply')}{lang('colon')}" + code("-" * 16) + "\n\n"
+                f"{lang('last_editor')}{lang('colon')}{code(last_editor)}\n\n"
+                f"{lang('reply_new')}{lang('colon')}" + code("-" * 16) + "\n\n"
+                f"{code_block(command_type)}\n\n"
+                f"{lang('reply_old')}{lang('colon')}" + code("-" * 16) + "\n\n"
                 f"{code_block(old_reply)}\n")
         send_report_message(20, client, gid, text)
 

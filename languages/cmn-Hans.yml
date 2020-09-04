@@ -188,8 +188,9 @@ kws_target_member: 群成员
 kws_total: 关键词总数
 last_editor: 上一个编辑者
 modified_by: 最后编辑者
-old_reply: 旧设置存档
 pinned_message: 置顶消息
+reply_new: 新设置
+reply_old: 旧设置存档
 rule_keyword: 群组自定义关键词
 statics_count: 已触发次数
 statics_today: 本日触发次数
