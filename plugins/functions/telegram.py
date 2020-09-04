@@ -175,7 +175,7 @@ def forward_messages(client: Client, cid: int, fid: int,
         )
     except FloodWait as e:
         raise e
-    except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, PeerIdInvalid):
+    except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, MessageIdInvalid, PeerIdInvalid):
         return False
     except Exception as e:
         logger.warning(f"Forward messages error: {e}", exc_info=True)
