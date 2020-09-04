@@ -80,14 +80,14 @@ def get_invite_link(client: Client, the_type: str, gid: int, manual: bool = Fals
         save("channels")
 
         # Check the config
-        if not enabled and the_type not in {"open", "resend"}:
+        if not enabled and the_type != "open":
             return False
 
         # Change the config
         if the_type == "close":
             glovar.configs[gid]["channel"] = False
             save("configs")
-        elif the_type not in {"open", "resend"}:
+        elif the_type == "open":
             glovar.configs[gid]["channel"] = True
             save("configs")
 
