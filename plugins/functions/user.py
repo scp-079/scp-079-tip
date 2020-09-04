@@ -28,12 +28,13 @@ from .. import glovar
 from .channel import forward_evidence, send_debug
 from .config import kws_action
 from .decorators import threaded
-from .etc import get_int, get_now, get_text_user, lang, random_str
+from .etc import get_int, get_now, lang, random_str
 from .file import save
 from .filters import is_class_d_user, is_keyworded_user
 from .group import delete_message
 from .markup import get_text_and_markup_tip
 from .telegram import kick_chat_member, restrict_chat_member, send_message, unban_chat_member
+from .tip import get_replaced
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -226,8 +227,8 @@ def terminate_user(client: Client, message: Message, data: dict) -> bool:
 
         # Get the markup
         text, markup = get_text_and_markup_tip(gid, reply)
-        text = get_text_user(text, user)
-        text = text.replace("$destruct_time", str(destruct))
+        text = get_replaced(text, gid, user, destruct)
+        text = text.replace("$evidence_link", result.link)
 
         # Send the tip
         result = send_message(client, gid, text, mid, markup)
