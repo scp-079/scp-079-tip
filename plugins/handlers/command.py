@@ -616,8 +616,7 @@ def config_tip(client: Client, message: Message) -> bool:
             gids=[gid],
             action=lang("config_change"),
             aid=aid,
-            config_type=command,
-            more=command_type
+            config_type=command
         )
 
         result = True
