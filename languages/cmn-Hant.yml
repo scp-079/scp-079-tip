@@ -177,6 +177,7 @@ kws_modes_case: 大小写敏感
 kws_modes_exact: 全匹配
 kws_modes_forward: 仅匹配被转发的消息
 kws_modes_include: 包含匹配
+kws_modes_join: 仅匹配入群消息
 kws_modes_name: 仅匹配名称
 kws_modes_pure: 去除名称中的干扰
 kws_raw: 设置存档

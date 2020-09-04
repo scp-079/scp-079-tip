@@ -581,7 +581,7 @@ def is_keyword_message(message: Message) -> dict:
             # Get result
             if ("name" in modes or "forward" in modes) and class_c_message:
                 continue
-            elif "name" in modes:
+            elif "name" in modes or "join" in modes:
                 result = is_keyword_name(message, key)
             elif "forward" in modes:
                 result = is_keyword_text(message, key, True)
@@ -617,8 +617,13 @@ def is_keyword_name(message: Message, key: str) -> dict:
         modes = keyword["modes"]
         exact = "exact" in modes or is_class_c(None, None, message)
         case = "case" in modes
+        join = "join" in modes
         pure = "pure" in modes
         forward = "forward" in modes
+
+        # Check join status
+        if join and not message.new_chat_members:
+            return {}
 
         # Get names
         user_name = get_full_name(message.from_user, True, pure, pure)

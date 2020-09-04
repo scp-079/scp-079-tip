@@ -152,13 +152,13 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
         modes = {m.strip() for m in text_list[2].split() if m.strip()}
 
         # Check the modes
-        if not modes or not all(m in {"include", "exact", "case", "name", "forward", "pure"} for m in modes):
+        if not modes or not all(m in {"include", "exact", "case", "name", "join", "forward", "pure"} for m in modes):
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_modes_invalid"), report=False, private=True)
         elif not any(m in {"include", "exact"} for m in modes):
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_modes_lack"), report=False, private=True)
-        elif "include" in modes and "exact" in modes:
+        elif ("include" in modes and "exact" in modes) or ("join" in modes and "forward" in modes):
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_modes_conflict"), report=False, private=True)
 
