@@ -953,10 +953,13 @@ def show_config(client: Client, message: Message) -> bool:
                 f"{lang('action')}{lang('colon')}{code(lang('action_show'))}\n"
                 f"{lang('type')}{lang('colon')}{code(lang(f'type_{command_type}'))}\n")
 
-        if count is not None:
+        if command_context == "old":
+            text += f"{lang('reply_old')}{lang('colon')}{code(True)}\n"
+
+        if command_context != "old" and count is not None:
             text += f"{lang('statics_count')}{lang('colon')}{code(str(count) + ' ' + lang('times'))}\n"
 
-        if today is not None:
+        if command_context != "old" and today is not None:
             text += f"{lang('statics_today')}{lang('colon')}{code(str(today) + ' ' +lang('times'))}\n"
 
         text += (f"{lang('result')}{lang('colon')}" + code("-" * 16) + "\n\n"
