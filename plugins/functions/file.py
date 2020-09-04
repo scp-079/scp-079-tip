@@ -17,10 +17,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from json import dump
+import json
+import pickle
 from os import remove
 from os.path import exists
-from pickle import dump
 from shutil import copyfile, move
 from typing import Any
 
@@ -66,7 +66,7 @@ def data_to_file(data: Any) -> str:
         file_path = get_new_path()
 
         with open(file_path, "wb") as f:
-            dump(data, f)
+            pickle.dump(data, f)
 
         result = file_path
     except Exception as e:
@@ -98,7 +98,7 @@ def file_json(data: dict) -> str:
         file = get_new_path(".json")
 
         with open(file, "w") as f:
-            dump(data, f, indent=4)
+            json.dump(data, f, indent=4)
 
         result = file
     except Exception as e:
@@ -182,7 +182,7 @@ def save(file: str) -> bool:
             return False
 
         with open(f"{glovar.PICKLE_BACKUP_PATH}/{file}", "wb") as f:
-            dump(eval(f"glovar.{file}"), f)
+            pickle.dump(eval(f"glovar.{file}"), f)
 
         result = copyfile(f"{glovar.PICKLE_BACKUP_PATH}/{file}", f"{glovar.PICKLE_PATH}/{file}")
     except Exception as e:
