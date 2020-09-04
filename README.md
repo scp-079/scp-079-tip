@@ -19,6 +19,7 @@ This bot is used to send tips.
 
 - examples
    - `config.ini` -> `../data/config/config.ini` : Configuration example
+   - `join.txt` -> `../data/config/join.txt` : Join template example
    - `start.txt` -> `../data/config/start.txt` : Start template example
 - plugins
     - functions
