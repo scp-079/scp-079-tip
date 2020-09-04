@@ -266,7 +266,21 @@ def kws_clear(client: Client, message: Message, gid: int) -> bool:
                    f"{lang('action')}{lang('colon')}{code(lang('action_kws_clear'))}\n\n")
 
         # Clear kws
-        file = file_json(glovar.keywords[gid].get("kws", {}))
+        keywords: Dict[str, Dict[str, Union[int, str, List[str], Set[str]]]]
+        keywords = deepcopy(glovar.keywords[gid].get("kws", {}))
+
+        for key in keywords:
+            for the_type in keywords[key]:
+                if not isinstance(keywords[key][the_type], set):
+                    continue
+
+                keywords[key][the_type] = list(keywords[key][the_type])
+
+        file = file_json(keywords)
+
+        if not file:
+            return False
+
         glovar.keywords[gid]["kws"] = {}
         save("keywords")
 
