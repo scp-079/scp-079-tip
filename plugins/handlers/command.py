@@ -117,6 +117,10 @@ def channel_bind(client: Client, message: Message) -> bool:
             return command_error(client, message, lang("action_bind"), lang("command_usage"),
                                  lang("error_channel_bind_reply"))
 
+        # Check command type
+        if get_command_type(message):
+            return command_error(client, message, lang("action_bind"), lang("command_usage"))
+
         # Try to send a message to the channel
         cid = r_message.forward_from_chat.id
 
