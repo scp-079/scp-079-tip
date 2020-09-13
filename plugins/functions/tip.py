@@ -215,7 +215,7 @@ def tip_saved(client: Client, gid: int, user: User, key: str) -> bool:
         keyword = glovar.keywords[gid]["kws"].get(key, {})
 
         # Check the keyword
-        if not keyword:
+        if not keyword or is_keyworded_user(gid, key, user.id):
             return False
 
         # Get the text and markup
