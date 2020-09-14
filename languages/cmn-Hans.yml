@@ -51,6 +51,7 @@ rm: RM 警告
 welcome: 欢迎信息
 keyword: 关键词
 white: 放行白名单
+equal: 平等模式
 cancel: 取消置顶
 hold: 保持置顶
 channel: 入群频道
@@ -88,6 +89,7 @@ error_kws_target_invalid: 关键词触发对象设置有误
 error_markup_invalid: 按钮设置有误
 error_need_confirm: 需要附加 yes 参数以确认
 error_none: 无数据
+error_regex: 正则表达式有误
 
 # Group
 group_id: 群组 ID
@@ -173,6 +175,7 @@ kws_actions_restrict_time: 禁言用户 {} 秒
 kws_destruct: 自毁时间
 kws_key: 关键词编号
 kws_modes: 关键词触发模式
+kws_modes_caption: 仅匹配媒体附文
 kws_modes_case: 大小写敏感
 kws_modes_exact: 全匹配
 kws_modes_forward: 仅匹配被转发的消息
@@ -180,6 +183,7 @@ kws_modes_include: 包含匹配
 kws_modes_join: 仅匹配入群消息
 kws_modes_name: 仅匹配名称
 kws_modes_pure: 去除名称中的干扰
+kws_modes_regex: 正则匹配
 kws_raw: 设置存档
 kws_target: 关键词触发对象
 kws_target_admin: 管理员

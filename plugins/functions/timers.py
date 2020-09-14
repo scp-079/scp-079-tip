@@ -53,7 +53,7 @@ def backup_files(client: Client) -> bool:
                 action="backup",
                 action_type="data",
                 data=file,
-                file=f"data/{file}"
+                file=f"{glovar.PICKLE_PATH}/{file}"
             )
             sleep(5)
 

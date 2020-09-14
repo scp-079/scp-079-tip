@@ -19,6 +19,7 @@
 import logging
 from copy import deepcopy
 from re import search
+from re2 import compile
 from typing import Dict, List, Set, Union
 
 from pyrogram import Client
@@ -68,7 +69,7 @@ def get_config_text(config: dict) -> str:
         result += f"{lang('config')}{lang('colon')}{code(default_text)}\n"
 
         # Others
-        for the_type in ["captcha", "alone", "clean", "ot", "rm", "welcome", "keyword", "white",
+        for the_type in ["captcha", "alone", "clean", "ot", "rm", "welcome", "keyword", "white", "equal",
                          "cancel", "hold", "channel", "resend"]:
             the_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get(the_type))
             result += f"{lang(the_type)}{lang('colon')}{code(the_text)}\n"
@@ -150,17 +151,30 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
 
         # Get modes
         modes = {m.strip() for m in text_list[2].split() if m.strip()}
+        valid_modes = {"include", "exact", "case", "name", "join", "forward", "caption", "pure", "regex"}
 
         # Check the modes
-        if not modes or not all(m in {"include", "exact", "case", "name", "join", "forward", "pure"} for m in modes):
+        if not modes or not all(m in valid_modes for m in modes):
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_modes_invalid"), report=False, private=True)
-        elif not any(m in {"include", "exact"} for m in modes):
+        elif not any(nm in modes for nm in ["join", "name"]) and "pure" in modes:
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
+                                 lang("error_kws_modes_invalid"), report=False, private=True)
+        elif not any(m in {"include", "exact", "regex"} for m in modes):
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_modes_lack"), report=False, private=True)
-        elif ("include" in modes and "exact" in modes) or ("join" in modes and "forward" in modes):
+        elif (len([m for m in modes if m in {"include", "exact", "regex"}]) > 1
+              or ("join" in modes and "forward" in modes)
+              or (any(nm in modes for nm in ["join", "name"]) and "caption" in modes)):
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_modes_conflict"), report=False, private=True)
+
+        # Check regex patterns
+        try:
+            "regex" in modes and [compile(word) for word in words]
+        except Exception as e:
+            return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
+                                 detail=str(e) and lang("error_regex"), report=False, private=True)
 
         # Get the actions
         actions = {a.strip() for a in text_list[3].split() if a.strip()}

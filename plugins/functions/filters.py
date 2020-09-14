@@ -18,6 +18,7 @@
 
 import logging
 import re
+import re2
 from copy import deepcopy
 from string import ascii_lowercase
 from typing import Match, Optional, Union
@@ -569,6 +570,8 @@ def is_keyword_message(message: Message) -> dict:
             actions = keywords[key]["actions"]
             target = keywords[key]["target"]
             class_c_message = is_class_c(None, None, message)
+            should_pass = is_should_pass(message, False)
+            should_pass_terminate = is_should_pass(message, True)
 
             # Check target
             if target == "member" and class_c_message:
@@ -579,7 +582,8 @@ def is_keyword_message(message: Message) -> dict:
                 continue
 
             # Get result
-            if ("name" in modes or "forward" in modes) and class_c_message:
+            if ((should_pass_terminate and "name" in modes and "forward" not in modes and not message.forward_date)
+                    or (should_pass and "forward" in modes)):
                 continue
             elif "name" in modes or "join" in modes:
                 result = is_keyword_name(message, key)
@@ -615,11 +619,12 @@ def is_keyword_name(message: Message, key: str) -> dict:
 
         # Get modes
         modes = keyword["modes"]
-        exact = "exact" in modes or is_class_c(None, None, message)
+        exact = "exact" in modes
         case = "case" in modes
         join = "join" in modes
         pure = "pure" in modes
         forward = "forward" in modes
+        regex = "regex" in modes
 
         # Check join status
         if join and not message.new_chat_members:
@@ -648,7 +653,7 @@ def is_keyword_name(message: Message, key: str) -> dict:
                 continue
 
             for word in words:
-                match = is_keyword_string(word, name, words[word], case)
+                match = is_keyword_string(word, name, words[word], case, regex)
 
                 if match:
                     break
@@ -676,7 +681,7 @@ def is_keyword_name(message: Message, key: str) -> dict:
     return result
 
 
-def is_keyword_string(word: str, text: str, exact: bool, case: bool) -> str:
+def is_keyword_string(word: str, text: str, exact: bool, case: bool, regex: bool) -> str:
     # Check if the keyword match the string
     result = ""
 
@@ -686,6 +691,11 @@ def is_keyword_string(word: str, text: str, exact: bool, case: bool) -> str:
 
         text = text.strip()
         origin = word
+
+        if regex and re2.search(word, text):
+            return origin
+        elif regex:
+            return ""
 
         if not case:
             word = word.lower()
@@ -723,10 +733,14 @@ def is_keyword_text(message: Message, key: str, forward: bool = False) -> dict:
         if not keyword:
             return {}
 
+        # Get config
+        equal_mode = glovar.configs[gid].get("equal", False)
+
         # Get modes
         modes = keyword["modes"]
-        exact = "exact" in modes or class_c_message
+        exact = "exact" in modes or (class_c_message and not equal_mode)
         case = "case" in modes
+        regex = "regex" in modes
 
         # Get text
         message_text = get_text(message, True)
@@ -740,9 +754,9 @@ def is_keyword_text(message: Message, key: str, forward: bool = False) -> dict:
 
         # Get match result
         for word in words:
-            match = is_keyword_string(word, message_text, words[word], case)
+            match = is_keyword_string(word, message_text, words[word], case, regex)
 
-            if match and not forward and message_text.lower() == word.lower() and class_c_message:
+            if match and not equal_mode and not forward and class_c_message and message_text.lower() == word.lower():
                 mid = (message.reply_to_message and message.reply_to_message.message_id) or message.message_id
                 break
             elif match:
@@ -1007,7 +1021,7 @@ def is_rm_text(message: Message) -> bool:
     return result
 
 
-def is_should_pass(message: Message) -> bool:
+def is_should_pass(message: Message, terminate: bool = False) -> bool:
     # Check if should pass the keyword detection
     result = False
 
@@ -1015,6 +1029,10 @@ def is_should_pass(message: Message) -> bool:
         # Basic data
         gid = message.chat.id
         uid = message.from_user.id
+
+        # Check config
+        if not terminate and glovar.configs[gid].get("equal", False):
+            return False
 
         # Check admins
         if is_class_c(None, None, message):

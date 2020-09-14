@@ -499,7 +499,7 @@ def config_directly(client: Client, message: Message) -> bool:
 
         # Check the command type
         if command_type not in {"captcha", "alone", "clean", "resend", "channel", "cancel", "hold", "keyword",
-                                "white", "ot", "rm", "welcome"}:
+                                "white", "equal", "ot", "rm", "welcome"}:
             return command_error(client, message, lang("config_change"), lang("command_type"))
 
         # New settings

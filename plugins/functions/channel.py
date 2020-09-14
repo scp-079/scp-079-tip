@@ -117,7 +117,7 @@ def forward_evidence(client: Client, message: Message, user: User, level: str, r
                 f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
                 f"{lang('level')}{lang('colon')}{code(level)}\n"
                 f"{lang('rule')}{lang('colon')}{code(rule)}\n")
-        text += f"{lang('keyword')}{lang('colon')}{code(keyword)}\n"
+        text += f"{lang('kws_key')}{lang('colon')}{code(keyword)}\n"
 
         # Additional information
         if message.game:
@@ -297,7 +297,7 @@ def share_data(client: Client, receivers: List[str], action: str, action_type: s
 
         # Delete the tmp file
         for f in {file, file_path}:
-            f.startswith("tmp/") and thread(delete_file, (f,))
+            f.startswith(f"{glovar.TMP_PATH}/") and thread(delete_file, (f,))
 
         result = bool(result)
     except Exception as e:

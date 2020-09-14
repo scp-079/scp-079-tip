@@ -30,7 +30,7 @@ from .config import kws_action
 from .decorators import threaded
 from .etc import get_int, get_now, get_replaced, lang, random_str
 from .file import save
-from .filters import is_class_d_user, is_keyworded_user
+from .filters import is_class_d_user, is_keyworded_user, is_should_pass
 from .group import delete_message
 from .markup import get_text_and_markup_tip
 from .telegram import kick_chat_member, restrict_chat_member, send_message, unban_chat_member
@@ -165,13 +165,15 @@ def terminate_user(client: Client, message: Message, data: dict) -> bool:
         user = get_user_from_message(message)
         uid = user.id
         key = data["key"]
-        word = data["word"]
         reply = data["reply"]
         actions = data["actions"]
         destruct = data["destruct"]
         forward = data["forward"]
         name = data["name"]
         now = get_now()
+
+        # Get pass status
+        should_pass = is_should_pass(message, True)
 
         # Check ignore status
         if is_class_d_user(uid) and gid not in glovar.ignore_ids["user"]:
@@ -187,11 +189,12 @@ def terminate_user(client: Client, message: Message, data: dict) -> bool:
             client=client,
             message=message,
             user=user,
-            level=action,
+            level=(should_pass and lang("auto_delete")) or action,
             rule=lang("rule_keyword"),
-            keyword=word,
+            keyword=key,
             forward=forward,
-            name=name
+            name=name,
+            more=(should_pass and lang("op_downgrade")) or ""
         )
 
         if not result:
@@ -201,7 +204,7 @@ def terminate_user(client: Client, message: Message, data: dict) -> bool:
         send_debug(
             client=client,
             gids=[gid],
-            action=action,
+            action=(should_pass and lang("auto_delete")) or action,
             uid=uid,
             em=result
         )
@@ -211,13 +214,13 @@ def terminate_user(client: Client, message: Message, data: dict) -> bool:
             delete_message(client, gid, mid)
 
         # Kick, ban, restrict the user
-        if "kick" in actions:
+        if not should_pass and "kick" in actions:
             kick_user(client, gid, uid)
-        elif "ban" in actions:
+        elif not should_pass and "ban" in actions:
             ban_user(client, gid, uid)
-        elif "restrict" in actions:
+        elif not should_pass and "restrict" in actions:
             restrict_user(client, gid, uid)
-        elif any(a.startswith("ban-") or a.startswith("restrict-") for a in actions):
+        elif not should_pass and any(a.startswith("ban-") or a.startswith("restrict-") for a in actions):
             time_user(client, gid, uid, now, actions)
 
         # Check reply action

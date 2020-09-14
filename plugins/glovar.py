@@ -345,6 +345,7 @@ default_config: Dict[str, Union[bool, int]] = {
     "welcome": True,
     "keyword": True,
     "white": False,
+    "equal": False,
     "cancel": False,
     "hold": False,
     "channel": False,
@@ -460,7 +461,7 @@ started_ids: Set[int] = set()
 
 updating: bool = False
 
-version: str = "0.2.4"
+version: str = "0.2.5"
 
 welcomed_ids: Dict[int, Set[int]] = {}
 # welcomed_ids = {
@@ -606,6 +607,7 @@ configs: Dict[int, Dict[str, Union[bool, int, str]]] = {}
 #         "welcome": True,
 #         "keyword": True,
 #         "white": True,
+#         "equal": False,
 #         "cancel": False,
 #         "hold": False,
 #         "channel": False,
