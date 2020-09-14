@@ -10,6 +10,7 @@ RUN apt update \
  && make test \
  && make install \
  && make testinstall \
+ && cd .. \
  && pip install --user -r requirements.txt
 
 FROM python:3.8.3-slim-buster AS build
