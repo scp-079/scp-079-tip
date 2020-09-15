@@ -10,6 +10,7 @@ RUN apt update \
  && make test \
  && make install \
  && make testinstall \
+ && ldconfig \
  && cd .. \
  && pip install --user -r requirements.txt
 

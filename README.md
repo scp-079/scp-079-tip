@@ -14,6 +14,7 @@ This bot is used to send tips.
 - Python 3.6 or higher
 - Debian 10: `sudo apt update && sudo apt install opencc pybind11-dev -y`
 - [Google RE2](https://github.com/google/re2) installed
+    - `git clone `
 - pip: `pip install -r requirements.txt`
 
 ## Files
