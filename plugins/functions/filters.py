@@ -756,7 +756,9 @@ def is_keyword_text(message: Message, key: str, forward: bool = False) -> dict:
         for word in words:
             match = is_keyword_string(word, message_text, words[word], case, regex)
 
-            if match and not equal_mode and not forward and class_c_message and message_text.lower() == word.lower():
+            if match and not equal_mode and class_c_message and regex and message_text.lower() != word.lower():
+                match = ""
+            elif match and not equal_mode and not forward and class_c_message and message_text.lower() == word.lower():
                 mid = (message.reply_to_message and message.reply_to_message.message_id) or message.message_id
                 break
             elif match:
