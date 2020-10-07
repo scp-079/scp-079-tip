@@ -151,7 +151,18 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
 
         # Get modes
         modes = {m.strip() for m in text_list[2].split() if m.strip()}
-        valid_modes = {"include", "exact", "case", "name", "join", "forward", "caption", "pure", "regex"}
+        valid_modes = {"include", "exact", "case", "regex", "pure",
+                       "forward", "user", "channel",
+                       "reply", "discuss", "strange",
+                       "mentioned",
+                       "service", "join", "leave", "name", "bio",
+                       "media", "edit", "url", "filename",
+                       "audio", "document", "photo", "sticker", "animation",
+                       "game", "score",
+                       "video", "voice", "video_note",
+                       "caption",
+                       "contact", "location", "venue",
+                       "web_page", "poll", "dice", "via_bot", "reply_markup"}
 
         # Check the modes
         if not modes or not all(m in valid_modes for m in modes):
@@ -163,9 +174,7 @@ def kws_add(client: Client, message: Message, gid: int, key: str, text: str, the
         elif not any(m in {"include", "exact", "regex"} for m in modes):
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_modes_lack"), report=False, private=True)
-        elif (len([m for m in modes if m in {"include", "exact", "regex"}]) > 1
-              or ("join" in modes and "forward" in modes)
-              or (any(nm in modes for nm in ["join", "name"]) and "caption" in modes)):
+        elif len([m for m in modes if m in {"include", "exact", "regex"}]) > 1:
             return command_error(client, message, lang(f"action_kws_{the_type}"), lang("command_para"),
                                  lang("error_kws_modes_conflict"), report=False, private=True)
 
