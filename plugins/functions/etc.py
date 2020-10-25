@@ -32,7 +32,7 @@ from unicodedata import normalize
 from cryptography.fernet import Fernet
 from opencc import OpenCC
 from pyrogram.errors import FloodWait
-from pyrogram.types import Message, User
+from pyrogram.types import Contact, Message, User
 
 from .. import glovar
 
@@ -232,12 +232,13 @@ def get_forward_name(message: Message, normal: bool = False, printable: bool = F
     return result
 
 
-def get_full_name(user: User, normal: bool = False, printable: bool = False, pure: bool = False) -> str:
+def get_full_name(user: Union[Contact, User], normal: bool = False, printable: bool = False,
+                  pure: bool = False) -> str:
     # Get user's full name
     result = ""
 
     try:
-        if not user or user.is_deleted:
+        if not user or (isinstance(user, User) and user.is_deleted):
             return ""
 
         result = user.first_name
