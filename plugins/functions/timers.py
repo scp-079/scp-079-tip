@@ -27,8 +27,8 @@ from .channel import share_data, share_regex_count
 from .decorators import threaded
 from .etc import code, general_link, get_now, get_readable_time, lang, thread
 from .file import data_to_file, move_file, save
-from .group import delete_message, leave_group, save_admins
-from .telegram import get_admins, get_group_info, send_message
+from .group import delete_message, get_pinned, leave_group, save_admins
+from .telegram import get_admins, get_group_info, get_members, send_message
 from .tip import get_invite_link
 
 # Enable logging
@@ -422,6 +422,66 @@ def update_admins(client: Client) -> bool:
         logger.warning(f"Update admin error: {e}", exc_info=True)
     finally:
         glovar.locks["admin"].release()
+
+    return result
+
+
+def update_members(client: Client) -> bool:
+    # Update members ids of groups
+    result = False
+
+    try:
+        for gid in list(glovar.message_ids):
+            try:
+                # Loop group members
+                members = get_members(client, gid)
+
+                # Check members
+                if not members:
+                    continue
+
+                # Get member ids
+                member_ids = {member.user.id for member in members}
+
+                # Check member ids
+                if not member_ids:
+                    continue
+
+                # Save member ids
+                glovar.member_ids[gid] = member_ids
+                save("member_ids")
+            except Exception as e:
+                logger.warning(f"Update members in {gid} error: {e}", exc_info=True)
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Update members error: {e}", exc_info=True)
+
+    return result
+
+
+def update_pins(client: Client) -> bool:
+    # Update pinned messages in groups
+    result = False
+
+    try:
+        for gid in list(glovar.pinned_ids):
+            # Check flood status
+            if gid in glovar.flooded_ids:
+                continue
+
+            # Get pinned message
+            pinned_message = get_pinned(client, gid, False)
+
+            # Check pinned message
+            if not pinned_message or pinned_message.from_user.id in glovar.bot_ids:
+                continue
+
+            # Save pinned message
+            glovar.pinned_ids[gid] = pinned_message.message_id
+            save("pinned_ids")
+    except Exception as e:
+        logger.warning(f"Update pins error: {e}", exc_info=True)
 
     return result
 

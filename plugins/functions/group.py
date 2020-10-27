@@ -20,7 +20,7 @@ import logging
 from typing import List, Optional
 
 from pyrogram import Client
-from pyrogram.types import ChatMember, InlineKeyboardMarkup, InlineKeyboardButton, Message
+from pyrogram.types import Chat, ChatMember, InlineKeyboardMarkup, InlineKeyboardButton, Message
 
 from .. import glovar
 from .decorators import threaded
@@ -28,7 +28,7 @@ from .etc import code, lang, mention_id, mention_text, thread
 from .file import save
 from .ids import init_group_id
 from .markup import get_text_and_markup
-from .telegram import delete_messages, get_chat_member, leave_chat, send_message
+from .telegram import delete_messages, get_chat, get_chat_member, leave_chat, send_message
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -47,6 +47,28 @@ def delete_message(client: Client, gid: int, mid: int) -> bool:
         result = delete_messages(client, gid, mids)
     except Exception as e:
         logger.warning(f"Delete message error: {e}", exc_info=True)
+
+    return result
+
+
+def get_group(client: Client, gid: int, cache: bool = True) -> Optional[Chat]:
+    # Get the group
+    result = None
+
+    try:
+        the_cache = glovar.chats.get(gid)
+
+        if cache and the_cache:
+            return the_cache
+
+        result = get_chat(client, gid)
+
+        if not result:
+            return result
+
+        glovar.chats[gid] = result
+    except Exception as e:
+        logger.warning(f"Get group error: {e}", exc_info=True)
 
     return result
 
@@ -76,6 +98,23 @@ def get_member(client: Client, gid: int, uid: int, cache: bool = True) -> Option
     return result
 
 
+def get_pinned(client: Client, gid: int, cache: bool = True) -> Optional[Message]:
+    # Get group's pinned message
+    result = None
+
+    try:
+        group = get_group(client, gid, cache)
+
+        if not group or not group.pinned_message:
+            return None
+
+        result = group.pinned_message
+    except Exception as e:
+        logger.warning(f"Get pinned error: {e}", exc_info=True)
+
+    return result
+
+
 def leave_group(client: Client, gid: int, reason: str = "") -> bool:
     # Leave a group, clear it's data
     result = False
@@ -94,6 +133,9 @@ def leave_group(client: Client, gid: int, reason: str = "") -> bool:
 
         glovar.flooded_ids.discard(gid)
         save("flooded_ids")
+
+        glovar.member_ids.pop(gid, set())
+        save("member_ids")
 
         glovar.message_ids.pop(gid, {})
         save("message_ids")

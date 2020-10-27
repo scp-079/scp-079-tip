@@ -525,6 +525,11 @@ lack_group_ids: Set[int] = set()
 left_group_ids: Set[int] = set()
 # left_group_ids = {-10012345678}
 
+member_ids: Dict[int, Set[int]] = {}
+# member_ids = {
+#     -10012345678: {12345678}
+# }
+
 message_ids: Dict[int, Dict[str, Union[Dict[str, Tuple[int, int]], Tuple[int, int]]]] = {}
 # message_ids = {
 #     -10012345678: {
@@ -701,8 +706,8 @@ for word_type in regex:
 
 # Load data
 file_list: List[str] = ["admin_ids", "bad_ids", "flooded_ids", "group_ids", "ignore_ids", "lack_group_ids",
-                        "left_group_ids", "message_ids", "pinned_ids", "trust_ids", "user_ids", "watch_ids",
-                        "white_ids",
+                        "left_group_ids", "member_ids", "message_ids", "pinned_ids", "trust_ids", "user_ids",
+                        "watch_ids", "white_ids",
                         "channels", "configs", "current", "keywords", "ots", "rms", "starts", "timeout_words",
                         "token", "welcomes"]
 file_list += [f"{f}_words" for f in regex]

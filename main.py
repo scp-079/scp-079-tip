@@ -28,7 +28,7 @@ from plugins import glovar
 from plugins.functions.etc import delay
 from plugins.functions.timers import (backup_files, interval_min_01, interval_min_10, log_rotation, resend_link,
                                       reset_count, reset_data, send_count, share_regex_timeout, update_admins,
-                                      update_status)
+                                      update_members, update_status)
 from plugins.start import init, renew
 
 # Enable logging
@@ -59,6 +59,8 @@ scheduler.add_job(interval_min_10, "interval", minutes=10)
 scheduler.add_job(update_status, "cron", [app, "awake"], minute=30)
 scheduler.add_job(reset_count, "cron", hour=0)
 scheduler.add_job(resend_link, "cron", [app], hour=1)
+scheduler.add_job(update_members, "cron", [app], hour=2)
+scheduler.add_job(update_pins, "cron", [app], hour=3)
 scheduler.add_job(share_regex_timeout, "cron", [app], hour=7, minute=10)
 scheduler.add_job(backup_files, "cron", [app], hour=20)
 scheduler.add_job(send_count, "cron", [app], hour=21)

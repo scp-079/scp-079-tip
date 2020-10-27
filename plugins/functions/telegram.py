@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import Iterable, List, Optional, Union
+from typing import Generator, Iterable, List, Optional, Union
 
 from pyrogram import Client
 from pyrogram.errors import (ButtonDataInvalid, ButtonUrlInvalid, ChatAdminRequired, ChatNotModified, ChannelInvalid,
@@ -283,6 +283,21 @@ def get_me(client: Client) -> Optional[User]:
         raise e
     except Exception as e:
         logger.warning(f"Get me error: {e}", exc_info=True)
+
+    return result
+
+
+@retry
+def get_members(client: Client, cid: int, query: str = "all") -> Optional[Generator[ChatMember, None, None]]:
+    # Get a members generator of a chat
+    result = None
+
+    try:
+        result = client.iter_chat_members(chat_id=cid, filter=query)
+    except FloodWait as e:
+        raise e
+    except Exception as e:
+        logger.warning(f"Get members in {cid} error: {e}", exc_info=True)
 
     return result
 
