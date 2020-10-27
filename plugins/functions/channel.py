@@ -234,7 +234,24 @@ def send_debug(client: Client, gids: List[int], action: str,
         if more:
             text += f"{lang('more')}{lang('colon')}{code(more)}\n"
 
-        result = bool(send_message(client, glovar.debug_channel_id, text))
+        result = send_message(client, glovar.debug_channel_id, text)
+
+        if not result or not em:
+            return False
+
+        share_data(
+            client=client,
+            receivers=["MANAGE"],
+            action="add",
+            action_type="debug",
+            data={
+                "channel_id": glovar.tip_channel_id,
+                "message_id": em.message_id,
+                "debug_id": result.message_id
+            }
+        )
+
+        result = True
     except Exception as e:
         logger.warning(f"Send debug error: {e}", exc_info=True)
 
