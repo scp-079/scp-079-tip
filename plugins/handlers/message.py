@@ -137,6 +137,8 @@ def check_join(client: Client, message: Message) -> bool:
         detection = is_keyword_message(message)
 
         if detection:
+            glovar.member_ids[gid].add(user.id)
+            save("member_ids")
             return tip_keyword(client, message, detection)
 
         # Check config
@@ -150,6 +152,10 @@ def check_join(client: Client, message: Message) -> bool:
         # Check group status
         if gid in glovar.flooded_ids:
             return False
+
+        # Add to joined members
+        glovar.member_ids[gid].add(user.id)
+        save("member_ids")
 
         # User status
         if is_watch_user(user, "ban", now):

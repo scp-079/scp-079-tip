@@ -107,6 +107,9 @@ def receive_help_welcome(client: Client, data: dict) -> bool:
             if not init_group_id(group_id):
                 continue
 
+            glovar.member_ids[group_id].add(user_id)
+            save("member_ids")
+
             if not glovar.configs[group_id].get("welcome"):
                 continue
 
