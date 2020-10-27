@@ -448,7 +448,9 @@ def update_members(client: Client) -> bool:
                     continue
 
                 # Save member ids
-                glovar.member_ids[gid] = member_ids
+                with glovar.locks["message"]:
+                    glovar.member_ids[gid] = member_ids
+
                 save("member_ids")
             except Exception as e:
                 logger.warning(f"Update members in {gid} error: {e}", exc_info=True)
