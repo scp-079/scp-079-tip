@@ -28,7 +28,7 @@ from plugins import glovar
 from plugins.functions.etc import delay
 from plugins.functions.timers import (backup_files, interval_min_01, interval_min_10, log_rotation, resend_link,
                                       reset_count, reset_data, send_count, share_regex_timeout, update_admins,
-                                      update_members, update_status)
+                                      update_members, update_pins, update_status)
 from plugins.start import init, renew
 
 # Enable logging
