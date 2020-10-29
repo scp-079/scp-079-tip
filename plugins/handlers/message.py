@@ -28,7 +28,7 @@ from ..functions.file import save
 from ..functions.filters import (aio, authorized_group, declared_message, exchange_channel, from_user, hide_channel,
                                  is_declared_message, is_high_score_user, is_keyword_message, is_nospam_message,
                                  is_nospam_join, is_rm_text, is_user_class_d, is_watch_user, new_group, test_group)
-from ..functions.group import leave_group, leave_unauthorized, join_hint, save_admins
+from ..functions.group import leave_group, leave_unauthorized, join_hint, pin_cancel, pin_hold, save_admins
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import (receive_add_bad, receive_captcha_flood, receive_config_commit, receive_clear_data,
                                  receive_config_reply, receive_config_show, receive_declared_message, receive_group_id,
@@ -36,7 +36,7 @@ from ..functions.receive import (receive_add_bad, receive_captcha_flood, receive
                                  receive_refresh, receive_remove_bad, receive_remove_score, receive_remove_watch,
                                  receive_remove_white, receive_white_users, receive_rollback, receive_text_data,
                                  receive_user_score, receive_watch_user)
-from ..functions.telegram import get_admins, pin_chat_message, send_message, unpin_chat_message
+from ..functions.telegram import get_admins, send_message
 from ..functions.timers import backup_files, send_count
 from ..functions.tip import tip_keyword, tip_rm, tip_welcome
 
@@ -313,7 +313,7 @@ def pin_process(client: Client, message: Message) -> bool:
 
         # Cancel the pinned message
         if glovar.configs[gid].get("cancel", False):
-            return delay(3, unpin_chat_message, [client, gid])
+            return delay(3, pin_cancel, [client, gid])
 
         # Hold the pinned message
         hold = glovar.configs[gid].get("hold", False)
@@ -324,7 +324,7 @@ def pin_process(client: Client, message: Message) -> bool:
             return False
 
         # Pin the message
-        delay(3, pin_chat_message, [client, gid, mid])
+        delay(3, pin_hold, [client, gid, mid])
 
         result = True
     except Exception as e:

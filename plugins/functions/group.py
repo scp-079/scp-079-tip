@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pyrogram import Client
 from pyrogram.types import Chat, ChatMember, InlineKeyboardMarkup, InlineKeyboardButton, Message
@@ -28,7 +28,8 @@ from .etc import code, lang, mention_id, mention_text, thread
 from .file import save
 from .ids import init_group_id
 from .markup import get_text_and_markup
-from .telegram import delete_messages, get_chat, get_chat_member, leave_chat, send_message
+from .telegram import (delete_messages, get_chat, get_chat_member, leave_chat, pin_chat_message, send_message,
+                       unpin_chat_message)
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -250,6 +251,44 @@ def join_hint(client: Client, gid: int) -> bool:
         send_message(client, gid, text, None, markup)
     except Exception as e:
         logger.warning(f"Join hint error: {e}", exc_info=True)
+
+    return result
+
+
+def pin_cancel(client: Client, cid: int, mid: int = 0) -> Union[bool, int]:
+    # Unpin all the pinned messages
+    result = False
+
+    try:
+        unpin_chat_message(client, cid)
+        chat = get_chat(client, cid)
+
+        if chat and chat.pinned_message and chat.pinned_message.message_id == mid:
+            return mid
+
+        if not chat or not chat.pinned_message:
+            return True
+
+        return pin_cancel(client, cid)
+    except Exception as e:
+        logger.warning(f"Pin cancel error: {e}", exc_info=True)
+
+    return result
+
+
+def pin_hold(client: Client, gid: int, mid: int) -> bool:
+    # Hold the pinned message
+    result = False
+
+    try:
+        pid = pin_cancel(client, gid, mid)
+
+        if pid == mid:
+            return True
+
+        result = pin_chat_message(client, gid, mid)
+    except Exception as e:
+        logger.warning(f"Pin hold error: {e}", exc_info=True)
 
     return result
 
