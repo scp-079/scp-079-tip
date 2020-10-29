@@ -472,6 +472,10 @@ def update_pins(client: Client) -> bool:
             if gid in glovar.flooded_ids:
                 continue
 
+            # Check config
+            if glovar.configs[gid].get("cancel", False) or glovar.configs[gid].get("hold", False):
+                continue
+
             # Get pinned message
             pinned_message = get_pinned(client, gid, False)
 
