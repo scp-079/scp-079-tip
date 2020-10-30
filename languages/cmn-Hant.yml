@@ -143,6 +143,7 @@ user_score: 用戶得分
 action_bind: 綁定頻道
 action_channel: 調整邀請提示
 action_close: 關閉入群通道
+action_find_pin: 查询置顶消息
 action_hold: 設置保持置頂
 action_kws: 调整关键词设置
 action_kws_add: 添加关键词

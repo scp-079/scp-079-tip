@@ -270,7 +270,11 @@ def pin_cancel(client: Client, cid: int, mid: int = 0, first: bool = True) -> Un
             return mid
 
         # Unpin and check again
-        unpin_chat_message(client, cid)
+        r = unpin_chat_message(client, cid)
+
+        if not r:
+            return False
+
         chat = get_chat(client, cid)
 
         if chat and chat.pinned_message and chat.pinned_message.message_id == mid:

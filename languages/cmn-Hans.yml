@@ -143,6 +143,7 @@ user_score: 用户得分
 action_bind: 绑定频道
 action_channel: 调整邀请提示
 action_close: 关闭入群通道
+action_find_pin: 查询置顶消息
 action_hold: 设置保持置顶
 action_kws: 调整关键词设置
 action_kws_add: 添加关键词

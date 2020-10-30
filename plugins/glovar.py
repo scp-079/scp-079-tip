@@ -296,6 +296,7 @@ all_commands: List[str] = [
     "clear",
     "config",
     "config_tip",
+    "find_pin",
     "hold",
     "keyword",
     "keywords",

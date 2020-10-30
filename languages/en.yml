@@ -143,6 +143,7 @@ user_score: User Score
 action_bind: Bind Channel
 action_channel: Adjust Invite Text
 action_close: Close Group Channel
+action_find_pin: 查询置顶消息
 action_hold: Hold the Pinned Message
 action_kws: 调整关键词设置
 action_kws_add: 添加关键词

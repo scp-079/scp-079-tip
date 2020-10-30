@@ -37,8 +37,8 @@ from ..functions.filters import (authorized_group, class_e, from_user, is_class_
                                  test_group)
 from ..functions.markup import get_text_and_markup, get_text_and_markup_tip
 from ..functions.program import restart_program, update_program
-from ..functions.telegram import (forward_messages, get_group_info, get_start, pin_chat_message, send_message,
-                                  send_report_message)
+from ..functions.telegram import (forward_messages, get_chat, get_group_info, get_start, pin_chat_message,
+                                  send_message, send_report_message)
 from ..functions.tip import get_invite_link, tip_ot, tip_rm, tip_welcome
 from ..functions.user import add_start, get_user_from_message
 
@@ -671,6 +671,49 @@ def edit(client: Client, message: Message) -> bool:
         logger.warning(f"Edit error: {e}", exc_info=True)
     finally:
         glovar.locks["config"].release()
+
+    return result
+
+
+@Client.on_message(filters.incoming & filters.group & filters.command(["find_pin"], glovar.prefix)
+                   & authorized_group
+                   & from_user)
+def find_pin(client: Client, message: Message) -> bool:
+    # Hold the pinned message
+    result = False
+
+    glovar.locks["config"].acquire()
+
+    try:
+        # Basic data
+        gid = message.chat.id
+        aid = message.from_user.id
+
+        # Check permission
+        if not is_class_c(None, None, message):
+            return False
+
+        # Get the chat
+        chat = get_chat(client, gid)
+
+        if not chat or not chat.pinned_message:
+            return command_error(client, message, lang("action_find_pin"), lang("error_none"))
+
+        # Generate the text
+        text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('action_find_pin'))}\n"
+                f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n"
+                f"{lang('pinned_message')}{lang('colon')}{chat.pinned_message and chat.pinned_message.link}\n")
+
+        # Send the report message
+        send_report_message(60, client, gid, text)
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Find pin error: {e}", exc_info=True)
+    finally:
+        glovar.locks["config"].release()
+        delete_normal_command(client, message)
 
     return result
 
