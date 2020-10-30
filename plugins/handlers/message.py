@@ -337,7 +337,6 @@ def pin_process(client: Client, message: Message) -> bool:
 
 @Client.on_message(filters.incoming & filters.group & filters.pinned_message
                    & authorized_group
-                   & from_user
                    & ~declared_message)
 def pin_record(_: Client, message: Message) -> bool:
     # Record pinned message

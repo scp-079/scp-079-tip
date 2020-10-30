@@ -49,6 +49,7 @@ def answer_callback(client: Client, callback_query_id: str, text: str, show_aler
             show_alert=show_alert
         )
     except FloodWait as e:
+        logger.warning(f"Answer callback to {callback_query_id} - Sleep for {e.x} second(s)")
         raise e
     except QueryIdInvalid:
         return False
@@ -85,6 +86,7 @@ def delete_messages_100(client: Client, cid: int, mids: Iterable[int]) -> Option
         mids = list(mids)
         result = client.delete_messages(chat_id=cid, message_ids=mids)
     except FloodWait as e:
+        logger.warning(f"Delete message in {cid} - Sleep for {e.x} second(s)")
         raise e
     except MessageDeleteForbidden:
         return False
@@ -102,6 +104,7 @@ def download_media(client: Client, file_id: str, file_ref: str, file_path: str) 
     try:
         result = client.download_media(message=file_id, file_ref=file_ref, file_name=file_path)
     except FloodWait as e:
+        logger.warning(f"Download media {file_id} - Sleep for {e.x} second(s)")
         raise e
     except Exception as e:
         logger.warning(f"Download media {file_id} to {file_path} error: {e}", exc_info=True)
@@ -128,6 +131,7 @@ def edit_message_text(client: Client, cid: int, mid: int, text: str,
             reply_markup=markup
         )
     except FloodWait as e:
+        logger.warning(f"Edit message {mid} text in {cid} - Sleep for {e.x} second(s)")
         raise e
     except (ButtonDataInvalid, ButtonUrlInvalid):
         logger.warning(f"Edit message {mid} text in {cid} - invalid markup: {markup}")
@@ -150,6 +154,7 @@ def export_chat_invite_link(client: Client, cid: int) -> Union[bool, str, None]:
     try:
         result = client.export_chat_invite_link(chat_id=cid)
     except FloodWait as e:
+        logger.warning(f"Export chat invite link in {cid} - Sleep for {e.x} second(s)")
         raise e
     except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, PeerIdInvalid) as e:
         logger.warning(f"Export chat invite link in {cid} error: {e}")
@@ -174,6 +179,7 @@ def forward_messages(client: Client, cid: int, fid: int,
             disable_notification=True
         )
     except FloodWait as e:
+        logger.warning(f"Forward message from {fid} to {cid} - Sleep for {e.x} second(s)")
         raise e
     except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, MessageIdInvalid, PeerIdInvalid):
         return False
@@ -196,6 +202,7 @@ def get_admins(client: Client, cid: int) -> Union[bool, List[ChatMember], None]:
 
         result = client.get_chat_members(chat_id=cid, filter="administrators")
     except FloodWait as e:
+        logger.warning(f"Get admins in {cid} - Sleep for {e.x} second(s)")
         raise e
     except (AttributeError, ChannelInvalid, ChannelPrivate, PeerIdInvalid):
         return False
@@ -213,6 +220,7 @@ def get_chat(client: Client, cid: Union[int, str]) -> Union[Chat, ChatPreview, N
     try:
         result = client.get_chat(chat_id=cid)
     except FloodWait as e:
+        logger.warning(f"Get chat {cid} - Sleep for {e.x} second(s)")
         raise e
     except (ChannelInvalid, ChannelPrivate, PeerIdInvalid):
         return None
@@ -230,6 +238,7 @@ def get_chat_member(client: Client, cid: int, uid: int) -> Union[bool, ChatMembe
     try:
         result = client.get_chat_member(chat_id=cid, user_id=uid)
     except FloodWait as e:
+        logger.warning(f"Get chat member {uid} in {cid} - Sleep for {e.x} second(s)")
         raise e
     except (ChannelInvalid, ChannelPrivate, PeerIdInvalid, UserNotParticipant):
         result = False
@@ -280,6 +289,7 @@ def get_me(client: Client) -> Optional[User]:
     try:
         result = client.get_me()
     except FloodWait as e:
+        logger.warning(f"Get me - Sleep for {e.x} second(s)")
         raise e
     except Exception as e:
         logger.warning(f"Get me error: {e}", exc_info=True)
@@ -295,6 +305,7 @@ def get_members(client: Client, cid: int, query: str = "all") -> Optional[Genera
     try:
         result = client.iter_chat_members(chat_id=cid, filter=query)
     except FloodWait as e:
+        logger.warning(f"Get members in {cid} - Sleep for {e.x} second(s)")
         raise e
     except Exception as e:
         logger.warning(f"Get members in {cid} error: {e}", exc_info=True)
@@ -332,6 +343,7 @@ def get_user_full(client: Client, uid: int) -> Optional[UserFull]:
 
         result = client.send(GetFullUser(id=user_id))
     except FloodWait as e:
+        logger.warning(f"Get user {uid} full - Sleep for {e.x} second(s)")
         raise e
     except Exception as e:
         logger.warning(f"Get user {uid} full error: {e}", exc_info=True)
@@ -373,6 +385,7 @@ def leave_chat(client: Client, cid: int, delete: bool = False) -> bool:
     try:
         result = client.leave_chat(chat_id=cid, delete=delete) or True
     except FloodWait as e:
+        logger.warning(f"Leave chat {cid} - Sleep for {e.x} second(s)")
         raise e
     except (ChannelInvalid, ChannelPrivate, PeerIdInvalid):
         return False
@@ -394,6 +407,7 @@ def pin_chat_message(client: Client, cid: int, mid: int) -> Optional[bool]:
             disable_notification=True
         )
     except FloodWait as e:
+        logger.warning(f"Pin chat message {mid} in {cid} - Sleep for {e.x} second(s)")
         raise e
     except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, ChatNotModified, PeerIdInvalid):
         return False
@@ -411,6 +425,7 @@ def resolve_peer(client: Client, pid: Union[int, str]) -> Union[bool, InputChann
     try:
         result = client.resolve_peer(pid)
     except FloodWait as e:
+        logger.warning(f"Resolve peer {pid} - Sleep for {e.x} second(s)")
         raise e
     except (PeerIdInvalid, UsernameInvalid, UsernameNotOccupied):
         return False
@@ -467,6 +482,7 @@ def send_document(client: Client, cid: int, document: str, file_ref: str = None,
             reply_markup=markup
         )
     except FloodWait as e:
+        logger.warning(f"Send document {document} to {cid} - Sleep for {e.x} second(s)")
         raise e
     except (ButtonDataInvalid, ButtonUrlInvalid):
         logger.warning(f"Send document {document} to {cid} - invalid markup: {markup}")
@@ -497,6 +513,7 @@ def send_message(client: Client, cid: int, text: str, mid: int = None,
             reply_markup=markup
         )
     except FloodWait as e:
+        logger.warning(f"Send message to {cid} - Sleep for {e.x} second(s)")
         raise e
     except (ButtonDataInvalid, ButtonUrlInvalid):
         logger.warning(f"Send message to {cid} - invalid markup: {markup}")
@@ -528,6 +545,7 @@ def send_photo(client: Client, cid: int, photo: str, file_ref: str = None, capti
             reply_markup=markup
         )
     except FloodWait as e:
+        logger.warning(f"Send photo {photo} to {cid} - Sleep for {e.x} second(s)")
         raise e
     except (ButtonDataInvalid, ButtonUrlInvalid):
         logger.warning(f"Send photo {photo} to {cid} - invalid markup: {markup}")
@@ -574,6 +592,7 @@ def unban_chat_member(client: Client, cid: int, uid: Union[int, str]) -> Optiona
     try:
         result = client.unban_chat_member(chat_id=cid, user_id=uid)
     except FloodWait as e:
+        logger.warning(f"Unban chat member {uid} in {cid} - Sleep for {e.x} second(s)")
         raise e
     except Exception as e:
         logger.warning(f"Unban chat member {uid} in {cid} error: {e}", exc_info=True)
@@ -591,10 +610,11 @@ def unpin_chat_message(client: Client, cid: int) -> Optional[bool]:
             chat_id=cid
         )
     except FloodWait as e:
+        logger.warning(f"Unpin chat message in {cid} - Sleep for {e.x} second(s)")
         raise e
     except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, ChatNotModified, PeerIdInvalid):
         return False
     except Exception as e:
-        logger.warning(f"Unpin chat message error: {e}", exc_info=True)
+        logger.warning(f"Unpin chat message in {cid} error: {e}", exc_info=True)
 
     return result
