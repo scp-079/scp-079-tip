@@ -384,6 +384,44 @@ def version_0_2_0() -> bool:
     return result
 
 
+def version_0_2_6() -> bool:
+    # Version 0.2.6
+    result = False
+
+    try:
+        if exists("data/pickle/current"):
+            with open("data/pickle/current", "rb") as f:
+                current = pickle.load(f)
+
+            if current >= "0.2.6":
+                return False
+
+        if not exists("data/pickle/channels"):
+            return False
+
+        with open("data/pickle/channels", "rb") as f:
+            channels = pickle.load(f)
+
+        for gid in list(channels):
+            cid = channels[gid].get("cid")
+
+            if cid is not None and isinstance(cid, int):
+                continue
+
+            channels[gid]["cid"] = 0
+
+        with open("data/pickle/channels", "wb") as f:
+            pickle.dump(channels, f)
+
+        print("Version 0.2.6 updated!")
+
+        result = True
+    except Exception as e:
+        print(f"Version 0.2.6 error: {e}")
+
+    return result
+
+
 def version_control() -> bool:
     # Version control
     result = False
@@ -394,6 +432,8 @@ def version_control() -> bool:
         version_0_1_9()
 
         version_0_2_0()
+
+        version_0_2_6()
 
         result = True
     except Exception as e:
