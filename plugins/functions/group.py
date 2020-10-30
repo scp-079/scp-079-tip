@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from time import sleep
 from typing import List, Optional, Union
 
 from pyrogram import Client
@@ -263,6 +264,10 @@ def pin_cancel(client: Client, cid: int, mid: int = 0, first: bool = True) -> Un
         # First time
         if mid and first:
             chat = get_chat(client, cid)
+            sleep(1)
+        elif mid:
+            sleep(1)
+            chat = None
         else:
             chat = None
 
@@ -274,6 +279,8 @@ def pin_cancel(client: Client, cid: int, mid: int = 0, first: bool = True) -> Un
 
         if not r:
             return False
+        else:
+            sleep(1)
 
         chat = get_chat(client, cid)
 
