@@ -166,8 +166,8 @@ def export_chat_invite_link(client: Client, cid: int) -> Union[bool, str, None]:
 
 
 @retry
-def forward_messages(client: Client, cid: int, fid: int,
-                     mids: Union[int, Iterable[int]]) -> Union[bool, Message, List[Message], None]:
+def forward_messages(client: Client, cid: int, fid: int, mids: Union[int, Iterable[int]],
+                     as_copy: bool = False) -> Union[bool, Message, List[Message], None]:
     # Forward messages of any kind
     result = None
 
@@ -176,7 +176,8 @@ def forward_messages(client: Client, cid: int, fid: int,
             chat_id=cid,
             from_chat_id=fid,
             message_ids=mids,
-            disable_notification=True
+            disable_notification=True,
+            as_copy=as_copy
         )
     except FloodWait as e:
         logger.warning(f"Forward message from {fid} to {cid} - Sleep for {e.x} second(s)")
@@ -298,7 +299,7 @@ def get_me(client: Client) -> Optional[User]:
 
 
 @retry
-def get_members(client: Client, cid: int, query: str = "all") -> Optional[Generator[ChatMember, None, None]]:
+def get_members(client: Client, cid: int, query: str = "all") -> Union[bool, Generator[ChatMember, None, None], None]:
     # Get a members generator of a chat
     result = None
 
@@ -307,6 +308,8 @@ def get_members(client: Client, cid: int, query: str = "all") -> Optional[Genera
     except FloodWait as e:
         logger.warning(f"Get members in {cid} - Sleep for {e.x} second(s)")
         raise e
+    except (AttributeError, ChannelInvalid, ChannelPrivate, PeerIdInvalid):
+        return False
     except Exception as e:
         logger.warning(f"Get members in {cid} error: {e}", exc_info=True)
 

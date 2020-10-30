@@ -35,10 +35,11 @@ from ..functions.etc import (code, code_block, general_link, get_int, get_now, g
 from ..functions.file import save
 from ..functions.filters import (authorized_group, class_e, from_user, is_class_c, is_class_e_user, is_from_user,
                                  test_group)
+from ..functions.group import pin_hold
 from ..functions.markup import get_text_and_markup, get_text_and_markup_tip
 from ..functions.program import restart_program, update_program
-from ..functions.telegram import (forward_messages, get_chat, get_group_info, get_start, pin_chat_message,
-                                  send_message, send_report_message)
+from ..functions.telegram import (forward_messages, get_chat, get_group_info, get_start, send_message,
+                                  send_report_message)
 from ..functions.tip import get_invite_link, tip_ot, tip_rm, tip_welcome
 from ..functions.user import add_start, get_user_from_message
 
@@ -751,7 +752,7 @@ def hold(client: Client, message: Message) -> bool:
         save("pinned_ids")
         glovar.configs[gid]["hold"] = True
         save("configs")
-        thread(pin_chat_message, (client, gid, r_message.message_id))
+        thread(pin_hold, (client, gid, r_message.message_id))
 
         # Generate the text
         text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
