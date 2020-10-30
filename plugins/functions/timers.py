@@ -480,12 +480,14 @@ def update_pins(client: Client) -> bool:
             pinned_message = get_pinned(client, gid, False)
 
             # Check pinned message
-            if not pinned_message or pinned_message.from_user.id in glovar.bot_ids:
+            if not pinned_message or (pinned_message.from_user and pinned_message.from_user.id in glovar.bot_ids):
                 continue
 
             # Save pinned message
             glovar.pinned_ids[gid] = pinned_message.message_id
             save("pinned_ids")
+
+        result = True
     except Exception as e:
         logger.warning(f"Update pins error: {e}", exc_info=True)
 

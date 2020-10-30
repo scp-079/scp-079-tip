@@ -255,11 +255,21 @@ def join_hint(client: Client, gid: int) -> bool:
     return result
 
 
-def pin_cancel(client: Client, cid: int, mid: int = 0) -> Union[bool, int]:
+def pin_cancel(client: Client, cid: int, mid: int = 0, first: bool = True) -> Union[bool, int]:
     # Unpin all the pinned messages
     result = False
 
     try:
+        # First time
+        if mid and first:
+            chat = get_chat(client, cid)
+        else:
+            chat = None
+
+        if chat and chat.pinned_message and chat.pinned_message.message_id == mid:
+            return mid
+
+        # Unpin and check again
         unpin_chat_message(client, cid)
         chat = get_chat(client, cid)
 
@@ -269,7 +279,7 @@ def pin_cancel(client: Client, cid: int, mid: int = 0) -> Union[bool, int]:
         if not chat or not chat.pinned_message:
             return True
 
-        return pin_cancel(client, cid)
+        return pin_cancel(client, cid, mid, False)
     except Exception as e:
         logger.warning(f"Pin cancel error: {e}", exc_info=True)
 

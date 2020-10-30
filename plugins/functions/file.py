@@ -186,7 +186,7 @@ def save(file: str) -> bool:
 
         result = copyfile(f"{glovar.PICKLE_BACKUP_PATH}/{file}", f"{glovar.PICKLE_PATH}/{file}")
     except Exception as e:
-        logger.warning(f"Save error: {e}", exc_info=True)
+        logger.warning(f"Save {file} error: {e}", exc_info=True)
 
     return result
 

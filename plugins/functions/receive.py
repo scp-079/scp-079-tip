@@ -538,6 +538,25 @@ def receive_remove_bad(data: dict) -> bool:
     return result
 
 
+def receive_remove_flood(data: int) -> bool:
+    # Receive remove flood
+    result = True
+
+    try:
+        # Basic data
+        group_id = data
+
+        # Remove the flood status
+        glovar.flooded_ids.discard(group_id)
+        save("flooded_ids")
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Receive remove flood error: {e}", exc_info=True)
+
+    return result
+
+
 def receive_remove_score(data: int) -> bool:
     # Receive remove user's score
     result = False

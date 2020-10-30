@@ -33,9 +33,9 @@ from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import (receive_add_bad, receive_captcha_flood, receive_config_commit, receive_clear_data,
                                  receive_config_reply, receive_config_show, receive_declared_message, receive_group_id,
                                  receive_help_welcome, receive_ignore_ids, receive_leave_approve, receive_regex,
-                                 receive_refresh, receive_remove_bad, receive_remove_score, receive_remove_watch,
-                                 receive_remove_white, receive_white_users, receive_rollback, receive_text_data,
-                                 receive_user_score, receive_watch_user)
+                                 receive_refresh, receive_remove_bad, receive_remove_flood, receive_remove_score,
+                                 receive_remove_watch, receive_remove_white, receive_white_users, receive_rollback,
+                                 receive_text_data, receive_user_score, receive_watch_user)
 from ..functions.telegram import get_admins, send_message
 from ..functions.timers import backup_files, send_count
 from ..functions.tip import tip_keyword, tip_rm, tip_welcome
@@ -335,7 +335,7 @@ def pin_process(client: Client, message: Message) -> bool:
     return result
 
 
-@Client.on_message(filters.incoming & filters.group & ~filters.linked_channel
+@Client.on_message(filters.incoming & filters.group & filters.pinned_message
                    & authorized_group
                    & from_user
                    & ~declared_message)
@@ -348,7 +348,6 @@ def pin_record(_: Client, message: Message) -> bool:
     try:
         # Basic data
         gid = message.chat.id
-        mid = message.message_id
 
         # Check flood status
         if gid in glovar.flooded_ids:
@@ -358,8 +357,12 @@ def pin_record(_: Client, message: Message) -> bool:
         if glovar.configs[gid].get("cancel", False) or glovar.configs[gid].get("hold", False):
             return False
 
+        # Check pinned message
+        if not message.pinned_message or not message.pinned_message.message_id:
+            return False
+
         # Save message id
-        glovar.pinned_ids[gid] = mid
+        glovar.pinned_ids[gid] = message.pinned_message.message_id
         save("pinned_ids")
 
         result = True
@@ -504,6 +507,8 @@ def process_data(client: Client, message: Message) -> bool:
                 elif action == "remove":
                     if action_type == "bad":
                         receive_remove_bad(data)
+                    elif action_type == "flood":
+                        receive_remove_flood(data)
                     elif action_type == "score":
                         receive_remove_score(data)
                     elif action_type == "watch":
