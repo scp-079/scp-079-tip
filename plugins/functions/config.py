@@ -59,11 +59,15 @@ def conflict_config(config: dict, config_list: List[str], master: str) -> dict:
     return result
 
 
-def get_config_text(config: dict) -> str:
+def get_config_text(config: dict, gid: int) -> str:
     # Get the group's config text
     result = ""
 
     try:
+        # Check gid
+        if not gid:
+            return ""
+
         # Basic
         default_text = (lambda x: lang("default") if x else lang("custom"))(config.get("default"))
         result += f"{lang('config')}{lang('colon')}{code(default_text)}\n"
@@ -71,7 +75,12 @@ def get_config_text(config: dict) -> str:
         # Others
         for the_type in ["captcha", "alone", "clean", "ot", "rm", "welcome", "keyword", "white", "equal",
                          "cancel", "hold", "channel", "resend"]:
-            the_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get(the_type))
+            if the_type != "hold":
+                the_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get(the_type))
+            else:
+                pid = glovar.pinned_ids.get(gid, 0)
+                the_text = (lambda x: str(pid) if x else lang("disabled"))(config.get(the_type))
+
             result += f"{lang(the_type)}{lang('colon')}{code(the_text)}\n"
     except Exception as e:
         logger.warning(f"Get config text error: {e}", exc_info=True)

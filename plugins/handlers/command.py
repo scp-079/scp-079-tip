@@ -480,7 +480,7 @@ def config_directly(client: Client, message: Message) -> bool:
         if command_type == "show":
             text = (f"{lang('admin_group')}{lang('colon')}{code(aid)}\n"
                     f"{lang('action')}{lang('colon')}{code(lang('config_show'))}\n"
-                    f"{get_config_text(new_config)}\n")
+                    f"{get_config_text(new_config, gid)}\n")
             return send_report_message(30, client, gid, text)
 
         # Check the config lock

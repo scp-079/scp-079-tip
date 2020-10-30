@@ -266,7 +266,7 @@ def receive_config_show(client: Client, data: dict) -> bool:
                   f"{lang('group_id')}{lang('colon')}{code(gid)}\n")
 
         if glovar.configs.get(gid, {}):
-            result += get_config_text(glovar.configs[gid])
+            result += get_config_text(glovar.configs[gid], gid)
         else:
             result += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
                        f"{lang('reason')}{lang('colon')}{code(lang('reason_none'))}\n")
