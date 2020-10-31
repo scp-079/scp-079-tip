@@ -316,6 +316,23 @@ def get_members(client: Client, cid: int, query: str = "all") -> Union[bool, Gen
     return result
 
 
+@retry
+def get_messages(client: Client, cid: int, mids: Union[int, Iterable[int]]) -> Union[Message, List[Message], None]:
+    # Get some messages
+    result = None
+
+    try:
+        result = client.get_messages(chat_id=cid, message_ids=mids)
+    except FloodWait as e:
+        raise e
+    except (ChannelInvalid, ChannelPrivate, MessageIdInvalid, PeerIdInvalid):
+        return None
+    except Exception as e:
+        logger.warning(f"Get messages {mids} in {cid} error: {e}", exc_info=True)
+
+    return result
+
+
 def get_start(client: Client, para: str) -> str:
     # Get start link with parameter
     result = ""

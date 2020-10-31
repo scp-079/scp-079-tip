@@ -29,7 +29,7 @@ from .decorators import threaded
 from .etc import bold, code, general_link, get_now, get_readable_time, lang, thread
 from .file import data_to_file, move_file, save
 from .group import delete_message, get_pinned, leave_group, save_admins
-from .telegram import get_admins, get_chat_member, get_group_info, get_members, send_message
+from .telegram import get_admins, get_chat_member, get_group_info, get_members, get_messages, send_message
 from .tip import get_invite_link
 
 # Enable logging
@@ -492,8 +492,16 @@ def update_pins(client: Client) -> bool:
             if gid in glovar.flooded_ids:
                 continue
 
+            # Get old message
+            oid = glovar.pinned_ids.get(gid, 0)
+
+            if oid:
+                old_message = get_messages(client, gid, oid)
+            else:
+                old_message = None
+
             # Check config
-            if glovar.configs[gid].get("cancel", False) or glovar.configs[gid].get("hold", False):
+            if glovar.configs[gid].get("cancel", False) or (old_message and glovar.configs[gid].get("hold", False)):
                 continue
 
             # Get pinned message
