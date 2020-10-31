@@ -21,14 +21,15 @@ from subprocess import run
 from time import sleep
 
 from pyrogram import Client
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from .. import glovar
 from .channel import share_data, share_regex_count
 from .decorators import threaded
-from .etc import code, general_link, get_now, get_readable_time, lang, thread
+from .etc import bold, code, general_link, get_now, get_readable_time, lang, thread
 from .file import data_to_file, move_file, save
 from .group import delete_message, get_pinned, leave_group, save_admins
-from .telegram import get_admins, get_group_info, get_members, send_message
+from .telegram import get_admins, get_chat_member, get_group_info, get_members, send_message
 from .tip import get_invite_link
 
 # Enable logging
@@ -375,10 +376,6 @@ def update_admins(client: Client) -> bool:
             # Save the admin list
             save_admins(gid, admin_members)
 
-            # Ignore the group
-            if gid in glovar.lack_group_ids:
-                continue
-
             # Check the permissions
             if glovar.user_id not in glovar.admin_ids[gid]:
                 reason = "user"
@@ -390,6 +387,8 @@ def update_admins(client: Client) -> bool:
                      for admin in admin_members):
                 glovar.lack_group_ids.discard(gid)
                 save("lack_group_ids")
+                continue
+            elif gid in glovar.lack_group_ids:
                 continue
             else:
                 reason = "permissions"
@@ -409,6 +408,27 @@ def update_admins(client: Client) -> bool:
                     "reason": reason
                 }
             )
+
+            # Send the info message to the group
+            member = get_chat_member(client, gid, glovar.user_id)
+
+            if reason == "user" and member and member.status not in {"restricted", "left", "kicked"}:
+                continue
+
+            info_text = f"{bold(lang('warning'))}{lang('colon')}{code(lang(f'warning_leave_{reason}'))}"
+            markup = InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text=lang("read_manual"),
+                            url=glovar.manual_link
+                        )
+                    ]
+                ]
+            )
+            thread(send_message, (client, gid, info_text, None, markup))
+
+            # Send the debug message
             reason = lang(f"reason_{reason}")
             project_link = general_link(glovar.project_name, glovar.project_link)
             debug_text = (f"{lang('project')}{lang('colon')}{project_link}\n"

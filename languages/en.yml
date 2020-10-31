@@ -22,6 +22,7 @@ score: Score
 status_failed: Failed
 status_succeeded: Succeeded
 type: Type
+warning: 警告
 
 # Command
 command_date: 命令发送时间
@@ -107,6 +108,8 @@ reason_user: Missing USER
 refresh: Refresh Admin Lists
 status_joined: Joined the Group
 status_left: Left the Group
+warning_leave_permessions: 本机器人的权限缺失，将严重影响机器人的正常工作，请及时参照使用手册赋予权限，否则机器人将退出本群组
+warning_leave_user: 检测到 USER 已不在群组中，而 USER 是本机器人运行所必须的辅助机器人，请及时处理该问题，否则机器人将退出本群组
 
 # Program
 program_restart: 重启程序
