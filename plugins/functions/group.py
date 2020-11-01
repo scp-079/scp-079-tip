@@ -256,18 +256,21 @@ def join_hint(client: Client, gid: int) -> bool:
     return result
 
 
-def pin_cancel(client: Client, gid: int, hid: str, mid: int = 0, first: bool = True) -> Union[bool, int]:
+def pin_cancel(client: Client, gid: int, hid: str, mid: int = 0) -> Union[bool, int]:
     # Unpin all the pinned messages
     result = False
 
     try:
-        # First time
-        if mid and first:
-            chat = get_chat(client, gid)
-        elif mid:
-            chat = None
-        else:
-            chat = None
+        # Get chat
+        chat = get_chat(client, gid)
+
+        # Check if current pinned message is the held message
+        if chat and chat.pinned_message and chat.pinned_message.message_id == mid:
+            return mid
+
+        # Check if there is no pinned message
+        if not chat or not chat.pinned_message:
+            return True
 
         # Avoid flooding
         sleep(1)
@@ -276,12 +279,8 @@ def pin_cancel(client: Client, gid: int, hid: str, mid: int = 0, first: bool = T
         if glovar.hold_ids.get(gid, "") != hid:
             return False
 
-        # Check current pinned message
-        if chat and chat.pinned_message and chat.pinned_message.message_id == mid:
-            return mid
-
         # Unpin current pinned message
-        r = unpin_chat_message(client, gid)
+        r = unpin_chat_message(client, gid, chat.pinned_message.message_id)
 
         if not r:
             return False
@@ -293,18 +292,8 @@ def pin_cancel(client: Client, gid: int, hid: str, mid: int = 0, first: bool = T
         if glovar.hold_ids.get(gid, "") != hid:
             return False
 
-        # Get chat after unpin
-        chat = get_chat(client, gid)
-
-        # Check current pinned message again
-        if chat and chat.pinned_message and chat.pinned_message.message_id == mid:
-            return mid
-
-        if not chat or not chat.pinned_message:
-            return True
-
         # Try to unpin again
-        return pin_cancel(client, gid, hid, mid, False)
+        return pin_cancel(client, gid, hid, mid)
     except Exception as e:
         logger.warning(f"Pin cancel error: {e}", exc_info=True)
 

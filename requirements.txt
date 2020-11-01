@@ -8,7 +8,7 @@ pyaes==1.6.1
 pyAesCrypt==0.4.3
 pybind11==2.6.0
 pycparser==2.20
-Pyrogram==1.0.7
+Pyrogram @ https://github.com/pyrogram/pyrogram/archive/master.zip
 PySocks==1.7.1
 pytz==2020.1
 PyYAML==5.3.1
