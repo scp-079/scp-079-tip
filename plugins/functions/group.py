@@ -256,57 +256,81 @@ def join_hint(client: Client, gid: int) -> bool:
     return result
 
 
-def pin_cancel(client: Client, cid: int, mid: int = 0, first: bool = True) -> Union[bool, int]:
+def pin_cancel(client: Client, gid: int, hid: str, mid: int = 0, first: bool = True) -> Union[bool, int]:
     # Unpin all the pinned messages
     result = False
 
     try:
         # First time
         if mid and first:
-            chat = get_chat(client, cid)
-            sleep(1)
+            chat = get_chat(client, gid)
         elif mid:
-            sleep(1)
             chat = None
         else:
             chat = None
 
+        # Avoid flooding
+        sleep(1)
+
+        # Check hid
+        if glovar.hold_ids.get(gid, "") != hid:
+            return False
+
+        # Check current pinned message
         if chat and chat.pinned_message and chat.pinned_message.message_id == mid:
             return mid
 
-        # Unpin and check again
-        r = unpin_chat_message(client, cid)
+        # Unpin current pinned message
+        r = unpin_chat_message(client, gid)
 
         if not r:
             return False
-        else:
-            sleep(1)
 
-        chat = get_chat(client, cid)
+        # Avoid flooding
+        sleep(1)
 
+        # Check hid
+        if glovar.hold_ids.get(gid, "") != hid:
+            return False
+
+        # Get chat after unpin
+        chat = get_chat(client, gid)
+
+        # Check current pinned message again
         if chat and chat.pinned_message and chat.pinned_message.message_id == mid:
             return mid
 
         if not chat or not chat.pinned_message:
             return True
 
-        return pin_cancel(client, cid, mid, False)
+        # Try to unpin again
+        return pin_cancel(client, gid, hid, mid, False)
     except Exception as e:
         logger.warning(f"Pin cancel error: {e}", exc_info=True)
 
     return result
 
 
-def pin_hold(client: Client, gid: int, mid: int) -> bool:
+def pin_hold(client: Client, gid: int, mid: int, hid: str) -> bool:
     # Hold the pinned message
     result = False
 
     try:
-        pid = pin_cancel(client, gid, mid)
+        # Check hid
+        if glovar.hold_ids.get(gid, "") != hid:
+            return False
+
+        # Try to unpin the current pinned message
+        pid = pin_cancel(client, gid, hid, mid)
 
         if pid == mid:
             return True
 
+        # Check hid
+        if glovar.hold_ids.get(gid, "") != hid:
+            return False
+
+        # Pin old message
         result = pin_chat_message(client, gid, mid)
     except Exception as e:
         logger.warning(f"Pin hold error: {e}", exc_info=True)

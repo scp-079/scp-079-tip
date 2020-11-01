@@ -23,7 +23,7 @@ from pyrogram.types import Message
 
 from .. import glovar
 from ..functions.channel import get_debug_text
-from ..functions.etc import code, delay, general_link, get_now, lang, mention_id, thread
+from ..functions.etc import code, delay, general_link, get_now, lang, mention_id, random_str, thread
 from ..functions.file import save
 from ..functions.filters import (aio, authorized_group, declared_message, exchange_channel, from_user, hide_channel,
                                  is_declared_message, is_high_score_user, is_keyword_message, is_nospam_message,
@@ -323,8 +323,16 @@ def pin_process(client: Client, message: Message) -> bool:
         if not hold or not mid:
             return False
 
+        # Get hold id
+        hid = random_str(8)
+
+        if glovar.hold_ids.get(gid, "") == hid:
+            hid = random_str(8)
+
+        glovar.hold_ids[gid] = hid
+
         # Pin the message
-        delay(3, pin_hold, [client, gid, mid])
+        delay(3, pin_hold, [client, gid, mid, hid])
 
         result = True
     except Exception as e:

@@ -403,6 +403,11 @@ default_welcome_data: Dict[str, Union[int, str]] = {
 
 emoji_set: Set[str] = {v for k, v in vars(emoji).items() if not k.startswith("_")}
 
+hold_ids: Dict[int, str] = {}
+# hold_ids = {
+#     -10012345678: "random"
+# }
+
 keyworded_ids: Dict[int, Dict[int, Set[str]]] = {}
 # keyworded_ids = {
 #     -10012345678: {
@@ -462,7 +467,7 @@ started_ids: Set[int] = set()
 
 updating: bool = False
 
-version: str = "0.2.6"
+version: str = "0.2.7"
 
 welcomed_ids: Dict[int, Set[int]] = {}
 # welcomed_ids = {
