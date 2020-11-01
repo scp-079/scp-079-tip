@@ -406,7 +406,7 @@ def version_0_2_7() -> bool:
             cid = channels[gid].get("cid")
             print(f"{gid}'s bind channel is {cid}")
 
-            if cid and isinstance(cid, int):
+            if cid is 0 or (cid and isinstance(cid, int)):
                 print(f"{gid} is good...")
                 continue
 
