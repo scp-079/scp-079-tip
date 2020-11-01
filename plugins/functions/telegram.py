@@ -626,9 +626,12 @@ def unpin_chat_message(client: Client, cid: int, mid: int) -> Optional[bool]:
     result = None
 
     try:
+        # result = client.unpin_chat_message(
+        #     chat_id=cid,
+        #     message_id=mid
+        # )
         result = client.unpin_chat_message(
-            chat_id=cid,
-            message_id=mid
+            chat_id=cid
         )
     except FloodWait as e:
         logger.warning(f"Unpin chat message {mid} in {cid} - Sleep for {e.x} second(s)")
