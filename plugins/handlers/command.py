@@ -752,7 +752,17 @@ def hold(client: Client, message: Message) -> bool:
         save("pinned_ids")
         glovar.configs[gid]["hold"] = True
         save("configs")
-        thread(pin_hold, (client, gid, r_message.message_id))
+
+        # Get hold id
+        hid = random_str(8)
+
+        if glovar.hold_ids.get(gid, "") == hid:
+            hid = random_str(8)
+
+        glovar.hold_ids[gid] = hid
+
+        # Pin the message
+        thread(pin_hold, (client, gid, r_message.message_id, hid))
 
         # Generate the text
         text = (f"{lang('admin')}{lang('colon')}{code(aid)}\n"
