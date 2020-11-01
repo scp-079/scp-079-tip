@@ -194,6 +194,8 @@ def version_0_1_9() -> bool:
         move_file("bot.session", "data/session/bot.session")
         remove_dir("tmp")
 
+        print("Version 0.1.9 updated!\n")
+
         result = True
     except Exception as e:
         print(f"Version 0.1.9 error: {e}")
@@ -375,7 +377,7 @@ def version_0_2_0() -> bool:
         with open("data/pickle/configs", "wb") as f:
             pickle.dump(configs, f)
 
-        print("Version 0.2.0 updated!")
+        print("Version 0.2.0 updated!\n")
 
         result = True
     except Exception as e:
@@ -416,7 +418,7 @@ def version_0_2_7() -> bool:
         with open("data/pickle/channels", "wb") as f:
             pickle.dump(channels, f)
 
-        print("Version 0.2.7 updated!")
+        print("Version 0.2.7 updated!\n")
 
         result = True
     except Exception as e:
