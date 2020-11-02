@@ -500,6 +500,8 @@ def update_pins(client: Client) -> bool:
             else:
                 old_message = None
 
+            print(old_message)
+
             # Check config
             if glovar.configs[gid].get("cancel", False) or (old_message and glovar.configs[gid].get("hold", False)):
                 continue
