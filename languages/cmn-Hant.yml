@@ -108,7 +108,7 @@ reason_user: 缺失 USER
 refresh: 刷新群管列表
 status_joined: 已加入群組
 status_left: 已退出群組
-warning_leave_permessions: 本机器人的权限缺失，将严重影响机器人的正常工作，请及时参照使用手册赋予权限，否则机器人将退出本群组
+warning_leave_permissions: 本机器人的权限缺失，将严重影响机器人的正常工作，请及时参照使用手册赋予权限，否则机器人将退出本群组
 warning_leave_user: 检测到 USER 已不在群组中，而 USER 是本机器人运行所必须的辅助机器人，请及时处理该问题，否则机器人将退出本群组
 
 # Program
