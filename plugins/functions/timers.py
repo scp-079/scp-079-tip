@@ -500,6 +500,7 @@ def update_pins(client: Client) -> bool:
             else:
                 old_message = None
 
+            print(gid)
             print(old_message)
 
             # Check config
