@@ -22,6 +22,7 @@ import pickle
 from os import remove
 from os.path import exists
 from shutil import copyfile, move
+from time import sleep
 from typing import Any
 
 from pyAesCrypt import decryptFile, encryptFile
@@ -185,6 +186,9 @@ def save(file: str) -> bool:
             pickle.dump(eval(f"glovar.{file}"), f)
 
         result = copyfile(f"{glovar.PICKLE_BACKUP_PATH}/{file}", f"{glovar.PICKLE_PATH}/{file}")
+    except RuntimeError:
+        sleep(1)
+        return save(file)
     except Exception as e:
         logger.warning(f"Save {file} error: {e}", exc_info=True)
 
