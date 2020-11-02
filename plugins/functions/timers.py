@@ -500,8 +500,11 @@ def update_pins(client: Client) -> bool:
             else:
                 old_message = None
 
-            print(gid)
-            print(old_message)
+            if gid == -1001154313178:
+                logger.warning(gid)
+                logger.warning(old_message)
+            else:
+                logger.warning(f"---{gid}")
 
             # Check config
             if glovar.configs[gid].get("cancel", False) or (old_message and glovar.configs[gid].get("hold", False)):
