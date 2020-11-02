@@ -29,9 +29,9 @@ from pyrogram.raw.types import UserFull
 from pyrogram.types import (Chat, ChatMember, ChatPermissions, ChatPreview, InlineKeyboardMarkup, Message,
                             ReplyKeyboardMarkup, User)
 
-from .. import glovar
 from .decorators import threaded, retry
 from .etc import delay, wait_flood
+from .. import glovar
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -205,7 +205,7 @@ def get_admins(client: Client, cid: int) -> Union[bool, List[ChatMember], None]:
     except FloodWait as e:
         logger.warning(f"Get admins in {cid} - Sleep for {e.x} second(s)")
         raise e
-    except (AttributeError, ChannelInvalid, ChannelPrivate, PeerIdInvalid):
+    except (ChannelInvalid, ChannelPrivate, PeerIdInvalid):
         return False
     except Exception as e:
         logger.warning(f"Get admins in {cid} error: {e}", exc_info=True)
