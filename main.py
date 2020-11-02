@@ -54,8 +54,6 @@ app.start()
 # Send online status
 delay(3, update_status, [app, "online"])
 
-delay(10, update_pins, [app])
-
 # Timer
 scheduler = BackgroundScheduler(job_defaults={"misfire_grace_time": 60})
 scheduler.add_job(interval_min_01, "interval", [app], minutes=1)
