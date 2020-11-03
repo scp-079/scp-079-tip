@@ -370,7 +370,7 @@ def update_admins(client: Client) -> bool:
                 continue
 
             # Check the admin list
-            if not (admin_members and any([admin.user.is_self for admin in admin_members])):
+            if not admin_members:
                 continue
 
             # Save the admin list

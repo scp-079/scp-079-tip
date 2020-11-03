@@ -205,6 +205,11 @@ def get_admins(client: Client, cid: int) -> Union[bool, List[ChatMember], None]:
     except FloodWait as e:
         logger.warning(f"Get admins in {cid} - Sleep for {e.x} second(s)")
         raise e
+    except AttributeError as e:
+        if "BadSeverSalt" in str(e):
+            return None
+        else:
+            return False
     except (ChannelInvalid, ChannelPrivate, PeerIdInvalid):
         return False
     except Exception as e:
