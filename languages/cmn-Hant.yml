@@ -50,7 +50,7 @@ clean: 無痕模式
 ot: OT 警告
 rm: RM 警告
 welcome: 歡迎信息
-keyword: 關鍵詞
+keyword: 關鍵詞提醒
 white: 放行白名單
 equal: 平等模式
 cancel: 取消置頂
