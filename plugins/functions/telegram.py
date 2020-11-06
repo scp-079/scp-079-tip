@@ -635,15 +635,9 @@ def unpin_chat_message(client: Client, cid: int, mid: int) -> Optional[bool]:
         #     chat_id=cid,
         #     message_id=mid
         # )
-
-        from subprocess import run
-        url = f"https://api.telegram.org/bot{glovar.token}/unpinAllChatMessages?chat_id={cid}"
-        run(f"""curl -g '{url}'""", shell=True)
-        result = True
-
-        # result = client.unpin_chat_message(
-        #     chat_id=cid
-        # )
+        result = client.unpin_chat_message(
+            chat_id=cid
+        )
     except FloodWait as e:
         logger.warning(f"Unpin chat message {mid} in {cid} - Sleep for {e.x} second(s)")
         raise e
@@ -651,5 +645,26 @@ def unpin_chat_message(client: Client, cid: int, mid: int) -> Optional[bool]:
         return False
     except Exception as e:
         logger.warning(f"Unpin chat message {mid} in {cid} error: {e}", exc_info=True)
+
+    return result
+
+
+@retry
+def unpin_all_chat_messages(client: Client, cid: int) -> Optional[bool]:
+    # Unpin all messages in a group
+    result = None
+
+    try:
+        from subprocess import run
+        url = f"https://api.telegram.org/bot{glovar.token}/unpinAllChatMessages?chat_id={cid}"
+        run(f"""curl -g '{url}'""", shell=True)
+        result = True
+    except FloodWait as e:
+        logger.warning(f"Unpin all chat messages in {cid} - Sleep for {e.x} second(s)")
+        raise e
+    except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, ChatNotModified, PeerIdInvalid):
+        return False
+    except Exception as e:
+        logger.warning(f"Unpin chat messages in {cid} error: {e}", exc_info=True)
 
     return result

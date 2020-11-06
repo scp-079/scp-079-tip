@@ -30,7 +30,7 @@ from .file import save
 from .ids import init_group_id
 from .markup import get_text_and_markup
 from .telegram import (delete_messages, get_chat, get_chat_member, leave_chat, pin_chat_message, send_message,
-                       unpin_chat_message)
+                       unpin_all_chat_messages)
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -272,6 +272,9 @@ def pin_cancel(client: Client, gid: int, hid: str, mid: int = 0) -> Union[bool, 
         if not chat or not chat.pinned_message:
             return True
 
+        # Record current pinned message
+        oid = chat.pinned_message.message_id
+
         # Avoid flooding
         sleep(1)
 
@@ -280,10 +283,36 @@ def pin_cancel(client: Client, gid: int, hid: str, mid: int = 0) -> Union[bool, 
             return False
 
         # Unpin current pinned message
-        r = unpin_chat_message(client, gid, chat.pinned_message.message_id)
+        # r = unpin_chat_message(client, gid, chat.pinned_message.message_id)
+        r = unpin_all_chat_messages(client, gid)
 
         if not r:
             return False
+
+        # Avoid flooding
+        sleep(1)
+
+        # Check hid
+        if glovar.hold_ids.get(gid, "") != hid:
+            return False
+
+        # Get chat
+        chat = get_chat(client, gid)
+
+        # Check if current pinned message is the held message
+        if chat and chat.pinned_message and chat.pinned_message.message_id == mid:
+            return mid
+
+        # Check if there is no pinned message
+        if not chat or not chat.pinned_message:
+            return True
+
+        # Record current pinned message
+        nid = chat.pinned_message.message_id
+
+        # Check the pinned message
+        if oid == nid:
+            return True
 
         # Avoid flooding
         sleep(1)
