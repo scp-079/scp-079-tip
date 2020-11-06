@@ -30,7 +30,7 @@ from .file import save
 from .ids import init_group_id
 from .markup import get_text_and_markup
 from .telegram import (delete_messages, get_chat, get_chat_member, leave_chat, pin_chat_message, send_message,
-                       unpin_all_chat_messages)
+                       unpin_all_chat_messages, unpin_chat_message)
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -283,8 +283,8 @@ def pin_cancel(client: Client, gid: int, hid: str, mid: int = 0) -> Union[bool, 
             return False
 
         # Unpin current pinned message
-        # r = unpin_chat_message(client, gid, chat.pinned_message.message_id)
-        r = unpin_all_chat_messages(client, gid)
+        r = unpin_chat_message(client, gid, chat.pinned_message.message_id)
+        # r = unpin_all_chat_messages(client, gid)
 
         if not r:
             return False

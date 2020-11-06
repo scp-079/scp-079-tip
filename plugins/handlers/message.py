@@ -313,7 +313,7 @@ def pin_process(client: Client, message: Message) -> bool:
 
         # Cancel the pinned message
         if glovar.configs[gid].get("cancel", False):
-            return delay(15, pin_cancel, [client, gid])
+            return delay(3, pin_cancel, [client, gid])
 
         # Hold the pinned message
         hold = glovar.configs[gid].get("hold", False)
@@ -332,7 +332,7 @@ def pin_process(client: Client, message: Message) -> bool:
         glovar.hold_ids[gid] = hid
 
         # Pin the message
-        delay(15, pin_hold, [client, gid, mid, hid])
+        delay(3, pin_hold, [client, gid, mid, hid])
 
         result = True
     except Exception as e:
