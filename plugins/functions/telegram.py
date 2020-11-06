@@ -639,6 +639,7 @@ def unpin_chat_message(client: Client, cid: int, mid: int) -> Optional[bool]:
         from subprocess import run
         url = f"https://api.telegram.org/bot{glovar.token}/unpinChatMessage?chat_id={cid}&message_id={mid}"
         run(f"""curl -g '{url}'""", shell=True)
+        result = True
 
         # result = client.unpin_chat_message(
         #     chat_id=cid
