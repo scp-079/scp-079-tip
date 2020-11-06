@@ -296,30 +296,30 @@ def pin_cancel(client: Client, gid: int, hid: str, mid: int = 0) -> Union[bool, 
         if glovar.hold_ids.get(gid, "") != hid:
             return False
 
-        # Get chat
-        chat = get_chat(client, gid)
-
-        # Check if current pinned message is the held message
-        if chat and chat.pinned_message and chat.pinned_message.message_id == mid:
-            return mid
-
-        # Check if there is no pinned message
-        if not chat or not chat.pinned_message:
-            return True
-
-        # Record current pinned message
-        nid = chat.pinned_message.message_id
-
-        # Check the pinned message
-        if oid == nid:
-            return True
-
-        # Avoid flooding
-        sleep(1)
-
-        # Check hid
-        if glovar.hold_ids.get(gid, "") != hid:
-            return False
+        # # Get chat
+        # chat = get_chat(client, gid)
+        #
+        # # Check if current pinned message is the held message
+        # if chat and chat.pinned_message and chat.pinned_message.message_id == mid:
+        #     return mid
+        #
+        # # Check if there is no pinned message
+        # if not chat or not chat.pinned_message:
+        #     return True
+        #
+        # # Record current pinned message
+        # nid = chat.pinned_message.message_id
+        #
+        # # Check the pinned message
+        # if oid == nid:
+        #     return True
+        #
+        # # Avoid flooding
+        # sleep(1)
+        #
+        # # Check hid
+        # if glovar.hold_ids.get(gid, "") != hid:
+        #     return False
 
         # Try to unpin again
         return pin_cancel(client, gid, hid, mid)
